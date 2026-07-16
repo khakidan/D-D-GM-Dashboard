@@ -1,0 +1,8 @@
+{
+  "name": "Remix: DnD GM Dashboard",
+  "description": "A responsive Game Master combat tracker and roster with a synced player-facing view.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

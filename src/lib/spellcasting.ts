@@ -1,0 +1,89 @@
+import { calculateModifier, proficiencyBonusFromLevel, AbilityName, abilitiesInOrder } from './abilityScores';
+
+export type SpellcastingAbility = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA' | null;
+
+export const SPELLCASTING_ABILITY_MAP: Record<string, SpellcastingAbility> = {
+  Barbarian: null,
+  Bard: 'CHA',
+  Cleric: 'WIS',
+  Druid: 'WIS',
+  Fighter: null,
+  Monk: null,
+  Paladin: 'CHA',
+  Ranger: 'WIS',
+  Rogue: null,
+  Sorcerer: 'CHA',
+  Warlock: 'CHA',
+  Wizard: 'INT',
+  Artificer: 'INT',
+};
+
+export const CLASS_SAVING_THROW_MAP: Record<string, AbilityName[]> = {
+  'Barbarian': ['STR', 'CON'],
+  'Bard':      ['DEX', 'CHA'],
+  'Cleric':    ['WIS', 'CHA'],
+  'Druid':     ['INT', 'WIS'],
+  'Fighter':   ['STR', 'CON'],
+  'Monk':      ['STR', 'DEX'],
+  'Paladin':   ['WIS', 'CHA'],
+  'Ranger':    ['STR', 'DEX'],
+  'Rogue':     ['DEX', 'INT'],
+  'Sorcerer':  ['CON', 'CHA'],
+  'Warlock':   ['WIS', 'CHA'],
+  'Wizard':    ['INT', 'WIS'],
+  'Artificer': ['CON', 'INT'],
+};
+
+export function getAutoSpellcastingAbility(className: string): SpellcastingAbility {
+  const normalized = className.trim().toLowerCase();
+  const key = Object.keys(SPELLCASTING_ABILITY_MAP).find(
+    k => k.toLowerCase() === normalized
+  );
+  return key ? SPELLCASTING_ABILITY_MAP[key] : null;
+}
+
+export function getSavingThrowsForClass(className: string): AbilityName[] {
+  if (!className) return [];
+  const normalized = className.trim().toLowerCase();
+  const key = Object.keys(CLASS_SAVING_THROW_MAP).find(
+    k => k.toLowerCase() === normalized
+  );
+  return key ? CLASS_SAVING_THROW_MAP[key] : [];
+}
+
+export function getEffectiveSpellcastingAbility(
+  className: string | undefined,
+  override: SpellcastingAbility | undefined
+): SpellcastingAbility {
+  if (override !== undefined) {
+    return override;
+  }
+  return getAutoSpellcastingAbility(className ?? '');
+}
+
+export function calculateSpellSaveDC(abilityMod: number, profBonus: number): number {
+  return 8 + abilityMod + profBonus;
+}
+
+export function calculateSpellAttackBonus(abilityMod: number, profBonus: number): number {
+  return abilityMod + profBonus;
+}
+
+export function parseSpellcastingAbility(val: string | null | undefined): SpellcastingAbility | undefined {
+  if (val === null) return null;
+  if (val === undefined) return undefined;
+  const normalized = val.trim().toLowerCase();
+  if (normalized === '' || normalized === 'auto') return undefined;
+  if (normalized === 'none') return null;
+  const uppercase = normalized.toUpperCase();
+  if (abilitiesInOrder.includes(uppercase as any)) {
+    return uppercase as SpellcastingAbility;
+  }
+  return undefined;
+}
+
+export function serializeSpellcastingAbility(ability: SpellcastingAbility | undefined): string {
+  if (ability === undefined) return '';
+  if (ability === null) return 'none';
+  return ability;
+}
