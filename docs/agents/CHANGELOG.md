@@ -6,6 +6,36 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## "Two-Column Form Field Grid" — Investigated and Correctly Decided Not Worth Extracting; Phase 2 Componentization Audit Fully Closed
+
+The finding — `grid grid-cols-2 gap-4`, reported 5 times across 3 files — was investigated on Dan's explicit direction (rather than assumed either way) before being closed.
+
+**Confirmed the finding itself needed a small correction**: the 5 instances genuinely span 4 files, not 3 (`NpcCombatTab.tsx` has 2 separate instances). All 5 are exact className matches.
+
+**Checked nearby "close-but-not-identical" sites, the same way the header title/subtitle investigation did — and this time they confirmed the boundary was drawn correctly, rather than revealing a hidden larger duplication.** 10 nearby 2-column grids were found using genuinely different values (`gap-3`, axis-specific `gap-x-4 gap-y-1`, responsive `grid-cols-1 lg:grid-cols-2` variants with larger gaps for wider screens) — real, concrete differences, not superficial ones, confirming these were correctly excluded from the original count rather than accidentally missed.
+
+**The weakest case for extraction found all session, and correctly identified as such.** Unlike `SettingsPanel` (a real visual identity — borders, background, shadow, spacing all bundled together) or even the rejected header title/subtitle case (at least real, shared typography), this className carries zero visual identity — pure layout, nothing else. The content inside the 5 sites varies significantly (some use the `LabeledField` abstraction, others raw `<div>`s with manual icons and labels), meaning a shared wrapper would functionally reduce to little more than an aliased `<div>`, adding an import and a file for a single Tailwind string that's already perfectly readable in place.
+
+**Conclusion**: left as plain Tailwind markup in all 4 files, no code changes made. This closes out the last of the systematic 6-category componentization audit's 35 original findings — **Phase 2 of the Full Codebase Audit is now complete.** Phase 3 (UI uniformity/D&D-app UX conventions) has not yet started and is the next phase to scope whenever picked back up.
+
+---
+
+## Spreadsheet Row Schemas — Single Source of Truth Established (Completed)
+
+`campaigns.ts`'s inline sheet-header arrays (used when seeding a new campaign) and `sheetSchemas.ts`'s Zod tuple schemas (used when parsing synced data back) independently encoded the identical column order for all 4 core sheets — confirmed column-by-column, a genuine, exact duplication with no single source of truth, meaning the two could silently drift if either was changed without updating the other.
+
+**A first-of-its-kind architectural decision was surfaced honestly rather than bundled in silently.** The safest fix required `campaigns.ts` (a server-side file) to import from `sheetSchemas.ts` (living in `src/lib/`) — a cross-layer dependency direction that had never existed anywhere in the codebase before. Rather than quietly introducing this, it was flagged directly, confirmed there was no existing precedent for it, and brought to Dan for an explicit decision rather than assumed acceptable. Recommended proceeding given `sheetSchemas.ts` is genuinely pure logic (Zod schemas and parsing functions, no React or browser APIs) — the conventional, safe category of code to share across a full-stack app's client/server boundary — but confirmed this directly against the real transitive import tree (`abilityScores.ts`, `spellcasting.ts`, `combatLog.ts`) before treating it as settled, not merely assumed from the file's apparent purpose.
+
+**Considered and correctly rejected a fuller "auto-derive one from the other" approach.** Zod's `z.tuple([...])` requires a literal array of schemas at the type level to preserve exact positional type inference (each index's specific type, which `sheetAdapters.ts` relies on for strict destructuring) — dynamically generating the tuple from a data-driven config array would have degraded this to a much looser type, risking real breakage elsewhere. The safer, more proportionate fix was co-location plus an automated length assertion, not a deeper structural merge.
+
+**Fix**: the 4 header arrays (`CHARACTER_HEADERS`, `NPC_HEADERS`, `ENCOUNTER_HEADERS`, `ENCOUNTER_COMBATANT_HEADERS`) now live as exported `const` arrays directly in `sheetSchemas.ts`, each schema's `padRow()` call now derives its length from the corresponding array instead of a hardcoded number, and `campaigns.ts` imports these constants instead of declaring them inline. 4 new length-assertion tests added to `sheetSchemas.test.ts`, each asserting a parsed row's length matches its header array's length — an automated guardrail that would fail the build immediately if a column were ever added to one without the other.
+
+**A real, previously undetected gap in this project's own bookkeeping was caught and corrected while verifying this work, not glossed over.** Batch 1's documented count had been stale at 462 since the `parseCommaSeparatedList` consolidation earlier this session — 5 new `stringUtils.test.ts` tests were added at the time, but the batch row itself was never updated to reflect it, a mistake made by Claude, not AI Studio. Caught because this task's real, complete file-by-file Batch 1 output (independently summed by hand) came to 469, not the 466 that would have matched the stale baseline plus this task's own additions. Corrected transparently rather than silently: true count is 462 (stale) + 5 (the missed update) + 2 (this task's net addition to `sheetSchemas.test.ts`) = 469.
+
+Verified: diffs for all 3 files checked directly against the real content. Raw, complete, file-by-file Batch 1 output obtained and independently summed by hand to confirm the 469 total before accepting it, rather than trusting a summary figure. `tsc -p tsconfig.build.json --noEmit` clean, confirming the new cross-layer import is type-safe. `testing-batches.md` updated: Batch 1 corrected from 462 to 469 (reflecting both the retroactive fix and this task's real addition), total baseline corrected from 816 to 823.
+
+---
+
 ## `SettingsPage.tsx` and All 5 Child Panels — Test Coverage Closed (Completed)
 
 `SettingsPage.tsx` and its 5 child components (`AuthPortalSettings.tsx`, `ReferenceDataSeeder.tsx`, `GMTestingTools.tsx`, `SheetConnectionSettings.tsx`, and `SettingsPage.tsx` itself) had zero test coverage anywhere in the codebase — the largest single test-coverage gap found this session, closed in 5 deliberately staged files rather than one large sweep.

@@ -4,13 +4,13 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 12 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 816 tests.**
+**Current baseline: 823 tests.** (Corrected from a previously undetected bookkeeping gap: Batch 1's row had been stale at 462 since the `parseCommaSeparatedList` Phase 1 work earlier this session — 5 new `stringUtils.test.ts` tests were added at the time but the row was never updated to reflect it. Caught while verifying this session's sheetSchemas.ts consolidation, whose own real, current file-by-file Batch 1 output summed to 469, not the expected 466. True count: 462 (stale) + 5 (missed update) + 2 (this task's net addition) = 469.)
 
 Run each batch individually. Never chain with `&&`. Never use glob patterns. Never run all tests at once with `npx vitest run`.
 
 | Batch | Description | Test Count |
 |-------|-------------|------------|
-| 1 | `src/lib/__tests__` | 462 |
+| 1 | `src/lib/__tests__` | 469 |
 | 2 | `src/services/__tests__` | 37 |
 | 3 | `src/hooks/__tests__` | 53 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 9 |
@@ -25,7 +25,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 9 | `src/components/auth/__tests__` | 15 |
 
 ```bash
-# BATCH 1 — 462 tests
+# BATCH 1 — 469 tests
 npx vitest run src/lib/__tests__
 
 # BATCH 2 — 37 tests
