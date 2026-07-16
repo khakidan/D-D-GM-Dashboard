@@ -5,6 +5,8 @@ import { Tabs } from './Tabs';
 import { NpcListEditor } from './NpcListEditor';
 import { NpcIdentityTab } from './NpcIdentityTab';
 import { NpcCombatTab } from './NpcCombatTab';
+import { NpcAbilitiesTab } from './NpcAbilitiesTab';
+import { NpcStatBlockTab } from './NpcStatBlockTab';
 import { NpcSimpleFieldEditor } from './NpcSimpleFieldEditor';
 import { NpcCombatActionFields } from './NpcCombatActionFields';
 import {
@@ -206,131 +208,27 @@ export function NpcFormFields({ data, onChange, errors = {}, compact = false }: 
       )}
 
       {activeTab === 'abilities' && (
-        <div className={cn("space-y-4", compact && "space-y-2")}>
-          <StatBlock
-            abilityScores={parsedAbilityScores}
-            proficiencies={parsedProficiencies}
-            readOnly={false}
-            onChange={(scores, profs) => {
-              onChange({
-                ...data,
-                abilityScores: serializeAbilityScores(scores),
-                proficiencies: serializeProficiencies(profs),
-              });
-            }}
-          />
-        </div>
+        <NpcAbilitiesTab
+          data={data}
+          onChange={onChange}
+          parsedAbilityScores={parsedAbilityScores}
+          parsedProficiencies={parsedProficiencies}
+          compact={compact}
+        />
       )}
 
       {activeTab === 'statblock' && (
-        <div className={cn("space-y-4", compact && "space-y-2")}>
-          <NpcListEditor<NpcTrait>
-            title="Traits"
-            items={traits}
-            emptyItem={{ name: '', description: '' }}
-            renderFields={(item, index, onChange) => (
-              <NpcSimpleFieldEditor
-                name={item.name}
-                onNameChange={name => onChange({ ...item, name })}
-                namePlaceholder="Trait name"
-                description={item.description}
-                onDescriptionChange={description => onChange({ ...item, description })}
-              />
-            )}
-            onChange={handleTraitsChange}
-          />
-
-          <NpcListEditor<NpcAction>
-            title="Actions"
-            items={actions}
-            emptyItem={{
-              name: '',
-              description: '',
-              attackBonus: undefined,
-              damage: undefined,
-              saveDC: undefined,
-              saveType: undefined,
-              range: undefined,
-              recharge: undefined,
-            }}
-            renderFields={(item, index, onChange) => (
-              <NpcCombatActionFields
-                name={item.name}
-                onNameChange={name => onChange({ ...item, name })}
-                namePlaceholder="Action name (e.g. Bite)"
-                recharge={item.recharge}
-                onRechargeChange={val => onChange({ ...item, recharge: val })}
-                attackBonus={item.attackBonus}
-                onAttackBonusChange={val => onChange({ ...item, attackBonus: val })}
-                damage={item.damage}
-                onDamageChange={val => onChange({ ...item, damage: val })}
-                damagePlaceholder="2d8+5 fire"
-                saveDC={item.saveDC}
-                onSaveDCChange={val => onChange({ ...item, saveDC: val })}
-                saveType={item.saveType}
-                onSaveTypeChange={val => onChange({ ...item, saveType: val })}
-                rangeValue={item.range}
-                onRangeValueChange={val => onChange({ ...item, range: val })}
-                description={item.description}
-                onDescriptionChange={description => onChange({ ...item, description })}
-                descriptionRows={3}
-              />
-            )}
-            onChange={handleActionsChange}
-          />
-
-          <NpcListEditor<NpcReaction>
-            title="Reactions"
-            items={reactions}
-            emptyItem={{ name: '', description: '' }}
-            renderFields={(item, index, onChange) => (
-              <NpcSimpleFieldEditor
-                name={item.name}
-                onNameChange={name => onChange({ ...item, name })}
-                namePlaceholder="Reaction name"
-                description={item.description}
-                onDescriptionChange={description => onChange({ ...item, description })}
-              />
-            )}
-            onChange={handleReactionsChange}
-          />
-
-          <NpcListEditor<NpcLegendaryAction>
-            title="Legendary Actions"
-            items={legendaryActionsList}
-            emptyItem={{
-              name: '',
-              description: '',
-              cost: 1,
-              attackBonus: undefined,
-              damage: undefined,
-              saveDC: undefined,
-              saveType: undefined,
-            }}
-            renderFields={(item, index, onChange) => (
-              <NpcCombatActionFields
-                name={item.name}
-                onNameChange={name => onChange({ ...item, name })}
-                namePlaceholder="Action name"
-                cost={item.cost}
-                onCostChange={val => onChange({ ...item, cost: val })}
-                attackBonus={item.attackBonus}
-                onAttackBonusChange={val => onChange({ ...item, attackBonus: val })}
-                damage={item.damage}
-                onDamageChange={val => onChange({ ...item, damage: val })}
-                damagePlaceholder="2d8+5"
-                saveDC={item.saveDC}
-                onSaveDCChange={val => onChange({ ...item, saveDC: val })}
-                saveType={item.saveType}
-                onSaveTypeChange={val => onChange({ ...item, saveType: val })}
-                description={item.description}
-                onDescriptionChange={description => onChange({ ...item, description })}
-                descriptionRows={2}
-              />
-            )}
-            onChange={handleLegendaryActionsListChange}
-          />
-        </div>
+        <NpcStatBlockTab
+          traits={traits}
+          actions={actions}
+          reactions={reactions}
+          legendaryActionsList={legendaryActionsList}
+          onTraitsChange={handleTraitsChange}
+          onActionsChange={handleActionsChange}
+          onReactionsChange={handleReactionsChange}
+          onLegendaryActionsChange={handleLegendaryActionsListChange}
+          compact={compact}
+        />
       )}
     </div>
   );

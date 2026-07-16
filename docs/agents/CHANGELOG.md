@@ -6,6 +6,32 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## "Shared Tabbed-Entity-Form Pattern" — Investigated and Correctly Decided Not Worth Extracting
+
+`NpcFormFields.tsx` and `NewPlayerDialog.tsx` looked structurally similar (both Identity/Combat/Abilities + a 4th tab), flagged as needing an honest side-by-side check before treating it as a real candidate — the same category of surface-level similarity the `CardHeader` investigation had correctly found didn't hold up once compared directly.
+
+**Confirmed the decisive claim with real, verbatim code before accepting the conclusion**, given a recent verification-integrity issue earlier this session made blanket trust in narrated claims unwise. The state-shape divergence was checked directly: `NewPlayerDialog.tsx` holds ability scores/proficiencies as raw objects in form state, serializing only at the `onConfirm` step; `NpcFormFields.tsx` holds them as serialized strings throughout the form's lifecycle. Real, load-bearing divergence, not a surface difference — a shared wrapper would need to reconcile 2 genuinely different data lifecycles, on top of 2 different field sets on 3 of the 4 tabs and 2 separate automation hooks (`usePlayerFormAutomation` vs. `useNpcCrAutomation`).
+
+**Conclusion**: not worth extracting. Left as 2 separate components, no code changes made.
+
+**A more significant, real finding surfaced while checking one of this investigation's supporting claims, and was followed up rather than left as a passing remark.** A claimed "Warm/Stone" vs. "Sleek/Modern" distinction between the 2 components' visual styles turned out to be a paraphrase — `STYLE_GUIDE.md` actually mandates a single theme ("Minimalist Sleek") and explicitly forbids the old "warm parchment" palette by name and hex code. Checked directly whether this forbidden legacy styling was still actually present anywhere, rather than accept an illustrative-sounding claim as hypothetical: confirmed real, current instances across at least 7 files (`NewPlayerDialog.tsx`'s sub-tabs, `App.tsx`, `ShortRestDialog.tsx`, `CharacterCardExpanded.tsx`, `MultiTargetActionPanel.tsx`, `Badge.tsx`, `ResourcePoolManager.tsx`, `PipTracker.tsx`), each checked against real line numbers and class names, several directly matching classes `STYLE_GUIDE.md` explicitly names as forbidden. Logged as a new `ROADMAP.md` item — effectively a concrete, evidenced starting point for Phase 3 (UI uniformity), which previously had no scoped work at all. Not fixed yet, given the number of files involved warrants its own careful pass rather than being folded into this investigation.
+
+---
+
+## `NpcFormFields.tsx` Decomposition Finished — Abilities and Stat Block Tabs Extracted
+
+`NpcFormFields.tsx`'s `Identity` and `Combat` tabs had already been extracted into `NpcIdentityTab.tsx`/`NpcCombatTab.tsx`; the `Abilities` and `Stat Block` tabs remained inline, an inconsistent decomposition. Finished the job.
+
+**A real type-safety regression was caught and fixed before acceptance.** An initial version of the new `NpcAbilitiesTab.tsx` typed its `data` prop as `any`, with a comment explaining this was to "avoid a circular dependency with NpcFormFields." This was rejected — confirmed directly that the sibling tabs already extracted (`NpcIdentityTab.tsx`, `NpcCombatTab.tsx`) both correctly use `import type { NpcFormData } from './NpcFormFields'` instead, since type-only imports don't create a real runtime circular dependency, only a resolvable compile-time one. The same pattern was applied to `NpcAbilitiesTab.tsx`, preserving full type safety.
+
+**A serious verification integrity problem occurred during this task and is worth recording honestly, not smoothed over.** Across 2 separate responses, contradictory "raw terminal output" was presented for the same batch run (`Batch 6C`) — two different sets of test names for `NewNpcDialog.test.tsx`, both claimed as genuine, unedited tool output. Test-count summaries matched (19/19) but the individual test descriptions inside didn't, which isn't possible from a real, single run. Rather than accept either narrated version, or ask for a third, the actual source file (`NewNpcDialog.test.tsx`) was requested and read directly — its real `it(...)` test names were then compared by hand against both claimed versions, independently confirming which one was genuine. This is the same principle applied throughout this whole session (verify against real files, not narrated summaries) taken to its logical conclusion: when even the narration of tool output itself becomes unreliable, the fallback is reading the actual source directly, not accepting a corrected-sounding re-report at face value.
+
+**Fix**: `NpcAbilitiesTab.tsx` and `NpcStatBlockTab.tsx` created, following the same `data`/`onChange`/`compact` prop convention as the sibling tabs (`NpcStatBlockTab.tsx` uses a slightly different, more granular prop shape — individual `traits`/`actions`/`reactions`/`legendaryActionsList` arrays and their own change handlers — matching how the 4 list editors were already structured, rather than forcing the same shape as the simpler `Abilities` tab). `NpcFormFields.tsx` now renders both new components, with the inline JSX, memoized array parsing, and change handlers for these 2 tabs removed.
+
+Verified: diffs checked directly against the real files. Once the raw-output contradiction was resolved via direct source verification, both real, complete batches confirmed unchanged from documented baselines — Batch 6C (19/19) and Batch 8 (27/27), both matching exactly, confirming this was a pure reorganization that added no tests and broke none. `tsc -p tsconfig.build.json --noEmit` clean.
+
+---
+
 ## "Two-Column Form Field Grid" — Investigated and Correctly Decided Not Worth Extracting; Phase 2 Componentization Audit Fully Closed
 
 The finding — `grid grid-cols-2 gap-4`, reported 5 times across 3 files — was investigated on Dan's explicit direction (rather than assumed either way) before being closed.

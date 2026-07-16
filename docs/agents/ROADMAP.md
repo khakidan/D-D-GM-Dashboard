@@ -16,16 +16,23 @@ None currently open.
 
 ### 🟡 Features to Add
 
-**Full Codebase Audit (bugs → componentization → UI uniformity).** Comprehensive pass for logic errors/bugs, oversized files needing decomposition, and UI/UX uniformity closer to established D&D apps (D&D Beyond, Roll20 conventions). Phase 3 (UI uniformity) has not yet started and is the next phase to scope.
+**Full Codebase Audit (bugs → componentization → UI uniformity).** Comprehensive pass for logic errors/bugs, oversized files needing decomposition, and UI/UX uniformity closer to established D&D apps (D&D Beyond, Roll20 conventions). Phase 3 (UI uniformity) has a concrete starting point now (see below) but has not yet been worked.
 
-**Open leads, not yet scoped as concrete work:**
+**Phase 3 starting point — real, evidenced `STYLE_GUIDE.md` violations, confirmed directly against real line numbers and class names.** The app's single mandated theme is "Minimalist Sleek" (`STYLE_GUIDE.md` explicitly forbids the old "warm parchment" palette by name and hex code), but that legacy palette is still actively in use in multiple places:
+- `NewPlayerDialog.tsx`'s sub-tabs (`IdentityTab.tsx`, `CombatTab.tsx`): `border-stone-200`, `text-stone-800`, `focus:border-amber-400`/`focus:ring-amber-400` on inputs — should be the mandated `focus:border-[#2563eb]`.
+- `App.tsx`: the "Authenticating..." loading screen still uses `bg-[#2c2c26]`, the old dark "Stone" charcoal.
+- `ShortRestDialog.tsx`: `border-amber-200/50` — `STYLE_GUIDE.md` explicitly forbids any `bg-amber-`/`text-amber-*` usage.
+- `CharacterCardExpanded.tsx`: `text-[#20201a]`, an old warm-palette near-black.
+- `MultiTargetActionPanel.tsx`, `Badge.tsx`, `ResourcePoolManager.tsx`, `PipTracker.tsx`: residual amber variants.
 
-- `NpcFormFields.tsx`'s `Abilities`/`Stat Block` tabs are still inline while `Identity`/`Combat` were already extracted — an inconsistent decomposition worth finishing.
+Not yet fixed — this needs a real, careful pass (confirm each instance directly against the file, not just this list, before changing anything) given the number of files involved.
+
+**Other open leads, not yet scoped as concrete work:**
+
 - `useParty.ts`, `useCombatSync.ts`, and `ActiveEncounterTab/index.tsx` are worth a fresh file-size check.
 - `campaigns.ts`'s inlined 7-sheet schema definition, `schema.md`, and `useSheetSync.ts`'s expectations all need to agree on one schema — currently no single source of truth across all three.
 - A reusable loading-spinner component may be worth extracting — inline `Loader2` used with varying sizes across several buttons/dialogs.
 - **Server-side error response shaping** — `campaigns.ts` and `auth.ts` both hand-build `{ error, message }` JSON error responses with a similar shape but not identical conventions; worth a real comparison before deciding if it's worth consolidating.
-- **Possibly a shared tabbed-entity-form pattern** — `NpcFormFields.tsx` and `NewPlayerDialog.tsx` are structurally similar (Identity/Combat/Abilities + one more tab); needs an honest side-by-side check before treating it as a real candidate.
 
 ### 🔵 Architecture / Technical Debt
 
