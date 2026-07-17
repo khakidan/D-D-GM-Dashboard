@@ -1,4 +1,4 @@
-import { calculateModifier, proficiencyBonusFromLevel, AbilityName, abilitiesInOrder } from './abilityScores';
+import { calculateModifier, proficiencyBonusFromLevel, AbilityName, abilitiesInOrder } from './abilityFundamentals';
 
 export type SpellcastingAbility = 'STR' | 'DEX' | 'CON' | 'INT' | 'WIS' | 'CHA' | null;
 

@@ -1,8 +1,8 @@
 import { SpellcastingAbility, parseSpellcastingAbility } from './spellcasting';
+import { abilitiesInOrder, AbilityName, calculateModifier, proficiencyBonusFromLevel } from './abilityFundamentals';
 
-export const abilitiesInOrder = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const;
-
-export type AbilityName = typeof abilitiesInOrder[number];
+export { abilitiesInOrder, calculateModifier, proficiencyBonusFromLevel };
+export type { AbilityName };
 
 export type SkillName =
   'Athletics' |
@@ -84,24 +84,6 @@ export const DEFAULT_PROFICIENCIES: Proficiencies = {
   },
   toughFeat: false,
 };
-
-// floor((score - 10) / 2)
-export function calculateModifier(score: number): number {
-  return Math.floor((score - 10) / 2);
-}
-
-// Standard 5e table:
-// Levels 1-4: +2, 5-8: +3, 9-12: +4,
-// 13-16: +5, 17-20: +6
-// Clamps: below 1 → +2, above 20 → +6
-export function proficiencyBonusFromLevel(level: number): number {
-  const lvl = Math.max(1, Math.min(20, level));
-  if (lvl <= 4) return 2;
-  if (lvl <= 8) return 3;
-  if (lvl <= 12) return 4;
-  if (lvl <= 16) return 5;
-  return 6;
-}
 
 /**
  * Returns the proficiency bonus for an NPC
