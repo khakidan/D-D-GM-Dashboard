@@ -67,7 +67,7 @@ export function AuthRelay() {
     navigator.clipboard.writeText(val);
     setCopied(true);
     if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
-    copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
+    copiedTimerRef.current = setTimeout(() => setCopied(false), TIMERS.copiedFeedbackMs);
   };
 
   const handleLogout = () => {

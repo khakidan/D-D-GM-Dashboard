@@ -9,7 +9,7 @@ import {
 } from '../services/sheetsService';
 import { clearRetryQueue } from '../services/writeQueue';
 import { Character, Encounter, NPC, EncounterCombatant, Condition, Spell } from '../types';
-import { STORAGE_KEYS, SHEET_RANGES } from '../lib/constants';
+import { STORAGE_KEYS, SHEET_RANGES, TIMERS } from '../lib/constants';
 import {
   parseStatuses,
   parseDifficulties,
@@ -155,7 +155,7 @@ export function useSheetSync({ setIsGoogleConnected, onActiveTabChange }: UseShe
     } finally {
       if (!isManual) setIsSyncing(false);
       if (isManual && !hadError) {
-        setTimeout(() => setIsSyncing(false), 800);
+        setTimeout(() => setIsSyncing(false), TIMERS.sheetSyncMinDurationMs);
       }
     }
   };

@@ -6,6 +6,7 @@ import { useCombatTurn } from './useCombatTurn';
 import { useCombatConcentration } from './useCombatConcentration';
 import { toast } from 'sonner';
 import { useDeathEvent, useDamageEvent, useHealEvent, useUnconsciousEvent, useRageEvent } from '../../../hooks/useCombatOverlayEvents';
+import { TIMERS } from '../../../lib/constants';
 
 export function useCombatSync() {
   const { state, updateState } = useAppState();
@@ -45,7 +46,7 @@ export function useCombatSync() {
     } else {
       setGlobalError(fallbackMsg);
       if (globalErrorTimerRef.current) clearTimeout(globalErrorTimerRef.current);
-      globalErrorTimerRef.current = setTimeout(() => setGlobalError(null), 5000);
+      globalErrorTimerRef.current = setTimeout(() => setGlobalError(null), TIMERS.combatSyncErrorMs);
     }
   };
 

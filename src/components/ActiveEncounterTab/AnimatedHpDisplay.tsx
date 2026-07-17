@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { cn } from '../../lib/utils';
+import { TIMERS } from '../../lib/constants';
 
 export const AnimatedHpDisplay = ({
   value,
@@ -27,7 +28,7 @@ export const AnimatedHpDisplay = ({
     }
     setPrevHp(value);
 
-    animationTimeout = setTimeout(() => setAnimateState('idle'), 500);
+    animationTimeout = setTimeout(() => setAnimateState('idle'), TIMERS.hpAnimationMs);
     return () => clearTimeout(animationTimeout);
   }, [value, prevHp]);
 

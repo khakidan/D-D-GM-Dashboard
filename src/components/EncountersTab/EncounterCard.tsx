@@ -4,6 +4,7 @@ import { Swords, MapPin, Skull, Trash2, AlertCircle, ScrollText } from 'lucide-r
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
 import { CardShell } from '../ui/CardShell';
+import { TIMERS } from '../../lib/constants';
 import { DebouncedInput } from '../ui/DebouncedInput';
 import { EncounterLogModal } from './EncounterLogModal';
 import { Badge } from '../ui/Badge';
@@ -98,7 +99,7 @@ export const EncounterCard: React.FC<EncounterCardProps> = ({
         });
       } else {
         setErrorStatus("Failed to sync changes.");
-        errorTimerRef.current = setTimeout(() => setErrorStatus(null), 3000);
+        errorTimerRef.current = setTimeout(() => setErrorStatus(null), TIMERS.encounterCardErrorMs);
       }
     } finally {
       setIsUpdating(false);

@@ -6,6 +6,7 @@ import { CombatEventRow } from './CombatEventRow';
 import { Button } from '../ui/Button';
 import { Accordion } from '../ui/Accordion';
 import { Tabs } from '../ui/Tabs';
+import { TIMERS } from '../../lib/constants';
 
 interface EncounterLogDetailsProps {
   log: EncounterLog;
@@ -26,7 +27,7 @@ export function EncounterLogDetails({ log }: EncounterLogDetailsProps) {
     navigator.clipboard.writeText(log.transcript || '').then(() => {
       setCopied(true);
       if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current);
-      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
+      copiedTimerRef.current = setTimeout(() => setCopied(false), TIMERS.copiedFeedbackMs);
     }).catch(err => {
       console.error('Failed to copy transcript:', err);
       toast.error('Failed to copy transcript to clipboard');

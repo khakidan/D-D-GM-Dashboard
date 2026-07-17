@@ -6,6 +6,20 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## 6 Magic-Number Timeouts Replaced with Named `TIMERS` Constants (Plus a Second Dead-Code Find)
+
+Flagged during the code-smells audit: 6 `setTimeout` calls used raw numeric literals instead of the already-established `TIMERS` constants object — `AuthRelay.tsx`/`EncounterLogDetails.tsx` (2000ms, identical "copied" feedback purpose), `EncounterCard.tsx` (3000ms), `useCombatSync.ts` (5000ms), `AnimatedHpDisplay.tsx` (500ms), `useSheetSync.ts` (800ms).
+
+**A second genuine dead-code item was found while investigating this, not assumed.** `TIMERS.authRelayTimeoutMs` (2000ms) already existed and happened to share the exact value found in `AuthRelay.tsx`'s magic-number copied-timer — worth checking directly rather than treating as coincidence. Confirmed genuinely unused anywhere in the codebase, same category as the 4 exports removed just before this. Correctly *not* repurposed for the new copied-feedback constant despite the matching value — an auth-prefixed constant powering an unrelated encounter-log copy feature would be a real semantic mismatch, so it was removed outright and a clean, purpose-named constant introduced instead.
+
+**Real judgment applied to which timers should share a constant and which shouldn't.** `AuthRelay.tsx`'s and `EncounterLogDetails.tsx`'s copied-feedback timers were merged into one `copiedFeedbackMs` — identical value, identical UX concept (clipboard copy confirmation), genuinely the same thing in two places. The 2 error-auto-dismiss timers (`EncounterCard.tsx`'s 3000ms card-level banner, `useCombatSync.ts`'s 5000ms global banner) were kept separate — different values and different UI scope (a local card vs. a global banner), not the same concern despite superficial similarity.
+
+**Fix**: `TIMERS` in `constants.ts` gained `copiedFeedbackMs` (2000), `encounterCardErrorMs` (3000), `combatSyncErrorMs` (5000), `hpAnimationMs` (500), `sheetSyncMinDurationMs` (800), and lost the dead `authRelayTimeoutMs`. All 6 real call sites updated to reference the named constants.
+
+Verified: all 6 call sites confirmed correctly updated, `AuthRelay.tsx`'s legitimate use of `TIMERS.authRelayPollingMs` elsewhere in the same file confirmed untouched. Real, complete test batches covering all 6 files — Batch 1 (469/469), Batch 3 (53/53), Batch 5A (54/54), Batch 6B (23/23), Batch 9 (15/15) — plus a clean `tsc -p tsconfig.build.json --noEmit`. This closes out the last remaining "code smells beyond duplication" finding.
+
+---
+
 ## 4 Dead Exports Removed (`audioFileStore.ts`, `googleAuth.ts`, `ThemeContext.tsx`)
 
 Flagged during the code-smells audit as having zero references anywhere in the codebase, including tests. Re-verified directly rather than trusted from the original finding, with real reasoning for each rather than just a reference count:

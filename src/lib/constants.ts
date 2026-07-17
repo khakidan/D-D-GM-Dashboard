@@ -124,12 +124,21 @@ export const TIMERS = {
   audioPreviewMs: 3000,
   // AuthRelay polling and timeout
   authRelayPollingMs: 500,
-  authRelayTimeoutMs: 2000,
   // DiceRoller animation bounds
   diceRollerTickMs: 15000,
   diceRollerSettleMs: 4000,
   // Write queue polling
   writeQueuePollingMs: 2000,
+  // Copied feedback duration (used in AuthRelay, EncounterLogDetails)
+  copiedFeedbackMs: 2000,
+  // EncounterCard action/save error dismissal
+  encounterCardErrorMs: 3000,
+  // Combat sync global error auto-clear
+  combatSyncErrorMs: 5000,
+  // HP change state transition delay
+  hpAnimationMs: 500,
+  // Sheet sync visual duration floor
+  sheetSyncMinDurationMs: 800,
 } as const;
 
 export const AUDIO = {
