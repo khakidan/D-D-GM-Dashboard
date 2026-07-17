@@ -52,13 +52,6 @@ export interface Notifier {
   dismiss: (id: string | number) => void;
 }
 
-export const silentNotifier: Notifier = {
-  loading: () => '',
-  success: () => {},
-  error:   () => {},
-  dismiss: () => {},
-};
-
 let activeNotifier: Notifier = toast;
 
 export function setSheetNotifier(notifier: Notifier): void {
@@ -180,11 +173,6 @@ export function clearTokens() {
 export function hasToken() {
   refreshLocalTokens();
   return !!accessToken || !!refreshToken;
-}
-
-export function setManualAccessToken(token: string) {
-  localStorage.setItem(STORAGE_KEYS.googleAccessToken, token);
-  accessToken = token;
 }
 
 export function setManualRefreshToken(token: string) {

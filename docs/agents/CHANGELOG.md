@@ -6,6 +6,19 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## 4 Dead Exports Removed (`audioFileStore.ts`, `googleAuth.ts`, `ThemeContext.tsx`)
+
+Flagged during the code-smells audit as having zero references anywhere in the codebase, including tests. Re-verified directly rather than trusted from the original finding, with real reasoning for each rather than just a reference count:
+
+- `addAudioFile` (`audioFileStore.ts`) — a pure alias for `saveAudioFile`, entirely redundant.
+- `silentNotifier` (`googleAuth.ts`) — a no-op `Notifier` implementation; confirmed never assigned to `activeNotifier` and nothing in the codebase calls `setSheetNotifier` to swap to it, so its removal doesn't affect interface conformance anywhere.
+- `setManualAccessToken` (`googleAuth.ts`) — never called; its sister function `setManualRefreshToken` is genuinely used (by `SheetConnectionSettings`), but access tokens are short-lived by design, so there's no valid manual-entry use case for one, unlike a refresh token.
+- `isVisualStyle` (`ThemeContext.tsx`) — a type guard, never called. Only 1 theme (`'sleek-modern'`) currently exists, so runtime validation isn't needed yet; would become genuinely useful if a second theme is ever added, but that's speculative, not current — correctly removed rather than kept as premature future-proofing.
+
+Verified: all 4 removals confirmed to touch nothing else — `saveAudioFile`, `setManualRefreshToken`, `activeNotifier`/`setSheetNotifier`, and `ThemeProvider`/`useTheme` all remain fully intact. Real, complete test batches run — Batch 1 (469/469), Batch 2 (37/37), Batch 7B-2 (20/20) — plus a clean `tsc -p tsconfig.build.json --noEmit`.
+
+---
+
 ## `updateCombatant` God Function Decomposed (`useCombatantMutations.ts`)
 
 Flagged during the code-smells audit: `updateCombatant` bundled condition-timer cleanup, condition-based AC-modifier recalculation, exhaustion Max-HP-cap logic (with its own toast notifications), rage-event detection, optimistic state merging across 3 store slices, 6 conditional DB-write paths, rollback-on-failure, and combat-log event emission — all in one ~296-line function.

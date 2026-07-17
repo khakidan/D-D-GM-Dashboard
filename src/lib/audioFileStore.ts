@@ -109,9 +109,6 @@ export async function saveAudioFile(
   });
 }
 
-// Alias for saveAudioFile
-export const addAudioFile = saveAudioFile;
-
 export async function getAllAudioFiles(campaignId: string): Promise<StoredAudioFile[]> {
   const db = await getDB(campaignId);
   return new Promise((resolve, reject) => {

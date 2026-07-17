@@ -27,9 +27,8 @@ None currently open.
 
 Not yet fixed — this needs a real, careful pass (confirm each instance directly against the file, not just this list, before changing anything) given the number of files involved.
 
-**"Code smells beyond duplication" — investigated, 2 real findings remain:**
+**"Code smells beyond duplication" — investigated, 1 real finding remains:**
 
-- **Dead code**: 4 exports confirmed to have zero references anywhere in the codebase, including tests — `addAudioFile` (`audioFileStore.ts`, an unused alias for `saveAudioFile`), `silentNotifier` (`googleAuth.ts`, a fully-built but never-used `Notifier` implementation), `setManualAccessToken` (`googleAuth.ts`, never called), `isVisualStyle` (`ThemeContext.tsx`, a type guard, never called).
 - **Magic numbers**: a `TIMERS` constants object already exists and is the established pattern, but 6 `setTimeout` calls bypass it with raw literals instead — `AuthRelay.tsx` (2000ms), `EncounterLogDetails.tsx` (2000ms — same value and same "copied" feedback purpose as `AuthRelay.tsx`), `EncounterCard.tsx` (3000ms), `useCombatSync.ts` (5000ms), `AnimatedHpDisplay.tsx` (500ms), `useSheetSync.ts` (800ms). `AuthRelay.tsx` notably uses `TIMERS.authRelayPollingMs` correctly on one line and a raw `2000` twenty-three lines later — an inconsistency within the same file.
 
 Deeply nested conditionals were also investigated directly and ruled out — no real finding there; the apparent nesting was JSX conditional rendering and callback structure, not tangled branching logic.

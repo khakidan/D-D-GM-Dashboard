@@ -2,10 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export type VisualStyle = 'sleek-modern';
 
-export function isVisualStyle(v: unknown): v is VisualStyle {
-  return v === 'sleek-modern';
-}
-
 interface ThemeContextType {
   theme: VisualStyle;
   setTheme: (theme: VisualStyle) => void;
