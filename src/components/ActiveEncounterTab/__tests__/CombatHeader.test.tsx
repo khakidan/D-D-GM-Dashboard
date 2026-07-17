@@ -18,6 +18,7 @@ describe('CombatHeader', () => {
     onOpenTools: vi.fn(),
     onRollNpcInit: vi.fn(),
     onResetCombat: vi.fn(),
+    onCancelEncounter: vi.fn(),
     onNextTurn: vi.fn(),
     onToggleMultiTargetMode: vi.fn(),
     onDeleteSelected: vi.fn(),

@@ -53,7 +53,7 @@ describe('deleteEncounterLog', () => {
     // 4. Assert batchUpdateSpreadsheet is called with the exact sheetId 999
     expect(sheetsService.batchUpdateSpreadsheet).toHaveBeenCalled();
     const batchUpdateCall = vi.mocked(sheetsService.batchUpdateSpreadsheet).mock.calls[0];
-    const requests = batchUpdateCall[1];
+    const requests = batchUpdateCall[1] as sheetsService.DeleteDimensionRequest[];
     
     expect(requests).toHaveLength(1);
     expect(requests[0].deleteDimension?.range?.sheetId).toBe(999);

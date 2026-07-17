@@ -189,7 +189,7 @@ describe('NPC spellcastingAbility dual-write', () => {
     const updateRow = vi.mocked(writeQueue.queueWrite).mock.calls[0][2][0];
     expect(updateRow[21]).toBe('WIS');
     expect(
-      JSON.parse(updateRow[12]).spellcastingAbility
+      JSON.parse(updateRow[12] as string).spellcastingAbility
     ).toBe('WIS');
     
     // Test add

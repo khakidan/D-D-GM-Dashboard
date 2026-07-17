@@ -138,7 +138,9 @@ describe('ActiveEncounterTab ID Uniqueness', () => {
       name: 'Test Encounter',
       location: '',
       difficultyId: 1,
+      difficultyName: 'Easy',
       npcDefinitions: '',
+      status: 'active' as const,
       currentRound: 1,
       activeTurnId: '',
     };
@@ -172,10 +174,17 @@ describe('ActiveEncounterTab ID Uniqueness', () => {
         name: 'Goblin',
         ac: 12,
         maxHp: 7,
-        currentHp: 7,
-        tempHp: 0,
-        conditions: '',
         notes: '',
+        abilityScores: '{}',
+        proficiencies: '{}',
+        speed: '30 ft.',
+        senses: '',
+        languages: '',
+        challengeRating: '1/4',
+        traits: '[]',
+        actions: '[]',
+        reactions: '[]',
+        legendaryActionsList: '[]',
       }
     ];
 

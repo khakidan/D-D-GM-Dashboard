@@ -59,9 +59,9 @@ describe('useCombatSync', () => {
           combatStarted: true,
           actionContext: { sourceOverride: null, actionType: 'attack' },
           combatants: [
-            { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20, reactionUsed: true },
-            { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15, reactionUsed: true, legendaryActions: { max: 3, remaining: 1 } },
-            { id: 'c3', name: 'PC 2', type: 'pc', initiative: 10, reactionUsed: true }
+            { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20, reactionUsed: true, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 },
+            { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15, reactionUsed: true, legendaryActions: { max: 3, remaining: 1 }, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 },
+            { id: 'c3', name: 'PC 2', type: 'pc', initiative: 10, reactionUsed: true, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 }
           ]
         },
         characters: [],
@@ -81,9 +81,9 @@ describe('useCombatSync', () => {
           combatStarted: false,
           activeTurnId: 'c2', // Incorrect turn before sorting
           combatants: [
-            { id: 'c3', name: 'PC 2', type: 'pc', initiative: 10 },
-            { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20 },
-            { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15 }
+            { id: 'c3', name: 'PC 2', type: 'pc', initiative: 10, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 },
+            { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 },
+            { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 }
           ]
         }
       }));
@@ -114,9 +114,9 @@ describe('useCombatSync', () => {
           ...prev.combatState,
           activeTurnId: 'c1',
           combatants: [
-            { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20, currentHp: 50 },
-            { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15, currentHp: 0 },
-            { id: 'c3', name: 'PC 2', type: 'pc', initiative: 10, currentHp: 10 } // PC is above 0 HP so not skipped (combatants at 0 HP are skipped under new rules)
+            { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20, currentHp: 50, ac: 15, maxHp: 50, passivePerception: 10 },
+            { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15, currentHp: 0, ac: 15, maxHp: 30, passivePerception: 10 },
+            { id: 'c3', name: 'PC 2', type: 'pc', initiative: 10, currentHp: 10, ac: 15, maxHp: 30, passivePerception: 10 } // PC is above 0 HP so not skipped (combatants at 0 HP are skipped under new rules)
           ]
         }
       }));
@@ -150,8 +150,8 @@ describe('useCombatSync', () => {
           ...prev.combatState,
           activeTurnId: 'c1',
           combatants: [
-            { id: 'c1', name: 'NPC 1', type: 'npc', initiative: 20, currentHp: 10 },
-            { id: 'c2', name: 'NPC 2', type: 'npc', initiative: 10, currentHp: 0 }
+            { id: 'c1', name: 'NPC 1', type: 'npc', initiative: 20, currentHp: 10, ac: 15, maxHp: 10, passivePerception: 10 },
+            { id: 'c2', name: 'NPC 2', type: 'npc', initiative: 10, currentHp: 0, ac: 15, maxHp: 10, passivePerception: 10 }
           ]
         }
       }));
@@ -323,6 +323,10 @@ describe('useCombatSync', () => {
               type: 'npc',
               initiative: 5,
               encounterCombatantId: 'ec-1',
+              ac: 15,
+              maxHp: 10,
+              currentHp: 10,
+              passivePerception: 10,
             }
           ]
         },
@@ -370,6 +374,10 @@ describe('useCombatSync', () => {
               type: 'npc',
               initiative: 5,
               encounterCombatantId: 'ec-1',
+              ac: 15,
+              maxHp: 10,
+              currentHp: 10,
+              passivePerception: 10,
             }
           ]
         },
@@ -421,6 +429,8 @@ describe('useCombatSync', () => {
               maxHp: 40,
               tempHp: 0,
               conditions: '',
+              ac: 15,
+              passivePerception: 10,
             }
           ]
         },
@@ -477,6 +487,8 @@ describe('useCombatSync', () => {
               maxHp: 20,
               tempHp: 0,
               conditions: '',
+              ac: 15,
+              passivePerception: 10,
             }
           ]
         }
@@ -639,6 +651,8 @@ describe('useCombatSync', () => {
               initiative: 20,
               currentHp: 30,
               maxHp: 40,
+              ac: 15,
+              passivePerception: 10,
             },
             {
               id: 'c2',
@@ -650,6 +664,8 @@ describe('useCombatSync', () => {
               maxHp: 100,
               legendaryActions: { max: 3, remaining: 3 },
               legendaryResistances: { max: 3, remaining: 3 },
+              ac: 15,
+              passivePerception: 10,
             }
           ]
         }
@@ -712,6 +728,8 @@ describe('useCombatSync', () => {
               initiative: 20,
               currentHp: 30,
               maxHp: 40,
+              ac: 15,
+              passivePerception: 10,
             },
             {
               id: 'c2',
@@ -723,6 +741,8 @@ describe('useCombatSync', () => {
               maxHp: 100,
               legendaryActions: { max: 3, remaining: 3 },
               legendaryResistances: { max: 3, remaining: 3 },
+              ac: 15,
+              passivePerception: 10,
             }
           ]
         }

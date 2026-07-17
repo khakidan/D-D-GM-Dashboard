@@ -214,9 +214,7 @@ describe('useSettings State Transition Tests', () => {
       const newState = stateUpdateFn({});
       expect(newState.campaignName).toBe('Clean Import');
       expect(newState.characters).toEqual([{ id: 'c2' }]);
-      // @ts-expect-error - testing exclusion of extra keys
       expect(newState.version).toBeUndefined();
-      // @ts-expect-error - testing exclusion of extra keys
       expect(newState.extraField).toBeUndefined();
     });
 

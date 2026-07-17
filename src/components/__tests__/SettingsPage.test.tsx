@@ -55,7 +55,8 @@ describe('SettingsPage Backup Export/Import', () => {
     
     vi.mocked(useAppState).mockReturnValue({
       state: mockState as any,
-      updateState: mockUpdateState
+      updateState: mockUpdateState,
+      getSnapshot: vi.fn(() => mockState as any),
     });
 
     vi.mocked(useTheme).mockReturnValue({

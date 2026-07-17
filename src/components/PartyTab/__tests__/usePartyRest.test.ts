@@ -467,7 +467,7 @@ describe('useParty - REST and Recovery', () => {
       expect(queueWrite).toHaveBeenCalled();
       const calls = vi.mocked(queueWrite).mock.calls;
       const writtenRow = calls[0][2][0];
-      const pools = JSON.parse(writtenRow[22]);
+      const pools = JSON.parse(writtenRow[22] as string);
       expect(pools[0].name).toBe('Rage');
       expect(pools[0].current).toBe(5);
       expect(calls[0][1]).toContain('Characters!');
@@ -513,8 +513,8 @@ describe('useParty - REST and Recovery', () => {
       const writtenRow = vi.mocked(queueWrite).mock.calls[0][2][0];
       
       expect(writtenRow[6]).toBe(80); // currentHp
-      expect(JSON.parse(writtenRow[21])).toEqual({ d10: 0 }); // hitDiceUsed reset (recovers 5 of 5)
-      const pools = JSON.parse(writtenRow[22]);
+      expect(JSON.parse(writtenRow[21] as string)).toEqual({ d10: 0 }); // hitDiceUsed reset (recovers 5 of 5)
+      const pools = JSON.parse(writtenRow[22] as string);
       expect(pools[0].name).toBe('Spell Slots');
       expect(pools[0].current).toBe(8);
     });

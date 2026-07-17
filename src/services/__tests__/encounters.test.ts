@@ -50,7 +50,7 @@ describe('deleteEncounterFully — cascade delete', () => {
 
     expect(sheetsService.batchUpdateSpreadsheet).toHaveBeenCalled();
     const batchUpdateCall = vi.mocked(sheetsService.batchUpdateSpreadsheet).mock.calls[0];
-    const requests = batchUpdateCall[1];
+    const requests = batchUpdateCall[1] as sheetsService.DeleteDimensionRequest[];
 
     // Expect 3 deletes: 1 Encounters, 1 Encounter_Combatants, 1 EncounterLogs (only enc-1)
     expect(requests).toHaveLength(3);
@@ -117,7 +117,7 @@ describe('deleteEncounterFully — cascade delete', () => {
 
     expect(sheetsService.batchUpdateSpreadsheet).toHaveBeenCalled();
     const batchUpdateCall = vi.mocked(sheetsService.batchUpdateSpreadsheet).mock.calls[0];
-    const requests = batchUpdateCall[1];
+    const requests = batchUpdateCall[1] as sheetsService.DeleteDimensionRequest[];
 
     // Find all EncounterLogs delete requests
     const logDeletes = requests.filter(r => r.deleteDimension?.range?.sheetId === 3);

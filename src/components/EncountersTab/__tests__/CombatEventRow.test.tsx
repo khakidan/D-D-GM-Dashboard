@@ -8,9 +8,14 @@ import { CombatEvent } from '../../../lib/combatLog';
 describe('CombatEventRow', () => {
   const baseEvent: CombatEvent = {
     id: '1',
-    timestamp: Date.now(),
+    timestamp: new Date().toISOString(),
     type: 'death-save',
+    round: 1,
+    actorId: null,
+    actorName: null,
+    targetId: 'aria-1',
     targetName: 'Aria',
+    isManualAdjustment: false,
   };
 
   it('renders success death save correctly', () => {

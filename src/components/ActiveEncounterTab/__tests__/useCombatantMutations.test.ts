@@ -100,7 +100,7 @@ describe('useCombatantMutations', () => {
     const { result } = renderHook(() => useCombatantMutations());
 
     let rejectPromise: any;
-    const promise = new Promise((_, reject) => { rejectPromise = reject; });
+    const promise = new Promise<void>((_, reject) => { rejectPromise = reject; });
     vi.mocked(updateCharacterDB).mockReturnValue(promise);
 
     // Trigger update
@@ -135,7 +135,7 @@ describe('useCombatantMutations', () => {
     const { result } = renderHook(() => useCombatantMutations());
 
     let rejectPromise: any;
-    const promise = new Promise((_, reject) => { rejectPromise = reject; });
+    const promise = new Promise<void>((_, reject) => { rejectPromise = reject; });
     vi.mocked(deleteEncounterCombatantDB).mockReturnValue(promise);
 
     // Trigger remove

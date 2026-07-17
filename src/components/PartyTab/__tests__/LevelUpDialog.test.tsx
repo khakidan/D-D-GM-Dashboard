@@ -49,7 +49,7 @@ describe('LevelUpDialog', () => {
 
   it('resource pools section shows suggested pool names when character has a class with pools', () => {
     vi.mocked(getResourcePoolSuggestions).mockReturnValue([
-      { name: 'Rage', suggestedMax: 3, reset: 'long', isNew: false }
+      { name: 'Rage', suggestedMax: 3, currentMax: 3, reset: 'long', isNew: false, isAutoDerived: true }
     ]);
 
     const charWithPools = {
@@ -75,7 +75,7 @@ describe('LevelUpDialog', () => {
 
   it('onConfirm payload contains correct resourcePools JSON with pool name and max value', async () => {
     vi.mocked(getResourcePoolSuggestions).mockReturnValue([
-      { name: 'Rage', suggestedMax: 3, reset: 'long', isNew: false }
+      { name: 'Rage', suggestedMax: 3, currentMax: 3, reset: 'long', isNew: false, isAutoDerived: true }
     ]);
 
     const charWithPools = {
@@ -119,7 +119,7 @@ describe('LevelUpDialog', () => {
 
   it('pool suggestions from getResourcePoolSuggestions are rendered in the dialog', () => {
     vi.mocked(getResourcePoolSuggestions).mockReturnValue([
-      { name: 'Rage', suggestedMax: 3, reset: 'long', isNew: false }
+      { name: 'Rage', suggestedMax: 3, currentMax: 3, reset: 'long', isNew: false, isAutoDerived: true }
     ]);
 
     const charWithPools = {
