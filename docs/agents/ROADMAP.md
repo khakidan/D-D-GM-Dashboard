@@ -27,15 +27,14 @@ None currently open.
 
 Not yet fixed — this needs a real, careful pass (confirm each instance directly against the file, not just this list, before changing anything) given the number of files involved.
 
-**"Code smells beyond duplication" — investigated, 3 real findings ready to act on:**
+**"Code smells beyond duplication" — investigated, 2 real findings remain:**
 
-- **God function**: `updateCombatant` in `useCombatantMutations.ts` (~296 of the file's 401 lines). Bundles condition-timer cleanup, condition-based AC-modifier recalculation, exhaustion Max-HP-cap logic (with its own toast notifications), rage-event detection, optimistic state merging across 3 separate store slices (combatants/characters/encounterCombatants), 6 different conditional DB-write paths, rollback-on-failure, and combat-log event emission — all in one function. Comparable in scope to `handleUpdate` in `usePartyCharacterCrud.ts` (already decomposed away from earlier this session).
 - **Dead code**: 4 exports confirmed to have zero references anywhere in the codebase, including tests — `addAudioFile` (`audioFileStore.ts`, an unused alias for `saveAudioFile`), `silentNotifier` (`googleAuth.ts`, a fully-built but never-used `Notifier` implementation), `setManualAccessToken` (`googleAuth.ts`, never called), `isVisualStyle` (`ThemeContext.tsx`, a type guard, never called).
 - **Magic numbers**: a `TIMERS` constants object already exists and is the established pattern, but 6 `setTimeout` calls bypass it with raw literals instead — `AuthRelay.tsx` (2000ms), `EncounterLogDetails.tsx` (2000ms — same value and same "copied" feedback purpose as `AuthRelay.tsx`), `EncounterCard.tsx` (3000ms), `useCombatSync.ts` (5000ms), `AnimatedHpDisplay.tsx` (500ms), `useSheetSync.ts` (800ms). `AuthRelay.tsx` notably uses `TIMERS.authRelayPollingMs` correctly on one line and a raw `2000` twenty-three lines later — an inconsistency within the same file.
 
 Deeply nested conditionals were also investigated directly and ruled out — no real finding there; the apparent nesting was JSX conditional rendering and callback structure, not tangled branching logic.
 
-**Adjacent finding surfaced during the above, technically duplication rather than a new category**: `useCombatantMutations.ts` and `useCombatTurn.ts` both still use raw `.split(',').map(s => s.trim())...` condition-parsing — the exact pattern `parseCommaSeparatedList()` was built to replace earlier this session. Both files were missed by that consolidation's original file list.
+**Adjacent finding, technically duplication rather than a new category**: `useCombatTurn.ts` still uses raw `.split(',').map(s => s.trim())...` condition-parsing — the exact pattern `parseCommaSeparatedList()` was built to replace earlier this session. (`useCombatantMutations.ts`'s instances of this same gap were fixed as part of its `updateCombatant` god-function decomposition — see `CHANGELOG.md`.)
 
 **"Error handling consistency" — investigated, real findings ready to act on.** 3 genuinely different patterns are in use for surfacing client-side async failures to the GM: `toast.error(...)` (the documented canonical pattern), local state rendered inline in the UI (also legitimate — confirmed genuinely wired through in `useCampaign.ts` → `CampaignSelector.tsx`, `useEncounterLogs.ts` → `EncounterLogModal.tsx`, and `useSheetSync.ts`'s `syncError` → `SyncingOverlay.tsx`/`SyncStatusIndicators.tsx`), and — the real problem — **console-only, genuinely silent**, confirmed in 11 places:
 
