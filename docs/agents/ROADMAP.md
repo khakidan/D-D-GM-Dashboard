@@ -27,13 +27,6 @@ None currently open.
 
 Not yet fixed — this needs a real, careful pass (confirm each instance directly against the file, not just this list, before changing anything) given the number of files involved.
 
-**Other open leads, not yet scoped as concrete work:**
-
-- `useParty.ts`, `useCombatSync.ts`, and `ActiveEncounterTab/index.tsx` are worth a fresh file-size check.
-- `campaigns.ts`'s inlined 7-sheet schema definition, `schema.md`, and `useSheetSync.ts`'s expectations all need to agree on one schema — currently no single source of truth across all three.
-- A reusable loading-spinner component may be worth extracting — inline `Loader2` used with varying sizes across several buttons/dialogs.
-- **Server-side error response shaping** — `campaigns.ts` and `auth.ts` both hand-build `{ error, message }` JSON error responses with a similar shape but not identical conventions; worth a real comparison before deciding if it's worth consolidating.
-
 ### 🔵 Architecture / Technical Debt
 
 - **`abilityScores.ts` and `spellcasting.ts` have a circular import.** `abilityScores.ts`'s `parseProficiencies()` calls `parseSpellcastingAbility()` from `spellcasting.ts`; `spellcasting.ts` needs `abilitiesInOrder`/`AbilityName` from `abilityScores.ts`. A genuine fix would require either moving `parseSpellcastingAbility`/`SpellcastingAbility` into `abilityScores.ts` (a domain mismatch) or restructuring `parseProficiencies()` to no longer call into `spellcasting.ts` directly (would change a working function's signature and require updating every caller). Deliberately deferred — real complexity/risk for a purely architectural benefit, not a functional one.

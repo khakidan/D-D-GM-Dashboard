@@ -38,7 +38,8 @@ export function useParty() {
   
   const {
     levelUpCharacter,
-    setLevelUpCharacter,
+    handleLevelUp,
+    cancelLevelUp,
     handleLevelUpConfirm
   } = usePartyLevelUp(setGlobalError, setSyncingId, mirrorCharacterFieldsToCombatants);
 
@@ -74,7 +75,8 @@ export function useParty() {
     handleDeletePlayer,
     handleUpdate,
     levelUpCharacter,
-    setLevelUpCharacter,
+    handleLevelUp,
+    cancelLevelUp,
     handleLevelUpConfirm,
   };
 }

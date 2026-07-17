@@ -3,7 +3,8 @@ import {
   CharacterRowSchema,
   NpcRowSchema,
   EncounterRowSchema,
-  EncounterCombatantRowSchema
+  EncounterCombatantRowSchema,
+  ENCOUNTER_LOG_HEADERS
 } from './sheetSchemas';
 import { Character, NPC, Encounter, EncounterCombatant } from '../types';
 import { DEFAULT_ABILITY_SCORES, DEFAULT_PROFICIENCIES, parseProficiencies } from './abilityScores';
@@ -238,7 +239,7 @@ export function mapEncounterCombatantRowToEC(
 }
 
 export function parseEncounterLogRow(row: any[]): EncounterLog | null {
-  if (!row || row.length < 10) return null;
+  if (!row || row.length < ENCOUNTER_LOG_HEADERS.length) return null;
 
   const id = row[0];
   const encounterId = row[1];

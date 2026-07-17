@@ -3,6 +3,7 @@
 import { Router } from 'express';
 import { createRateLimiter } from '../rateLimiter';
 import { requireBody } from '../bodyValidation';
+import { sendError } from '../utils/errors';
 
 const router = Router();
 
@@ -28,10 +29,10 @@ router.post('/google-token', authLimiter, requireBody, async (req, res) => {
   try {
     const { code, redirect_uri, refresh_token } = req.body;
     if (!code && !refresh_token) {
-      return res.status(400).json({ error: 'Code or refresh_token is required' });
+      return sendError(res, 400, 'MISSING_PARAMETERS', 'Code or refresh_token is required');
     }
     if (code && !redirect_uri) {
-      return res.status(400).json({ error: 'redirect_uri is required when using authorization code' });
+      return sendError(res, 400, 'MISSING_PARAMETERS', 'redirect_uri is required when using authorization code');
     }
     const clientId = GOOGLE_CLIENT_ID;
     const clientSecret = GOOGLE_CLIENT_SECRET;
@@ -39,10 +40,7 @@ router.post('/google-token', authLimiter, requireBody, async (req, res) => {
     if (!clientId || !clientSecret) {
       console.warn('⚠️ [Server] Persistent Sync Disabled: Missing Google Client Secret or ID.');
       console.info('   To enable persistent background sync, set VITE_GOOGLE_CLIENT_ID and VITE_GOOGLE_CLIENT_SECRET in your .env or AI Studio Secrets.');
-      return res.status(400).json({
-        error: 'CONFIGURATION_REQUIRED',
-        message: 'Google Client Secret/ID is not configured in the environment.',
-      });
+      return sendError(res, 400, 'CONFIGURATION_REQUIRED', 'Google Client Secret/ID is not configured in the environment.');
     }
 
 
@@ -81,7 +79,7 @@ router.post('/google-token', authLimiter, requireBody, async (req, res) => {
     res.json(data);
   } catch (error: unknown) {
     console.error('❌ [Server] Token exchange exception', error);
-    res.status(500).json({ error: 'Internal server error during token exchange' });
+    sendError(res, 500, 'TOKEN_EXCHANGE_ERROR', 'Internal server error during token exchange');
   }
 });
 

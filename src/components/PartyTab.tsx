@@ -31,7 +31,8 @@ export function PartyTab() {
     handleDeletePlayer,
     handleUpdate,
     levelUpCharacter,
-    setLevelUpCharacter,
+    handleLevelUp,
+    cancelLevelUp,
     handleLevelUpConfirm,
   } = useParty();
 
@@ -117,7 +118,7 @@ export function PartyTab() {
               onToggleExpand={() => toggleExpand(char.id)}
               onUpdate={(updates) => handleUpdate(char.id, updates)}
               onDelete={() => handleDeletePlayer(char.id)}
-              onLevelUpClick={() => setLevelUpCharacter(char)}
+              onLevelUpClick={() => handleLevelUp(char)}
             />
           ))}
         </div>
@@ -126,7 +127,7 @@ export function PartyTab() {
         <LevelUpDialog
           character={levelUpCharacter}
           isOpen={levelUpCharacter !== null}
-          onClose={() => setLevelUpCharacter(null)}
+          onClose={cancelLevelUp}
           onConfirm={handleLevelUpConfirm}
         />
       )}

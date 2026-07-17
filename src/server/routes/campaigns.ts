@@ -4,11 +4,13 @@ import { Router } from 'express';
 import { sheets_v4 } from 'googleapis';
 import { createRateLimiter } from '../rateLimiter';
 import { requireBody } from '../bodyValidation';
+import { sendError } from '../utils/errors';
 import {
   CHARACTER_HEADERS,
   NPC_HEADERS,
   ENCOUNTER_HEADERS,
-  ENCOUNTER_COMBATANT_HEADERS
+  ENCOUNTER_COMBATANT_HEADERS,
+  ENCOUNTER_LOG_HEADERS
 } from '../../lib/sheetSchemas';
 
 const router = Router();
@@ -17,20 +19,17 @@ function getGoogleAuthHeaders(token: string) {
   return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 }
 
-const campaignCreateLimiter = createRateLimiter({
-  error: 'TOO_MANY_REQUESTS',
-  message: 'Too many campaign creation attempts. Please try again in 15 minutes.'
-});
+const campaignCreateLimiter = createRateLimiter('Too many campaign creation attempts. Please try again in 15 minutes.');
 
 router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
   try {
     const { title } = req.body;
     const authHeader = req.headers.authorization;
     if (!title || !title.trim()) {
-      return res.status(400).json({ error: 'BAD_REQUEST', message: 'Spreadsheet title is required.' });
+      return sendError(res, 400, 'BAD_REQUEST', 'Spreadsheet title is required.');
     }
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'UNAUTHORIZED', message: 'Bearer access token is required.' });
+      return sendError(res, 401, 'UNAUTHORIZED', 'Bearer access token is required.');
     }
     const token = authHeader.substring(7);
 
@@ -54,11 +53,7 @@ router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
         createData = { error: { message: errorText } };
       }
       console.error('[Server] Failed to create spreadsheet:', errorText);
-      return res.status(createRes.status).json({
-        error: 'GOOGLE_API_ERROR',
-        message: createData?.error?.message || 'Google Sheets API rejected the request.',
-        details: createData
-      });
+      return sendError(res, createRes.status, 'GOOGLE_API_ERROR', createData?.error?.message || 'Google Sheets API rejected the request.', { details: createData });
     }
 
     const createData = await createRes.json() as any;
@@ -107,12 +102,7 @@ router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
       },
       {
         title: 'EncounterLogs',
-        headers: [
-          'id', 'encounterId', 'encounterName',
-          'location', 'date', 'durationRounds',
-          'outcome', 'partySnapshot', 'events',
-          'transcript'
-        ],
+        headers: [...ENCOUNTER_LOG_HEADERS],
         rows: []
       }
     ];
@@ -152,13 +142,8 @@ router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
       } catch (e) {
         // fallback to raw text
       }
-      console.error('[Server] Failed sheet structure batch update:', errorText);
-      return res.status(sheetsUpdateRes.status).json({
-        error: 'SHEET_STRUCTURE_FAILED',
-        message: 'Spreadsheet was created but sheet tabs could not be provisioned: ' + errorDetail,
-        spreadsheetId,
-        spreadsheetUrl
-      });
+      console.error('[Server] Failed to sheet structure batch update:', errorText);
+      return sendError(res, sheetsUpdateRes.status, 'SHEET_STRUCTURE_FAILED', 'Spreadsheet was created but sheet tabs could not be provisioned: ' + errorDetail, { spreadsheetId, spreadsheetUrl });
     }
 
     const valueData = requiredSheets.map(sheet => {
@@ -190,12 +175,7 @@ router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
         // fallback to raw text
       }
       console.error('[Server] Failed headers batch update:', errorText);
-      return res.status(headersRes.status).json({
-        error: 'HEADERS_FAILED',
-        message: 'Spreadsheet and sheet tabs were created but column headers could not be written: ' + errorDetail,
-        spreadsheetId,
-        spreadsheetUrl
-      });
+      return sendError(res, headersRes.status, 'HEADERS_FAILED', 'Spreadsheet and sheet tabs were created but column headers could not be written: ' + errorDetail, { spreadsheetId, spreadsheetUrl });
     }
 
     res.json({
@@ -206,7 +186,7 @@ router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
 
   } catch (error: any) {
     console.error('[Server] Exception creating campaign spreadsheet:', error);
-    res.status(500).json({ error: 'INTERNAL_SERVER_ERROR', message: error.message });
+    sendError(res, 500, 'INTERNAL_SERVER_ERROR', error.message);
   }
 });
 

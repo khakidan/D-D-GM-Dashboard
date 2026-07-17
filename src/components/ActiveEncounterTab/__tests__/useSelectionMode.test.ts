@@ -26,6 +26,8 @@ describe('useSelectionMode', () => {
         isSelectionMode: false,
         syncingIds: [],
         expandedIds: [],
+        combatStarted: false,
+        actionContext: { sourceOverride: null, actionType: 'attack' },
       }
     });
   });

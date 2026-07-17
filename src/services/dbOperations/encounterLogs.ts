@@ -1,6 +1,7 @@
 // src/services/dbOperations/encounterLogs.ts
 
 import { BatchRequest } from '../sheetsService';
+import { ENCOUNTER_LOG_HEADERS } from '../../lib/sheetSchemas';
 import {
   resolveSpreadsheetId,
   appendSheetData,
@@ -77,7 +78,7 @@ export async function appendEncounterLog(
       log.events,
       log.transcript
     ];
-    await appendSheetData(resolvedId, 'EncounterLogs!A:J', [rowData]);
+    await appendSheetData(resolvedId, `EncounterLogs!A:${String.fromCharCode(64 + ENCOUNTER_LOG_HEADERS.length)}`, [rowData]);
   } catch (err) {
     console.error('[DB] appendEncounterLog failed:', err);
     throw err;
@@ -87,7 +88,7 @@ export async function appendEncounterLog(
 export async function readEncounterLogs(spreadsheetId?: string): Promise<any[][]> {
   try {
     const resolvedId = resolveSpreadsheetId(spreadsheetId);
-    const data = await fetchSheetData(resolvedId, 'EncounterLogs!A2:J');
+    const data = await fetchSheetData(resolvedId, `EncounterLogs!A2:${String.fromCharCode(64 + ENCOUNTER_LOG_HEADERS.length)}`);
     return data.values || [];
   } catch (err) {
     console.error('[DB] readEncounterLogs failed:', err);

@@ -50,6 +50,8 @@ describe('useEncounterLifecycle & useCombatSync Tests', () => {
         isSelectionMode: false,
         syncingIds: [],
         expandedIds: [],
+        combatStarted: false,
+        actionContext: { sourceOverride: null, actionType: 'attack' },
       },
     });
   });
@@ -105,6 +107,7 @@ describe('useEncounterLifecycle & useCombatSync Tests', () => {
         syncingIds: [],
         expandedIds: [],
         combatStarted: true,
+        actionContext: { sourceOverride: null, actionType: 'attack' },
       }
     });
 
@@ -140,6 +143,7 @@ describe('useEncounterLifecycle & useCombatSync Tests', () => {
         syncingIds: [],
         expandedIds: [],
         combatStarted: true,
+        actionContext: { sourceOverride: null, actionType: 'attack' },
       }
     });
 
@@ -176,6 +180,7 @@ describe('useEncounterLifecycle & useCombatSync Tests', () => {
         syncingIds: [],
         expandedIds: [],
         combatStarted: true,
+        actionContext: { sourceOverride: null, actionType: 'attack' },
       }
     });
 
@@ -212,6 +217,8 @@ describe('useEncounterLifecycle & useCombatSync Tests', () => {
         isSelectionMode: false,
         syncingIds: [],
         expandedIds: [],
+        combatStarted: false,
+        actionContext: { sourceOverride: null, actionType: 'attack' },
       }
     });
 

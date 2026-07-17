@@ -29,6 +29,8 @@ describe('useDashboardStore', () => {
         isSelectionMode: false,
         syncingIds: [],
         expandedIds: [],
+        combatStarted: false,
+        actionContext: { sourceOverride: null, actionType: 'attack' },
       },
     });
   });
@@ -78,6 +80,8 @@ describe('useDashboardStore', () => {
         isSelectionMode: false,
         syncingIds: [],
         expandedIds: [],
+        combatStarted: false,
+        actionContext: { sourceOverride: null, actionType: 'attack' },
       },
     });
 

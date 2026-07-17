@@ -190,6 +190,11 @@ export interface CombatState {
   isSelectionMode: boolean;
   syncingIds: string[];
   expandedIds: string[];
+  combatStarted: boolean;
+  actionContext: {
+    sourceOverride: string | null;
+    actionType: string;
+  };
 }
 
 export interface EncounterCombatant {

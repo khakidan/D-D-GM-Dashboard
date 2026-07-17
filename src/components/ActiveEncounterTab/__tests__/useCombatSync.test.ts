@@ -57,6 +57,7 @@ describe('useCombatSync', () => {
           expandedIds: [],
           concentrationLinks: {},
           combatStarted: true,
+          actionContext: { sourceOverride: null, actionType: 'attack' },
           combatants: [
             { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20, reactionUsed: true },
             { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15, reactionUsed: true, legendaryActions: { max: 3, remaining: 1 } },

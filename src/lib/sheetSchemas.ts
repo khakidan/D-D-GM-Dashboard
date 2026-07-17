@@ -38,6 +38,10 @@ export const ENCOUNTER_COMBATANT_HEADERS = [
   'NPC_Legendary_Resistances_Remaining', 'NPC_Recharge_State'
 ] as const;
 
+export const ENCOUNTER_LOG_HEADERS = [
+  'id', 'encounterId', 'encounterName', 'location', 'date', 'durationRounds', 'outcome', 'partySnapshot', 'events', 'transcript'
+] as const;
+
 const idSchema = z
   .any()
   .transform((val) => (val == null ? '' : String(val).trim()))
