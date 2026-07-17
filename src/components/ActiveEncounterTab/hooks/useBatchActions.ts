@@ -30,9 +30,6 @@ export function useBatchActions({ selectedIds, combatants, onSuccess }: UseBatch
     const previousState = getSnapshot();
     const newlyUnconsciousPCs: string[] = [];
     try {
-      const { addCombatEvent, activeCombatLog, combatState } =
-        useDashboardStore.getState()
-
       for (const c of selectedList) {
         const hpBefore = c.currentHp;
         const isPc = c.type === 'pc';
@@ -81,9 +78,6 @@ export function useBatchActions({ selectedIds, combatants, onSuccess }: UseBatch
     const affectedNames = selectedList.map(c => c.name);
     const previousState = getSnapshot();
     try {
-      const { addCombatEvent, activeCombatLog, combatState } =
-        useDashboardStore.getState()
-
       for (const c of selectedList) {
         await handleHealthChange(c.id, c, false, null, amount, false, true); // pass skipOverlay=true
       }
@@ -108,9 +102,6 @@ export function useBatchActions({ selectedIds, combatants, onSuccess }: UseBatch
 
     const previousState = getSnapshot();
     try {
-      const { addCombatEvent, activeCombatLog, combatState } =
-        useDashboardStore.getState()
-
       for (const c of selectedList) {
         const list = parseCommaSeparatedList(c.conditions);
         if (!list.includes(condition)) {

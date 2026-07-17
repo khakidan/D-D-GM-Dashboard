@@ -64,7 +64,7 @@ export const NpcStatBlockSection: React.FC<NpcStatBlockSectionProps> = ({ title,
         {items.map((item, index) => (
           <div key={index} className="leading-snug">
             <div className="flex flex-wrap items-baseline gap-2">
-              <span className="font-semibold text-[#0f172a] italic">
+              <span className="font-bold text-[#2563eb] italic">
                 {item.name}
               </span>
               {item.meta && (

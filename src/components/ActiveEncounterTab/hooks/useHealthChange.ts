@@ -153,7 +153,7 @@ export function useHealthChange(
 
       const { addCombatEvent, activeCombatLog, combatState } = useDashboardStore.getState();
 
-      if (activeCombatLog && !skipOverlay) {
+      if (activeCombatLog) {
         const { actionContext } = combatState;
         const sourceId = actionContext.sourceOverride ?? combatState.activeTurnId;
         const sourceName = actionContext.sourceOverride
