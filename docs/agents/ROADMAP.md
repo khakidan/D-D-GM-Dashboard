@@ -27,10 +27,6 @@ None currently open.
 
 Not yet fixed — this needs a real, careful pass (confirm each instance directly against the file, not just this list, before changing anything) given the number of files involved.
 
-### 🔵 Architecture / Technical Debt
-
-- **`abilityScores.ts` and `spellcasting.ts` have a circular import.** `abilityScores.ts`'s `parseProficiencies()` calls `parseSpellcastingAbility()` from `spellcasting.ts`; `spellcasting.ts` needs `abilitiesInOrder`/`AbilityName` from `abilityScores.ts`. A genuine fix would require either moving `parseSpellcastingAbility`/`SpellcastingAbility` into `abilityScores.ts` (a domain mismatch) or restructuring `parseProficiencies()` to no longer call into `spellcasting.ts` directly (would change a working function's signature and require updating every caller). Deliberately deferred — real complexity/risk for a purely architectural benefit, not a functional one.
-
 **Future audit categories, discussed but not yet started** — beyond bug-hunting and componentization, a professional React/TypeScript codebase review typically also covers:
 
 - **Type safety** — a systematic sweep for `any`/unsafe type casts, missing null checks, and places where TypeScript's strictness is being worked around rather than honored.

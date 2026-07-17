@@ -34,7 +34,7 @@ When any combatant or character with the `concentrating` condition takes damage:
 
 - Call `concentrationCheckDc(damage)` to calculate the DC.
 - Call `fireConcentrationAlert(name, damage)` to display the Sonner toast.
-- This fires in `useHealthChange.ts` for combat and `useParty.ts` for Party Tab HP changes.
+- This fires in `useHealthChange.ts` for combat and `usePartyCharacterCrud.ts`'s `handleUpdate` for Party Tab HP changes (part of `useParty.ts`'s decomposition — see `CHANGELOG.md`).
 - Each source fires independently. There should never be double-firing between tabs.
 
 ### Recharge pattern
@@ -70,20 +70,20 @@ The distinction between `undefined` and `null` is critical:
 
 Do **not** flatten both values to `null` in any handler.
 
-NPC `spellcastingAbility` is stored in column **Y** (index 24) and read using:
+NPC `spellcastingAbility` is stored in column **V** (index 21) and read using:
 
 ```ts
-SHEET_RANGES.npcs = "NPCs!A2:Y";
+SHEET_RANGES.npcs = "NPCs!A2:V";
 ```
 
 `NpcCard`'s `onOverrideChange` writes both:
 
-- `spellcastingAbility` (column Y)
+- `spellcastingAbility` (column V)
 - `proficiencies` JSON
 
 for resilience.
 
-Do **not** revert `SHEET_RANGES.npcs` to `A2:X`.
+Do **not** shrink `SHEET_RANGES.npcs` below `A2:V` — that would truncate the sheet read before reaching `spellcastingAbility`, the last of the 22 NPC columns.
 
 Character `spellcastingAbility` is stored in column **Z** (index 25) and is also embedded in the proficiencies JSON stored in column **Y**.
 
@@ -117,7 +117,7 @@ On confirmation, `resourcePools` is included in the `onConfirm` updates object a
 
 ### NPC stat block display
 
-NPC stat blocks are stored as JSON strings in columns **U–X**.
+NPC stat blocks are stored as JSON strings in columns **R–U**.
 
 They are displayed in two places:
 
@@ -150,7 +150,7 @@ It keeps the raw typed value locally and commits changes only on blur or Enter. 
 
 Do **not** replace it with `DebouncedInput` (different contract) or revert to a direct `<input onChange>`.
 
-`CrInput` in `NpcFormFields.tsx` follows the same editing pattern for the Challenge Rating field.
+The Challenge Rating field in `NpcIdentityTab.tsx` (part of `NpcFormFields.tsx`'s decomposition — see `file-reference.md`) previously had its own `CrInput` local-state wrapper; it was found functionally identical to `DebouncedInput` and now uses that directly instead — see `CHANGELOG.md`.
 
 ---
 

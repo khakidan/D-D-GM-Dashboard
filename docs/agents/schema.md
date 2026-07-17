@@ -216,10 +216,12 @@ IDs: 1=Easy, 2=Medium, 3=Hard, 4=Deadly
 
 ---
 
-## handleUpdate Whitelist (`useParty.ts`)
+## handleUpdate Whitelist (`usePartyCharacterCrud.ts`)
+
+`useParty.ts` is a thin facade — `handleUpdate`'s real implementation lives in `usePartyCharacterCrud.ts` (see `file-reference.md`'s `src/components/PartyTab/` entries for the full decomposition), still exposed to consumers as `useParty().handleUpdate` unchanged.
 
 The following fields are accepted by `handleUpdate` and write to the sheet:
 
-`playerName`, `characterName`, `class`, `ac`, `maxHp`, `tempHp`, `currentHp`, `conditions`, `passivePerception`, `level`, `statusId`, `notes`, `resistances`, `immunities`, `vulnerabilities`, `tempAc`, `deathSavesFails`, `deathSavesSuccesses`, `hitDiceConfig`, `hitDiceUsed`, `resourcePools`, `abilityScores`, `proficiencies`
+`playerName`, `characterName`, `class`, `ac`, `maxHp`, `tempHp`, `currentHp`, `conditions`, `passivePerception`, `level`, `statusId`, `notes`, `resistances`, `immunities`, `vulnerabilities`, `tempAc`, `deathSavesFails`, `deathSavesSuccesses`, `hitDiceConfig`, `hitDiceUsed`, `resourcePools`, `abilityScores`, `proficiencies`, `spellcastingAbility`
 
 When adding a new character field, add it to this whitelist and to `dbOperations.ts`.

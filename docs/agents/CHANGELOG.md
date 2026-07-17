@@ -6,6 +6,34 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## `file-reference.md`, `patterns.md`, `schema.md` — Accuracy Review
+
+At Dan's request, all 3 remaining reference docs were checked directly against the real, current codebase rather than assumed current. Genuine drift was found in all 3, mostly downstream of this session's own decomposition work (`useParty.ts`, `NpcFormFields.tsx`) and the circular-import fix, plus a few pre-existing inaccuracies unrelated to anything from this session.
+
+**`schema.md`**: the `handleUpdate` field whitelist was missing `spellcastingAbility` (a real, confirmed omission — the field exists in the real whitelist array but had never been added to the doc), and the whitelist's owning file was stale (`useParty.ts` directly, rather than `usePartyCharacterCrud.ts`, where the real implementation now lives post-decomposition).
+
+**`patterns.md`**: 3 genuine, pre-existing errors unrelated to this session's changes — `SHEET_RANGES.npcs` documented as `A2:Y`, when the real, current value is `A2:V` (NPC `spellcastingAbility` documented at column Y/index 24, when it's genuinely at column V/index 21 — the NPC sheet has 22 columns total, not 25); NPC stat blocks documented as living in columns U–X, when the real columns are R–U. Plus 2 items genuinely stale from this session's work: a reference to `CrInput`, a component removed earlier this session (replaced with `DebouncedInput` in `NpcIdentityTab.tsx`) — corrected rather than silently deleted, so the historical context isn't lost; and the concentration-check firing location, updated from `useParty.ts` to `usePartyCharacterCrud.ts`.
+
+**`file-reference.md`**: the most significant drift, entirely downstream of this session's 2 decomposition efforts. `useParty.ts`'s entry described it as still directly containing `handleLongRest`/`handleShortRest`/the rest-calculation helpers — all now live in `usePartyRest.ts`, with `usePartyLevelUp.ts`/`usePartyCharacterCrud.ts`/`partyStateHelpers.ts` also entirely unlisted. `NpcFormFields.tsx`'s entry described "internal four-tab navigation" as if all 4 tabs still rendered inline — the doc had already been updated for the earlier `Identity`/`Combat` extraction but never for this session's `Abilities`/`Stat Block` extraction, and none of the 4 resulting tab files were listed. Also found and fixed: `campaigns.ts`'s entry said "6 sheets," while `schema.md` already correctly said "7" — a real inconsistency between 2 of these docs, not just staleness in one; `SettingsPage.tsx`'s layout description was missing `ReferenceDataSeeder` entirely; `SettingsPanel.tsx`, `abilityFundamentals.ts`, and `src/server/utils/errors.ts` (all created this session) were absent from the inventory, along with 2 pre-existing, never-documented files (`rateLimiter.ts`, `bodyValidation.ts`).
+
+**One self-correction caught during the review itself**: an initial fix in `patterns.md` referenced "see below" for further detail that doesn't actually exist in that file — the real detail lives in `file-reference.md`. Caught on a final re-read before finalizing, not left in.
+
+No code was touched — this was a documentation-only pass. Each correction was verified directly against the real, current source before being written (real `SHEET_RANGES` values, real column indices derived from `NPC_HEADERS`'s actual array position, real current file contents and import structure) rather than inferred from what the surrounding prose implied should be true.
+
+---
+
+## `abilityScores.ts`/`spellcasting.ts` Circular Import Resolved
+
+`abilityScores.ts` imported `SpellcastingAbility`/`parseSpellcastingAbility` from `spellcasting.ts`; `spellcasting.ts` imported `abilitiesInOrder`/`AbilityName`/`calculateModifier`/`proficiencyBonusFromLevel` from `abilityScores.ts` — a genuine circular dependency, deliberately deferred earlier this session given the 2 fixes then under consideration each carried real cost: moving `SpellcastingAbility` into `abilityScores.ts` would have mixed spellcasting-specific logic into ability-score territory (a real domain mismatch), while restructuring `parseProficiencies()`'s signature to no longer call into `spellcasting.ts` would have required updating every caller for a purely architectural benefit.
+
+**A third option, better than either originally considered, was found instead of picking the lesser of two real costs.** Every consumer of the 4 symbols `spellcasting.ts` actually needed (`abilitiesInOrder`, `AbilityName`, `calculateModifier`, `proficiencyBonusFromLevel`) was traced across the codebase first — all 14 confirmed to import from `'../lib/abilityScores'` (directly or via `StatBlockScores.tsx`'s existing re-export), none from anywhere else. Given `calculateModifier`/`proficiencyBonusFromLevel` are pure functions with zero dependencies of their own, and `abilitiesInOrder`/`AbilityName` are simple constants, all 4 could be extracted into a genuinely dependency-free shared module without moving anything spellcasting-specific and without changing any public function's signature — avoiding both stated risks entirely.
+
+**Fix**: new `abilityFundamentals.ts` holds the 4 shared, zero-dependency primitives. `abilityScores.ts` now imports from it and re-exports all 4, so every existing consumer importing from `'../lib/abilityScores'` is completely unaffected — zero caller updates needed anywhere in the codebase. `spellcasting.ts` now imports the same 4 symbols from `abilityFundamentals.ts` instead of from `abilityScores.ts`. The result is a one-way dependency graph (`abilityScores.ts` → `spellcasting.ts` → `abilityFundamentals.ts`, plus `abilityScores.ts` → `abilityFundamentals.ts` directly) — no cycle.
+
+Verified: confirmed directly that `spellcasting.ts` no longer imports from `abilityScores.ts` at all (not just reduced — genuinely zero). `npx tsc --noEmit` clean. Full test suite run for real — 823/823 passing, identical to the baseline before this change, including the existing dedicated `calculateModifier`/`proficiencyBonusFromLevel` test blocks in `abilityScores.test.ts`, confirming no coverage gap was left behind by the relocation.
+
+---
+
 ## All 44 Pre-Existing TypeScript Errors Resolved, Plus a Real `auth.test.ts` Bug Found and Fixed — Full Suite Now 100% Green
 
 The "54 pre-existing TypeScript errors across 18 test files" technical-debt item (visible only under the broader `npx tsc --noEmit`, not the build-scoped check) is fully resolved. The real, current count at the start of this effort was 44 across 19 files — genuine drift from the original count, expected given how much code changed earlier this session; confirmed directly rather than trusted from the stale number.
