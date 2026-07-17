@@ -14,6 +14,8 @@ import {
 } from '../../../services/dbOperations';
 import { Combatant } from '../../../types';
 import { buildConditionSummary } from '../../../lib/conditions';
+import { parseCommaSeparatedList } from '../../../lib/stringUtils';
+import { CombatEvent } from '../../../lib/combatLog';
 import { calculateConditionAcModifier, calculateExhaustionHpCap } from '../../../lib/combatLogic';
 import { useRageEvent } from '../../../hooks/useCombatOverlayEvents';
 
@@ -86,72 +88,22 @@ export function useCombatantMutations() {
     const currentCombatant = snapshot.combatState.combatants.find(c => c.id === id);
     if (!currentCombatant) return;
 
-    if (updates.conditions !== undefined) {
-      const newConditionSet = new Set(
-        (updates.conditions || '').split(',')
-          .map(s => s.trim().toLowerCase())
-          .filter(Boolean)
-      );
+    const { updates: computedUpdates, notifications, rageTriggered } = calculateCombatantStateUpdates(
+      currentCombatant,
+      updates
+    );
+    updates = computedUpdates;
 
-      if (currentCombatant.conditionTimers) {
-        const cleanedTimers = Object.fromEntries(
-          Object.entries(currentCombatant.conditionTimers)
-            .filter(([key]) => newConditionSet.has(key.toLowerCase()))
-        );
-
-        if (Object.keys(cleanedTimers).length !== Object.keys(currentCombatant.conditionTimers).length) {
-          updates = { ...updates, conditionTimers: cleanedTimers };
-        }
+    notifications.forEach(n => {
+      if (n.type === 'warning') {
+        toast.warning(n.message, { description: n.description });
+      } else if (n.type === 'success') {
+        toast.success(n.message);
       }
+    });
 
-      const condList = Array.from(newConditionSet);
-      const newAcMod = calculateConditionAcModifier(condList);
-      
-      if (newAcMod !== (currentCombatant.tempAcModifier || 0)) {
-        updates = { ...updates, tempAcModifier: newAcMod };
-      }
-
-      if (currentCombatant.type === 'pc') {
-        const conditionSummary = buildConditionSummary(condList);
-        
-        const { tempHpMax, changed } = calculateExhaustionHpCap(
-          currentCombatant.maxHp,
-          conditionSummary.hpMaxHalved,
-          currentCombatant.tempHpMax || 0
-        );
-        
-        if (changed === 'gained') {
-          updates = { ...updates, tempHpMax };
-          
-          const currentHpVal = updates.currentHp !== undefined ? updates.currentHp : currentCombatant.currentHp;
-          if (currentHpVal > tempHpMax) {
-            updates.currentHp = tempHpMax;
-          }
-          
-          toast.warning(`${currentCombatant.name}'s Max HP is halved from exhaustion!`, {
-            description: `Effective Max HP is now ${tempHpMax}`,
-          });
-        } else if (changed === 'lost') {
-          updates = { ...updates, tempHpMax };
-          toast.success(`${currentCombatant.name}'s Max HP restriction is lifted.`);
-        }
-      }
-
-      const hadRaging = (currentCombatant.conditions || '')
-        .toLowerCase()
-        .split(',')
-        .map(s => s.trim())
-        .includes('raging');
-
-      const nowHasRaging = (updates.conditions || '')
-        .toLowerCase()
-        .split(',')
-        .map(s => s.trim())
-        .includes('raging');
-
-      if (!hadRaging && nowHasRaging && currentCombatant.type === 'pc') {
-        fireRageEvent({ characterName: currentCombatant.name });
-      }
+    if (rageTriggered && currentCombatant.type === 'pc') {
+      fireRageEvent({ characterName: currentCombatant.name });
     }
 
     const targetCombatant = { ...currentCombatant, ...updates };
@@ -294,101 +246,21 @@ export function useCombatantMutations() {
       throw error;
     }
 
-    if (updates.conditions !== undefined) {
-      const { addCombatEvent, activeCombatLog, combatState } = useDashboardStore.getState();
+    // Section F: Post-success combat logging
+    const { addCombatEvent, activeCombatLog, combatState } = useDashboardStore.getState();
+    if (activeCombatLog) {
+      const activeTurnCombatant = combatState.combatants.find(x => x.id === combatState.activeTurnId);
+      const preMutationCombatant = snapshot.combatState.combatants.find(x => x.id === id);
 
-      if (activeCombatLog) {
-        const activeTurnCombatant = combatState.combatants.find(x => x.id === combatState.activeTurnId);
-        const currentCombatant = combatState.combatants.find(x => x.id === id);
+      const eventsToLog = getCombatantStateLogEvents(
+        id,
+        updates,
+        preMutationCombatant,
+        activeTurnCombatant,
+        activeCombatLog.currentRound
+      );
 
-        const oldConditions = (currentCombatant?.conditions || '').split(',')
-          .map(s => s.trim())
-          .filter(Boolean);
-
-        const newConditions = updates.conditions.split(',')
-          .map(s => s.trim())
-          .filter(Boolean);
-
-        newConditions
-          .filter(c => !oldConditions.includes(c))
-          .forEach(condition => {
-            addCombatEvent({
-              round: activeCombatLog.currentRound,
-              type: 'condition-applied',
-              actorId: activeTurnCombatant?.id ?? null,
-              actorName: activeTurnCombatant?.name ?? null,
-              targetId: id,
-              targetName: currentCombatant?.name ?? null,
-              condition,
-              isManualAdjustment: false,
-            });
-          });
-
-        oldConditions
-          .filter(c => !newConditions.includes(c))
-          .forEach(condition => {
-            addCombatEvent({
-              round: activeCombatLog.currentRound,
-              type: 'condition-removed',
-              actorId: activeTurnCombatant?.id ?? null,
-              actorName: activeTurnCombatant?.name ?? null,
-              targetId: id,
-              targetName: currentCombatant?.name ?? null,
-              condition,
-              isManualAdjustment: false,
-            });
-          });
-      }
-    }
-
-    if (updates.legendaryActions !== undefined || updates.legendaryResistances !== undefined) {
-      const { addCombatEvent, activeCombatLog, combatState } = useDashboardStore.getState();
-
-      if (activeCombatLog) {
-        const activeTurnCombatant = combatState.combatants.find(x => x.id === combatState.activeTurnId);
-
-        if (currentCombatant) {
-          if (updates.legendaryActions !== undefined) {
-            const before = currentCombatant.legendaryActions?.remaining ?? 0;
-            const after = updates.legendaryActions.remaining;
-            if (before !== after) {
-              addCombatEvent({
-                round: activeCombatLog.currentRound,
-                type: 'resource-changed',
-                actorId: activeTurnCombatant?.id ?? null,
-                actorName: activeTurnCombatant?.name ?? null,
-                targetId: id,
-                targetName: currentCombatant.name,
-                resourceName: 'Legendary Actions',
-                resourceBefore: before,
-                resourceAfter: after,
-                resourceMax: updates.legendaryActions.max,
-                isManualAdjustment: false,
-              });
-            }
-          }
-
-          if (updates.legendaryResistances !== undefined) {
-            const before = currentCombatant.legendaryResistances?.remaining ?? 0;
-            const after = updates.legendaryResistances.remaining;
-            if (before !== after) {
-              addCombatEvent({
-                round: activeCombatLog.currentRound,
-                type: 'resource-changed',
-                actorId: activeTurnCombatant?.id ?? null,
-                actorName: activeTurnCombatant?.name ?? null,
-                targetId: id,
-                targetName: currentCombatant.name,
-                resourceName: 'Legendary Resistances',
-                resourceBefore: before,
-                resourceAfter: after,
-                resourceMax: updates.legendaryResistances.max,
-                isManualAdjustment: false,
-              });
-            }
-          }
-        }
-      }
+      eventsToLog.forEach(evt => addCombatEvent(evt));
     }
   };
 
@@ -396,5 +268,192 @@ export function useCombatantMutations() {
     syncingIds,
     updateCombatant,
     removeCombatant
+  };
+}
+
+/**
+ * Pure helper function to calculate the combat events that should be logged
+ * based on state transitions of a combatant (conditions, resources, etc.).
+ */
+export function getCombatantStateLogEvents(
+  id: string,
+  updates: Partial<Combatant>,
+  currentCombatant: Combatant | undefined,
+  activeTurnCombatant: Combatant | undefined,
+  currentRound: number
+): Omit<CombatEvent, 'id' | 'timestamp'>[] {
+  const events: Omit<CombatEvent, 'id' | 'timestamp'>[] = [];
+
+  if (updates.conditions !== undefined) {
+    const oldConditions = parseCommaSeparatedList(currentCombatant?.conditions);
+    const newConditions = parseCommaSeparatedList(updates.conditions);
+
+    newConditions
+      .filter(c => !oldConditions.includes(c))
+      .forEach(condition => {
+        events.push({
+          round: currentRound,
+          type: 'condition-applied',
+          actorId: activeTurnCombatant?.id ?? null,
+          actorName: activeTurnCombatant?.name ?? null,
+          targetId: id,
+          targetName: currentCombatant?.name ?? null,
+          condition,
+          isManualAdjustment: false,
+        });
+      });
+
+    oldConditions
+      .filter(c => !newConditions.includes(c))
+      .forEach(condition => {
+        events.push({
+          round: currentRound,
+          type: 'condition-removed',
+          actorId: activeTurnCombatant?.id ?? null,
+          actorName: activeTurnCombatant?.name ?? null,
+          targetId: id,
+          targetName: currentCombatant?.name ?? null,
+          condition,
+          isManualAdjustment: false,
+        });
+      });
+  }
+
+  if (updates.legendaryActions !== undefined || updates.legendaryResistances !== undefined) {
+    if (currentCombatant) {
+      if (updates.legendaryActions !== undefined) {
+        const before = currentCombatant.legendaryActions?.remaining ?? 0;
+        const after = updates.legendaryActions.remaining;
+        if (before !== after) {
+          events.push({
+            round: currentRound,
+            type: 'resource-changed',
+            actorId: activeTurnCombatant?.id ?? null,
+            actorName: activeTurnCombatant?.name ?? null,
+            targetId: id,
+            targetName: currentCombatant.name,
+            resourceName: 'Legendary Actions',
+            resourceBefore: before,
+            resourceAfter: after,
+            resourceMax: updates.legendaryActions.max,
+            isManualAdjustment: false,
+          });
+        }
+      }
+
+      if (updates.legendaryResistances !== undefined) {
+        const before = currentCombatant.legendaryResistances?.remaining ?? 0;
+        const after = updates.legendaryResistances.remaining;
+        if (before !== after) {
+          events.push({
+            round: currentRound,
+            type: 'resource-changed',
+            actorId: activeTurnCombatant?.id ?? null,
+            actorName: activeTurnCombatant?.name ?? null,
+            targetId: id,
+            targetName: currentCombatant.name,
+            resourceName: 'Legendary Resistances',
+            resourceBefore: before,
+            resourceAfter: after,
+            resourceMax: updates.legendaryResistances.max,
+            isManualAdjustment: false,
+          });
+        }
+      }
+    }
+  }
+
+  return events;
+}
+
+/**
+ * Pure helper function to compute automatic downstream state changes resulting from
+ * direct updates to a combatant (e.g., condition timers cleanup, AC-modifier recalculation,
+ * exhaustion Max-HP capping, and rage-event triggering).
+ */
+export function calculateCombatantStateUpdates(
+  currentCombatant: Combatant,
+  updates: Partial<Combatant>
+): {
+  updates: Partial<Combatant>;
+  notifications: {
+    type: 'warning' | 'success';
+    message: string;
+    description?: string;
+  }[];
+  rageTriggered: boolean;
+} {
+  let mergedUpdates = { ...updates };
+  const notifications: {
+    type: 'warning' | 'success';
+    message: string;
+    description?: string;
+  }[] = [];
+  let rageTriggered = false;
+
+  if (mergedUpdates.conditions !== undefined) {
+    const newConditions = Array.from(new Set(parseCommaSeparatedList(mergedUpdates.conditions, { toLowerCase: true })));
+    const newConditionSet = new Set(newConditions);
+
+    if (currentCombatant.conditionTimers) {
+      const cleanedTimers = Object.fromEntries(
+        Object.entries(currentCombatant.conditionTimers)
+          .filter(([key]) => newConditionSet.has(key.toLowerCase()))
+      );
+
+      if (Object.keys(cleanedTimers).length !== Object.keys(currentCombatant.conditionTimers).length) {
+        mergedUpdates = { ...mergedUpdates, conditionTimers: cleanedTimers };
+      }
+    }
+
+    const newAcMod = calculateConditionAcModifier(newConditions);
+    if (newAcMod !== (currentCombatant.tempAcModifier || 0)) {
+      mergedUpdates = { ...mergedUpdates, tempAcModifier: newAcMod };
+    }
+
+    if (currentCombatant.type === 'pc') {
+      const conditionSummary = buildConditionSummary(newConditions);
+      
+      const { tempHpMax, changed } = calculateExhaustionHpCap(
+        currentCombatant.maxHp,
+        conditionSummary.hpMaxHalved,
+        currentCombatant.tempHpMax || 0
+      );
+      
+      if (changed === 'gained') {
+        mergedUpdates = { ...mergedUpdates, tempHpMax };
+        
+        const currentHpVal = mergedUpdates.currentHp !== undefined ? mergedUpdates.currentHp : currentCombatant.currentHp;
+        if (currentHpVal > tempHpMax) {
+          mergedUpdates.currentHp = tempHpMax;
+        }
+        
+        notifications.push({
+          type: 'warning',
+          message: `${currentCombatant.name}'s Max HP is halved from exhaustion!`,
+          description: `Effective Max HP is now ${tempHpMax}`,
+        });
+      } else if (changed === 'lost') {
+        mergedUpdates = { ...mergedUpdates, tempHpMax };
+        notifications.push({
+          type: 'success',
+          message: `${currentCombatant.name}'s Max HP restriction is lifted.`,
+        });
+      }
+    }
+
+    const oldConditions = parseCommaSeparatedList(currentCombatant.conditions, { toLowerCase: true });
+    const hadRaging = oldConditions.includes('raging');
+    const nowHasRaging = newConditions.includes('raging');
+
+    if (!hadRaging && nowHasRaging && currentCombatant.type === 'pc') {
+      rageTriggered = true;
+    }
+  }
+
+  return {
+    updates: mergedUpdates,
+    notifications,
+    rageTriggered,
   };
 }
