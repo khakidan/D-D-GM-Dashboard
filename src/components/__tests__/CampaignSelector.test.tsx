@@ -45,4 +45,15 @@ describe('CampaignSelector Component Tests', () => {
     expect(screen.getByText('Connect with Google')).toBeInTheDocument();
     expect(screen.queryByText('No campaigns yet.')).not.toBeInTheDocument();
   });
+
+  it('renders corrupted campaigns warning card when hasParseError is true', () => {
+    render(<CampaignSelector {...defaultProps} hasParseError={true} />);
+    expect(screen.getByText('Local Campaigns Corrupted')).toBeInTheDocument();
+    expect(screen.getByText(/Some or all of your saved campaigns could not be parsed/)).toBeInTheDocument();
+  });
+
+  it('does not render corrupted campaigns warning card when hasParseError is false or omitted', () => {
+    render(<CampaignSelector {...defaultProps} />);
+    expect(screen.queryByText('Local Campaigns Corrupted')).not.toBeInTheDocument();
+  });
 });

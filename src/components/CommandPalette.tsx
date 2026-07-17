@@ -33,13 +33,13 @@ interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   ambientFiles: StoredAudioFile[];
-  onPlayAmbient: (fileId: string) => void;
+  onPlayAmbient: (fileId: string) => void | Promise<void>;
   currentAmbientId: string | null;
 
   // Mood Presets Props
   activeMood: MoodId | null;
   assignments: Record<MoodId, string | null>;
-  activateMood: (moodId: MoodId, playAmbient: (fileId: string) => void) => void;
+  activateMood: (moodId: MoodId, playAmbient: (fileId: string) => void | Promise<void>) => void;
 }
 
 export function CommandPalette({ 
@@ -447,7 +447,13 @@ export function CommandPalette({
                         key={file.id}
                         id={`cmd-play-ambient-${file.id}`}
                         onSelect={() => {
-                          onPlayAmbient(file.id);
+                          const res = onPlayAmbient(file.id);
+                          if (res instanceof Promise) {
+                            res.catch(err => {
+                              console.error(`[Audio Engine] Failed to play ambient track "${file.name}":`, err);
+                              toast.error(`Failed to play ambient track "${file.name}": ${err instanceof Error ? err.message : 'Unknown error'}`);
+                            });
+                          }
                           onClose();
                         }}
                         className={COMMAND_ITEM_CLASS}

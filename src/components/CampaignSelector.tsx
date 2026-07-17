@@ -9,6 +9,7 @@ import {
   FolderOpen
 } from 'lucide-react';
 import { Button } from './ui/Button';
+import { Callout } from './ui/Callout';
 import { Campaign } from '../hooks/useCampaign';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { STORAGE_KEYS } from '../lib/constants';
@@ -17,6 +18,7 @@ interface CampaignSelectorProps {
   campaigns: Campaign[];
   isLoading: boolean;
   error: string | null;
+  hasParseError?: boolean;
   onCreateCampaign: (name: string) => Promise<Campaign | null>;
   onConnectCampaign: (name: string, spreadsheetIdOrUrl: string) => Promise<Campaign | null>;
   onOpenCampaign: (campaign: Campaign) => void;
@@ -48,6 +50,7 @@ export function CampaignSelector({
   campaigns,
   isLoading,
   error,
+  hasParseError,
   onCreateCampaign,
   onConnectCampaign,
   onOpenCampaign,
@@ -193,6 +196,17 @@ export function CampaignSelector({
           </div>
         ) : (
           <>
+            {hasParseError && (
+              <Callout severity="warning" id="campaign-parse-error-card" className="mb-6">
+                <div className="font-bold mb-1">
+                  Local Campaigns Corrupted
+                </div>
+                <div className="leading-relaxed opacity-90">
+                  Some or all of your saved campaigns could not be parsed from local storage. Any newly created or connected campaigns will overwrite the corrupted data.
+                </div>
+              </Callout>
+            )}
+
             {/* Saved Campaigns list */}
             <div className="bg-white/50 backdrop-blur-md rounded-2xl border border-[#e2e8f0] p-6 shadow-sm mb-8">
           <h3 className="text-xs uppercase tracking-widest font-sans font-bold text-[#8d8db9] mb-4 flex items-center gap-2">

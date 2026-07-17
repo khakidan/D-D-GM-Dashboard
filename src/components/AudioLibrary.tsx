@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Play, Pause, Trash2, X, Music, Volume2, HelpCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { StoredAudioFile } from '../lib/audioFileStore';
 import { STORAGE_KEYS, TIMERS, MOODS, MoodId, campaignKey } from '../lib/constants';
 import { SoundboardSlot } from './Soundboard';
@@ -106,6 +107,7 @@ export function AudioLibrary({
 
       audio.play().catch((err) => {
         console.warn('[Audio Library] Preview play failed:', err);
+        toast.error(`Failed to play preview for "${file.name}": ${err instanceof Error ? err.message : 'Unknown error'}`);
         stopPreview();
       });
 
@@ -115,6 +117,7 @@ export function AudioLibrary({
       }, TIMERS.audioPreviewMs);
     } catch (err) {
       console.error('[Audio Library] Failed to setup preview playback:', err);
+      toast.error(`Failed to setup preview for "${file.name}": ${err instanceof Error ? err.message : 'Unknown error'}`);
       stopPreview();
     }
   };

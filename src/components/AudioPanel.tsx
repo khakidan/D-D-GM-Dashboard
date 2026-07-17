@@ -34,7 +34,7 @@ interface AudioPanelProps {
   assignTrackToMood: (fileId: string, moodId: MoodId) => void;
   unassignTrack: (fileId: string) => void;
   getMoodForTrack: (fileId: string) => MoodId | null;
-  activateMood: (moodId: MoodId, playAmbient: (fileId: string) => void) => void;
+  activateMood: (moodId: MoodId, playAmbient: (fileId: string) => void | Promise<void>) => void;
   resetAllMoods: () => void;
 
   // New Modal Props

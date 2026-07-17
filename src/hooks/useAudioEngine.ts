@@ -170,14 +170,16 @@ export function useAudioEngine(campaignId: string = 'default') {
   async function playAmbient(fileId: string) {
     initAmbient();
     if (!globalAudioContext || !deckA.current || !deckB.current) {
-      console.error('Audio decks could not be initialized');
-      return;
+      const errorMsg = 'Audio decks could not be initialized';
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     const file = globalStoredFiles.find((f) => f.id === fileId);
     if (!file) {
-      console.error(`Ambient track not found for ID: ${fileId}`);
-      return;
+      const errorMsg = `Ambient track not found for ID: ${fileId}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     const incomingDeckName = activeDeck.current === 'A' ? 'B' : 'A';
@@ -213,6 +215,7 @@ export function useAudioEngine(campaignId: string = 'default') {
         await incomingDeck.current.audio.play();
       } catch (err) {
         console.warn('[Ambient audio] failed to start play:', err);
+        throw err;
       }
       
       // Ramp incoming up and outgoing down simultaneously
@@ -330,8 +333,9 @@ export function useAudioEngine(campaignId: string = 'default') {
   async function playEffect(fileId: string) {
     initAudio();
     if (!globalAudioContext) {
-      console.error('AudioContext is not initialized.');
-      return;
+      const errorMsg = 'AudioContext is not initialized.';
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     let audioBuffer = globalEffectCache.get(fileId);
@@ -339,20 +343,21 @@ export function useAudioEngine(campaignId: string = 'default') {
     if (!audioBuffer) {
       const file = globalStoredFiles.find((f) => f.id === fileId);
       if (!file) {
-        console.error(`Effect track not found for ID: ${fileId}`);
-        return;
+        const errorMsg = `Effect track not found for ID: ${fileId}`;
+        console.error(errorMsg);
+        throw new Error(errorMsg);
       }
 
-    try {
-      const arrayBuffer = typeof file.blob.arrayBuffer === 'function'
-        ? await file.blob.arrayBuffer()
-        : new ArrayBuffer(0);
-      audioBuffer = await globalAudioContext.decodeAudioData(arrayBuffer);
-      globalEffectCache.set(fileId, audioBuffer);
-    } catch (err) {
-      console.error('[Audio Engine] error decoding effect audio data:', err);
-      return;
-    }
+      try {
+        const arrayBuffer = typeof file.blob.arrayBuffer === 'function'
+          ? await file.blob.arrayBuffer()
+          : new ArrayBuffer(0);
+        audioBuffer = await globalAudioContext.decodeAudioData(arrayBuffer);
+        globalEffectCache.set(fileId, audioBuffer);
+      } catch (err) {
+        console.error('[Audio Engine] error decoding effect audio data:', err);
+        throw err;
+      }
     }
 
     const sourceNode = globalAudioContext.createBufferSource();

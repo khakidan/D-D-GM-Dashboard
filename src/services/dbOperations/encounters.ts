@@ -14,12 +14,17 @@ import {
   buildCascadeDeleteRequests,
 } from './shared';
 
-export async function deleteEncounterFully(encounterId: string): Promise<void>;
-export async function deleteEncounterFully(spreadsheetId: string | undefined, encounterId: string): Promise<void>;
+export interface DeleteEncounterResult {
+  success: boolean;
+  logsCleanupFailed: boolean;
+}
+
+export async function deleteEncounterFully(encounterId: string): Promise<DeleteEncounterResult>;
+export async function deleteEncounterFully(spreadsheetId: string | undefined, encounterId: string): Promise<DeleteEncounterResult>;
 export async function deleteEncounterFully(
   arg1: string | undefined,
   arg2?: string
-): Promise<void> {
+): Promise<DeleteEncounterResult> {
   let spreadsheetId: string | undefined;
   let encounterId: string;
   if (arg2 === undefined) {
@@ -29,6 +34,8 @@ export async function deleteEncounterFully(
     spreadsheetId = arg1;
     encounterId = arg2;
   }
+
+  let logsCleanupFailed = false;
 
   try {
     const resolvedId = resolveSpreadsheetId(spreadsheetId);
@@ -61,11 +68,14 @@ export async function deleteEncounterFully(
       });
     } catch (err) {
       console.warn('[DB] Failed to cleanup EncounterLogs during encounter deletion:', err);
+      logsCleanupFailed = true;
     }
 
     if (requests.length > 0) {
       await batchUpdateSpreadsheet(resolvedId, requests);
     }
+
+    return { success: true, logsCleanupFailed };
   } catch (err) {
     console.error('[DB] deleteEncounterFully failed:', err);
     throw err;

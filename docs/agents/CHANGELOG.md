@@ -6,6 +6,28 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Error Handling Consistency — 11 Silent-Failure Sites Resolved (2 Stages)
+
+Flagged during the error-handling audit: 11 places where a client-side failure was caught and only logged to console — genuinely silent from the GM's perspective. Investigated per-item first, since some were genuinely low-stakes (a preview sound failing to play) where a toast could be overkill, and others silently corrupted or lost data the GM would want to know about.
+
+**Stage 1 — audio engine and playback (`useAudioEngine.ts`, `useMoodPresets.ts`, `AmbientPlayer.tsx`, `AudioPanel.tsx`, `CommandPalette.tsx`, `Soundboard.tsx`, `AudioLibrary.tsx`).** `playAmbient`/`playEffect` now throw descriptive errors instead of swallowing them, propagating up to whichever UI actually triggered the action.
+
+**A real architectural question got real thought rather than a reflexive "add toast everywhere."** `activateMood` (in `useMoodPresets.ts`) is called from 3 separate places (`AmbientPlayer.tsx`, `CommandPalette.tsx`, `useDashboardShortcuts.ts`'s hotkeys) and internally invokes `playAmbient` synchronously with no `await`. Rather than requiring each of the 3 callers to remember their own `.catch()`, the rejection handling was centralized once inside `activateMood` itself (checking `result instanceof Promise` for backward compatibility), so no caller can forget it.
+
+**2 real gaps were found in the first implementation attempt by reading the actual diffs, not just the description of what was done.** `CommandPalette.tsx`'s direct ambient-track selection (a separate path from the mood-preset flow, bypassing `activateMood` entirely) and `AmbientPlayer.tsx`'s `handleTrackClick` (an `await`ed call inside an async function with no surrounding try/catch, invoked from an `onClick` whose returned promise is never awaited) both had zero error handling and would have produced unhandled promise rejections. Both fixed with explicit handling at their own call sites — while investigating this, an additional uncaught `stopAmbient()` call on the "FADE OUT" button was also found and fixed, beyond what was explicitly asked.
+
+**Stage 2 — `deleteEncounterFully`/`useEncounters.ts` and `useCampaign.ts`/`CampaignSelector.tsx`.** `deleteEncounterFully` now returns `{ success, logsCleanupFailed }` instead of `Promise<void>`. Reasoning for *not* blocking the whole deletion on a cleanup failure: Google Sheets has no real multi-sheet transactions, so treating a secondary `EncounterLogs` cleanup failure as fatal would mean a single sheet glitch permanently bricks the "Delete Encounter" button — worse than proceeding and telling the GM cleanup didn't fully finish. `useEncounters.ts` shows a `toast.warning` only when `logsCleanupFailed` is true; the happy path (successful deletion, successful cleanup) stays exactly as silent as it's always been — a proposed new success toast for that path was correctly identified as scope creep beyond the actual gap and dropped.
+
+`useCampaign.ts` gained a `hasParseError` flag for when saved campaigns fail to parse from localStorage, surfaced as a permanent inline warning card in `CampaignSelector.tsx` rather than an easy-to-miss toast, given this is closer to "your data may be gone" than a transient failure.
+
+**A real style-guide violation was caught and correctly not smoothed over.** The inline warning card was built with hand-rolled `bg-amber-*`/`text-amber-*` classes initially — directly re-introducing the exact forbidden legacy palette already queued up for removal elsewhere in the app (see the Phase 3 findings entry). Corrected to reuse the existing shared `Callout` component instead of inventing new amber styling. Checking further revealed `Callout.tsx` itself already uses the forbidden amber palette for its `warning` severity — missed by the original Phase 3 style audit. This wasn't silently left alone: `Callout.tsx` has been added to the Phase 3 backlog in `ROADMAP.md`, flagged as worth prioritizing there given how many other places already depend on it for their own warning styling.
+
+**A test that claimed to verify behavior it didn't actually check was caught before acceptance.** An initial version of a new test named "shows warning toast if `deleteEncounterFully` returns `logsCleanupFailed: true`" only asserted that `deleteEncounterFully` was called with the right ID — something an existing, different test already covered — without ever checking that a toast actually fired. Corrected to mock `sonner` properly and assert `toast.warning` was genuinely called with the expected content.
+
+Verified: every diff reviewed directly against the real files at each stage, not just the accompanying description. Real, complete test batches run throughout — Batch 1 (55/55), Batch 2/EncountersTab (24/24), Batch 3/top-level components (22/22) for Stage 2; Batch 3/hooks (53/53) and Batch 7B-1 (13/13) for Stage 1 — all matching documented baselines plus the genuinely new tests added, with a clean `tsc -p tsconfig.build.json --noEmit` throughout.
+
+---
+
 ## 6 Magic-Number Timeouts Replaced with Named `TIMERS` Constants (Plus a Second Dead-Code Find)
 
 Flagged during the code-smells audit: 6 `setTimeout` calls used raw numeric literals instead of the already-established `TIMERS` constants object — `AuthRelay.tsx`/`EncounterLogDetails.tsx` (2000ms, identical "copied" feedback purpose), `EncounterCard.tsx` (3000ms), `useCombatSync.ts` (5000ms), `AnimatedHpDisplay.tsx` (500ms), `useSheetSync.ts` (800ms).

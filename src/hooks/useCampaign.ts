@@ -53,10 +53,39 @@ function getActiveCampaignFromUrl(): Campaign | null {
 }
 
 export function useCampaign() {
-  const [campaigns, setCampaigns] = useState<Campaign[]>(loadCampaigns);
+  const [hasParseError, setHasParseError] = useState(false);
+  const [campaigns, setCampaigns] = useState<Campaign[]>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.campaigns);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        return parsed as Campaign[];
+      }
+      throw new Error('Stored campaigns is not an array');
+    } catch (err) {
+      console.error('[useCampaign] Error parsing campaigns from localStorage:', err);
+      return [];
+    }
+  });
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(getActiveCampaignFromUrl);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check for parse error on initial mount
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.campaigns);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (!Array.isArray(parsed)) {
+          setHasParseError(true);
+        }
+      }
+    } catch (err) {
+      setHasParseError(true);
+    }
+  }, []);
 
   useEffect(() => {
     // Sync on initial mount in case the URL has a campaign parameter
@@ -226,6 +255,7 @@ export function useCampaign() {
     activeCampaign,
     isLoading,
     error,
+    hasParseError,
     createCampaign,
     connectCampaign,
     openCampaign,

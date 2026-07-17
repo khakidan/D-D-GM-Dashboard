@@ -46,8 +46,9 @@ describe('deleteEncounterFully — cascade delete', () => {
       return { values: [] };
     });
 
-    await deleteEncounterFully('enc-1');
+    const result = await deleteEncounterFully('enc-1');
 
+    expect(result).toEqual({ success: true, logsCleanupFailed: false });
     expect(sheetsService.batchUpdateSpreadsheet).toHaveBeenCalled();
     const batchUpdateCall = vi.mocked(sheetsService.batchUpdateSpreadsheet).mock.calls[0];
     const requests = batchUpdateCall[1] as sheetsService.DeleteDimensionRequest[];
@@ -79,7 +80,9 @@ describe('deleteEncounterFully — cascade delete', () => {
       return { values: [] };
     });
 
-    await deleteEncounterFully('enc-1');
+    const result = await deleteEncounterFully('enc-1');
+
+    expect(result).toEqual({ success: true, logsCleanupFailed: true });
 
     // Should still have been called for Encounters and Encounter_Combatants
     expect(sheetsService.batchUpdateSpreadsheet).toHaveBeenCalled();
@@ -113,7 +116,9 @@ describe('deleteEncounterFully — cascade delete', () => {
       return { values: [] };
     });
 
-    await deleteEncounterFully('enc-1');
+    const result = await deleteEncounterFully('enc-1');
+
+    expect(result).toEqual({ success: true, logsCleanupFailed: false });
 
     expect(sheetsService.batchUpdateSpreadsheet).toHaveBeenCalled();
     const batchUpdateCall = vi.mocked(sheetsService.batchUpdateSpreadsheet).mock.calls[0];

@@ -71,6 +71,7 @@ function AppContent() {
                 campaigns={campaignState.campaigns}
                 isLoading={campaignState.isLoading}
                 error={campaignState.error}
+                hasParseError={campaignState.hasParseError}
                 onCreateCampaign={campaignState.createCampaign}
                 onConnectCampaign={campaignState.connectCampaign}
                 onOpenCampaign={campaignState.openCampaign}

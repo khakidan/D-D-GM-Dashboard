@@ -172,4 +172,16 @@ describe('useCampaign Tests', () => {
     expect(consoleErrorSpy).not.toHaveBeenCalled();
     consoleErrorSpy.mockRestore();
   });
+
+  it('sets hasParseError to true if campaigns in localStorage are invalid JSON or not an array', () => {
+    localStorage.setItem(STORAGE_KEYS.campaigns, 'not-valid-json{');
+    const { result } = renderHook(() => useCampaign());
+    expect(result.current.hasParseError).toBe(true);
+  });
+
+  it('sets hasParseError to false if campaigns in localStorage are valid array JSON', () => {
+    localStorage.setItem(STORAGE_KEYS.campaigns, JSON.stringify([]));
+    const { result } = renderHook(() => useCampaign());
+    expect(result.current.hasParseError).toBe(false);
+  });
 });

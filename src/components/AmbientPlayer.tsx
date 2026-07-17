@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Play, Pause, Volume, Volume2, Music, Square } from 'lucide-react';
+import { toast } from 'sonner';
 import { StoredAudioFile } from '../lib/audioFileStore';
 import { MOODS, MoodId } from '../lib/constants';
 
@@ -19,7 +20,7 @@ interface AmbientPlayerProps {
   activeMood?: MoodId | null;
   setActiveMood?: (mood: MoodId | null) => void;
   assignments?: Record<MoodId, string | null>;
-  activateMood?: (moodId: MoodId, playAmbient: (fileId: string) => void) => void;
+  activateMood?: (moodId: MoodId, playAmbient: (fileId: string) => void | Promise<void>) => void;
   getMoodForTrack?: (fileId: string) => MoodId | null;
 }
 
@@ -85,15 +86,27 @@ export function AmbientPlayer({
   }, [currentAmbientId, isAmbientPlaying, getMoodForTrack, setActiveMood]);
 
   const handleTrackClick = async (trackId: string) => {
+    const track = ambientTracks.find((t) => t.id === trackId);
+    const trackLabel = track ? track.name : 'Unknown Track';
     if (currentAmbientId === trackId && isAmbientPlaying) {
       // Just stopping shouldn't affect mood if we want to allow re-trigger
-      await stopAmbient();
+      try {
+        await stopAmbient();
+      } catch (err) {
+        console.error(`[Audio Engine] Failed to stop ambient track "${trackLabel}":`, err);
+        toast.error(`Failed to stop ambient track: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
       setActiveMood(null);
     } else {
       // Crossfade logic internally inside audioEngine
-      await playAmbient(trackId);
-      const trackMoodId = getMoodForTrack(trackId);
-      setActiveMood(trackMoodId);
+      try {
+        await playAmbient(trackId);
+        const trackMoodId = getMoodForTrack(trackId);
+        setActiveMood(trackMoodId);
+      } catch (err) {
+        console.error(`[Audio Engine] Failed to play ambient track "${trackLabel}":`, err);
+        toast.error(`Failed to play ambient track "${trackLabel}": ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
     }
   };
 
@@ -113,7 +126,12 @@ export function AmbientPlayer({
         {isAmbientPlaying && (
           <button
             id="btn-fade-out"
-            onClick={() => stopAmbient()}
+            onClick={() => {
+              stopAmbient().catch(err => {
+                console.error('[Audio Engine] Failed to stop ambient playback:', err);
+                toast.error('Failed to stop ambient playback');
+              });
+            }}
             className="flex items-center gap-1.5 px-3 py-1 bg-red-50 border border-red-200 hover:bg-red-100 text-red-700 font-sans font-bold text-xs rounded transition-all cursor-pointer"
           >
             <Square className="w-3.5 h-3.5 fill-red-700" />

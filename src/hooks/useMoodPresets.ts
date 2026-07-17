@@ -89,15 +89,26 @@ export function useMoodPresets(campaignId: string = 'default') {
     return null;
   }, [assignments]);
 
-  const activateMood = useCallback((moodId: MoodId, playAmbient: (fileId: string) => void) => {
+  const activateMood = useCallback((moodId: MoodId, playAmbient: (fileId: string) => void | Promise<void>) => {
     const track = assignments[moodId];
+    const moodLabel = MOODS.find(m => m.id === moodId)?.label || moodId;
     if (!track) {
-      const moodLabel = MOODS.find(m => m.id === moodId)?.label || moodId;
       toast(`No tracks assigned to ${moodLabel}. Open the Audio Library to assign one.`);
       return;
     }
     // Activate a mood — plays its assigned track via playAmbient
-    playAmbient(track);
+    try {
+      const res = playAmbient(track);
+      if (res instanceof Promise) {
+        res.catch(err => {
+          console.error(`[Audio Engine] Failed to activate mood "${moodLabel}":`, err);
+          toast.error(`Failed to activate mood "${moodLabel}": ${err instanceof Error ? err.message : 'Unknown error'}`);
+        });
+      }
+    } catch (err) {
+      console.error(`[Audio Engine] Failed to activate mood "${moodLabel}":`, err);
+      toast.error(`Failed to activate mood "${moodLabel}": ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
     setActiveMood(moodId);
   }, [assignments]);
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { VolumeX, Plus, Edit2, Play, Trash2, Music } from 'lucide-react';
+import { toast } from 'sonner';
 import { StoredAudioFile } from '../lib/audioFileStore';
 import { STORAGE_KEYS, campaignKey } from '../lib/constants';
 import { DialogShell } from './ui/DialogShell';
@@ -80,7 +81,8 @@ export function Soundboard({ storedFiles, playEffect, onSwitchTab, campaignId }:
 
       await playEffect(slot.fileId);
     } catch (err) {
-      console.error('Failed to play effect from slot:', err);
+      console.error(`[Audio Engine] Failed to play effect "${slot.label}":`, err);
+      toast.error(`Failed to play effect "${slot.label}": ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 

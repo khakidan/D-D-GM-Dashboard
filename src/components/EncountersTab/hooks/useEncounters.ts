@@ -83,7 +83,10 @@ export function useEncounters({ onSelectEncounter, onSyncRequested }: UseEncount
     toast.success(`${enc.name || 'Encounter'} deleted.`);
 
     try {
-      await deleteEncounterFully(enc.id);
+      const result = await deleteEncounterFully(enc.id);
+      if (result && result.logsCleanupFailed) {
+        toast.warning(`Encounter "${enc.name || 'Encounter'}" deleted, but associated combat logs failed to clean up.`);
+      }
       onSyncRequested?.()?.catch(console.error);
     } catch (error) {
       // 4a. Roll back to snapshot on failure

@@ -24,26 +24,11 @@ None currently open.
 - `ShortRestDialog.tsx`: `border-amber-200/50` — `STYLE_GUIDE.md` explicitly forbids any `bg-amber-`/`text-amber-*` usage.
 - `CharacterCardExpanded.tsx`: `text-[#20201a]`, an old warm-palette near-black.
 - `MultiTargetActionPanel.tsx`, `Badge.tsx`, `ResourcePoolManager.tsx`, `PipTracker.tsx`: residual amber variants.
+- `Callout.tsx`: its `severity="warning"` variant uses `bg-amber-50 border-amber-200 text-amber-800`/`text-amber-500` internally — missed by the original audit, found later while reusing this shared component elsewhere. Worth prioritizing in this list given it's a shared component multiple other places already depend on for their own warning styling.
 
 Not yet fixed — this needs a real, careful pass (confirm each instance directly against the file, not just this list, before changing anything) given the number of files involved.
 
 **Adjacent finding, technically duplication rather than a new category**: `useCombatTurn.ts` still uses raw `.split(',').map(s => s.trim())...` condition-parsing — the exact pattern `parseCommaSeparatedList()` was built to replace earlier this session. (`useCombatantMutations.ts`'s instances of this same gap were fixed as part of its `updateCombatant` god-function decomposition — see `CHANGELOG.md`.)
-
-**"Error handling consistency" — investigated, real findings ready to act on.** 3 genuinely different patterns are in use for surfacing client-side async failures to the GM: `toast.error(...)` (the documented canonical pattern), local state rendered inline in the UI (also legitimate — confirmed genuinely wired through in `useCampaign.ts` → `CampaignSelector.tsx`, `useEncounterLogs.ts` → `EncounterLogModal.tsx`, and `useSheetSync.ts`'s `syncError` → `SyncingOverlay.tsx`/`SyncStatusIndicators.tsx`), and — the real problem — **console-only, genuinely silent**, confirmed in 11 places:
-
-- `AudioLibrary.tsx:116` — preview playback setup failure (recovers via `stopPreview()`, but no message)
-- `AudioLibrary.tsx:156` — cascading sound-removal layout update failure
-- `EncountersTab.tsx:40` — loading encounter logs for the "completed" check
-- `Soundboard.tsx:82` — playing a sound effect from a slot
-- `useMoodPresets.ts:32` — loading mood presets from localStorage
-- `useAudioEngine.ts:214` — ambient audio failing to start
-- `useAudioEngine.ts:352` — decoding sound-effect audio data
-- `dashboardStore.ts:274` — cross-tab sync (BroadcastChannel/storage event)
-- `useCampaign.ts:40` — parsing saved campaigns from localStorage
-- `combatantBuilder.ts:206` — parsing an NPC's recharge-state JSON (synchronous, not async, but the same silent pattern)
-- `dbOperations/encounters.ts`'s `deleteEncounterFully` — the most consequential one: an inner catch swallows a failure while cleaning up `EncounterLogs` rows during encounter deletion, and the outer function proceeds with the main deletion regardless, leaving orphaned log rows with no indication to the GM that cleanup didn't finish
-
-The service layer (`dbOperations/*.ts`, `sheetsService.ts`, `googleAuth.ts`) is otherwise almost perfectly consistent — 25 of 26 catch blocks there correctly log-and-rethrow, leaving the UI decision to the calling hook; the `deleteEncounterFully` case above is the one exception. Not yet fixed.
 
 **Other future audit categories, discussed but not yet started** — beyond bug-hunting, componentization, and the findings above, a professional React/TypeScript codebase review typically also covers:
 

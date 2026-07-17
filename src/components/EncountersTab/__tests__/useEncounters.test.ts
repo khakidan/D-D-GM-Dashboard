@@ -1,12 +1,21 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { toast } from 'sonner';
 import { useEncounters } from '../hooks/useEncounters';
 import { useAppState, getSnapshot } from '../../../hooks/useAppState';
 import { addEncounterDB, deleteEncounterFully, updateEncounterDB } from '../../../services/dbOperations';
 
+vi.mock('sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+  },
+}));
+
 vi.mock('../../../services/dbOperations', () => ({
   addEncounterDB: vi.fn().mockResolvedValue({ id: 'real-enc-1', name: 'Goblin Ambush', location: 'Woods', difficultyId: 2, status: 'planned', difficultyName: 'Medium' }),
-  deleteEncounterFully: vi.fn().mockResolvedValue(undefined),
+  deleteEncounterFully: vi.fn().mockResolvedValue({ success: true, logsCleanupFailed: false }),
   updateEncounterDB: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -247,5 +256,48 @@ describe('useEncounters', () => {
     const restoredState = typeof lastCall === 'function' ? lastCall(initialState) : lastCall;
 
     expect(restoredState).toEqual(initialState);
+  });
+
+  it('shows warning toast if deleteEncounterFully returns logsCleanupFailed: true', async () => {
+    const mockEnc = {
+      id: 'enc-1',
+      name: 'Goblin Ambush',
+      location: 'Woods',
+      difficultyId: 2,
+    };
+
+    const initialState = {
+      encounters: [mockEnc],
+      encounterCombatants: [],
+    };
+
+    // Make deleteEncounterFully resolve with logsCleanupFailed: true
+    vi.mocked(deleteEncounterFully).mockResolvedValueOnce({
+      success: true,
+      logsCleanupFailed: true,
+    });
+
+    const updateStateSpy = vi.fn();
+    vi.mocked(useAppState).mockReturnValue({
+      state: initialState as any,
+      updateState: updateStateSpy,
+      getSnapshot: vi.fn(),
+    } as any);
+
+    const { result } = renderHook(() =>
+      useEncounters({
+        onSelectEncounter: vi.fn(),
+        onSyncRequested: vi.fn(),
+      })
+    );
+
+    await act(async () => {
+      await result.current.handleDelete(mockEnc as any);
+    });
+
+    expect(deleteEncounterFully).toHaveBeenCalledWith('enc-1');
+    expect(toast.warning).toHaveBeenCalledWith(
+      expect.stringContaining('Goblin Ambush')
+    );
   });
 });
