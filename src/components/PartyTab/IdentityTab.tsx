@@ -30,7 +30,7 @@ export function IdentityTab({
           onChange={e => onChange('playerName', e.target.value)}
           placeholder="e.g. Sarah"
           required
-          className="w-full bg-white border border-stone-200 rounded-lg px-4 py-2 text-sm text-stone-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-all placeholder:text-stone-400 shadow-sm"
+          className="w-full bg-white border border-[#e2e8f0] rounded-lg px-4 py-2 text-sm text-[#0f172a] focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/30 outline-none transition-all placeholder:text-[#8d8db9] shadow-sm"
         />
       </LabeledField>
       <LabeledField label="Character Name" htmlFor="character-name" size="default">
@@ -41,7 +41,7 @@ export function IdentityTab({
           onChange={e => onChange('characterName', e.target.value)}
           placeholder="e.g. Drogar"
           required
-          className="w-full bg-white border border-stone-200 rounded-lg px-4 py-2 text-sm text-stone-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-all placeholder:text-stone-400 shadow-sm"
+          className="w-full bg-white border border-[#e2e8f0] rounded-lg px-4 py-2 text-sm text-[#0f172a] focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/30 outline-none transition-all placeholder:text-[#8d8db9] shadow-sm"
         />
       </LabeledField>
       <LabeledField label="Class" htmlFor="char-class" size="default">
@@ -51,9 +51,9 @@ export function IdentityTab({
           value={characterClass}
           onChange={e => onChange('class', e.target.value)}
           placeholder="e.g. Barbarian, Monk, Vitalist"
-          className="w-full bg-white border border-stone-200 rounded-lg px-4 py-2 text-sm text-stone-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-all placeholder:text-stone-400 shadow-sm"
+          className="w-full bg-white border border-[#e2e8f0] rounded-lg px-4 py-2 text-sm text-[#0f172a] focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/30 outline-none transition-all placeholder:text-[#8d8db9] shadow-sm"
         />
-        <p className="text-xs text-stone-500 mt-1">
+        <p className="text-xs text-[#8d8db9] mt-1">
           Used to suggest starting resources on the Resources tab
         </p>
       </LabeledField>
@@ -66,7 +66,7 @@ export function IdentityTab({
             max="20"
             value={level}
             onChange={e => onChange('level', parseInt(e.target.value) || 1)}
-            className="w-full bg-white border border-stone-200 rounded-lg px-4 py-2 text-sm text-stone-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-all shadow-sm"
+            className="w-full bg-white border border-[#e2e8f0] rounded-lg px-4 py-2 text-sm text-[#0f172a] focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/30 outline-none transition-all shadow-sm"
           />
         </LabeledField>
         <LabeledField label="Status" htmlFor="char-status" size="default">
@@ -74,7 +74,7 @@ export function IdentityTab({
             id="char-status"
             value={statusId}
             onChange={e => onChange('statusId', parseInt(e.target.value))}
-            className="w-full bg-white border border-stone-200 rounded-lg px-4 py-2 text-sm text-stone-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-all appearance-none cursor-pointer shadow-sm"
+            className="w-full bg-white border border-[#e2e8f0] rounded-lg px-4 py-2 text-sm text-[#0f172a] focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/30 outline-none transition-all appearance-none cursor-pointer shadow-sm"
           >
             {Object.entries(statuses)
               .sort(([a], [b]) => Number(a) - Number(b))

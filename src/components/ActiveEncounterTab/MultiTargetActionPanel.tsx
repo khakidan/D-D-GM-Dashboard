@@ -56,11 +56,11 @@ export const MultiTargetActionPanel: React.FC<MultiTargetActionPanelProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#faf8f5] border-b border-[#e2e8f0] p-5 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+    <div className="w-full bg-[#f8fafc] border-b border-[#e2e8f0] p-5 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
       {/* Header Row */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center border border-amber-200 text-amber-900 text-xl font-bold font-mono">
+          <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center border border-blue-200 text-blue-900 text-xl font-bold font-mono">
             {selectedCount}
           </div>
           <div>
@@ -96,13 +96,13 @@ export const MultiTargetActionPanel: React.FC<MultiTargetActionPanelProps> = ({
                 disabled={isGlobalDisabled}
                 onChange={(e) => setDamageAmount(e.target.value)}
                 placeholder="Amt"
-                className="w-16 h-8 bg-stone-50 border border-[#e2e8f0] rounded-lg px-2 text-center text-xs font-bold outline-none focus:border-red-500 disabled:opacity-50"
+                className="w-16 h-8 bg-white border border-[#e2e8f0] rounded-lg px-2 text-center text-xs font-bold outline-none focus:border-red-500 disabled:opacity-50"
               />
               <select
                 value={damageType}
                 disabled={isGlobalDisabled}
                 onChange={(e) => setDamageType(e.target.value as DamageType | '')}
-                className="flex-1 h-8 bg-stone-50 border border-[#e2e8f0] rounded-lg px-2 text-xs font-serif font-bold cursor-pointer outline-none focus:border-red-500 disabled:opacity-50"
+                className="flex-1 h-8 bg-white border border-[#e2e8f0] rounded-lg px-2 text-xs font-serif font-bold cursor-pointer outline-none focus:border-red-500 disabled:opacity-50"
               >
                 <option value="">Type</option>
                 {DAMAGE_TYPE_OPTIONS.map((type) => (
@@ -135,7 +135,7 @@ export const MultiTargetActionPanel: React.FC<MultiTargetActionPanelProps> = ({
               disabled={isGlobalDisabled}
               onChange={(e) => setHealAmount(e.target.value)}
               placeholder="Amount"
-              className="w-full h-8 bg-stone-50 border border-[#e2e8f0] rounded-lg px-2 text-xs font-bold outline-none focus:border-green-500 disabled:opacity-50"
+              className="w-full h-8 bg-white border border-[#e2e8f0] rounded-lg px-2 text-xs font-bold outline-none focus:border-green-500 disabled:opacity-50"
             />
           </div>
           <button
@@ -160,7 +160,7 @@ export const MultiTargetActionPanel: React.FC<MultiTargetActionPanelProps> = ({
               disabled={isGlobalDisabled}
               onChange={(e) => setConditionName(e.target.value)}
               placeholder="e.g. Paralyzed"
-              className="w-full h-8 bg-stone-50 border border-[#e2e8f0] rounded-lg px-2 text-xs outline-none focus:border-[#2563eb] disabled:opacity-50 italic"
+              className="w-full h-8 bg-white border border-[#e2e8f0] rounded-lg px-2 text-xs outline-none focus:border-[#2563eb] disabled:opacity-50 italic"
             />
           </div>
           <button

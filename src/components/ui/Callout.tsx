@@ -12,7 +12,7 @@ export function Callout({ severity, children, className, ...props }: CalloutProp
 
   const severityStyles = {
     error: "bg-red-50 border border-red-100 p-4 gap-3 text-red-800 text-sm shadow-sm",
-    warning: "bg-[#f9f8ff] border border-amber-200 p-3.5 gap-2.5 text-amber-800 text-xs",
+    warning: "bg-[#f9f8ff] border border-blue-200 p-3.5 gap-2.5 text-blue-900 text-xs",
     // UNVALIDATED PLACEHOLDER: No real instance of 'info' severity exists yet in the codebase.
     // Implemented for completeness to align with STYLE_GUIDE.md design specs.
     info: "bg-blue-50 border border-blue-200 p-3.5 gap-2.5 text-blue-800 text-xs",

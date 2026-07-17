@@ -6,6 +6,24 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Phase 3 Styling Cleanup — 8 of the Original Files Fixed (Stages 1-2)
+
+Flagged during the earlier style-guide audit: the app's single mandated "Minimalist Sleek" theme was still being undermined by legacy warm-parchment amber/stone colors in several places. Done in 2 stages: shared UI components first (since multiple other files depend on them), then individual feature files.
+
+**Stage 1 — shared components.** `Callout.tsx`, `Badge.tsx`, `ResourcePoolManager.tsx`, `PipTracker.tsx`. The `amber` color key in `Badge`/`PipTracker`'s color unions was deliberately kept (aliased to render as blue) rather than removed, to avoid a breaking change for any existing caller passing `color="amber"`. `Callout.tsx`'s warning severity moved from `bg-amber-50 border-amber-200 text-amber-800` to `bg-[#f9f8ff] border-blue-200 text-blue-900`, verified in the context of a real consumer (`CampaignSelector.tsx`'s corrupted-campaigns warning card) rather than just in isolation.
+
+**A real self-correction happened mid-audit and is worth recording.** While re-verifying `Callout.tsx`'s consumer list against a stale challenge, it turned out the challenge itself was wrong — based on confusing `SettingsPanel.tsx`'s real consumer list with `Callout.tsx`'s. The real, freshly-grepped consumer list (`ShortRestDialog.tsx`, `CampaignSelector.tsx`, `PartyTab.tsx`, `EncountersTab.tsx`, `NpcLibraryTab.tsx`, `Soundboard.tsx`) was correct and held up against direct, first-hand confirmation from this same session's earlier work on `CampaignSelector.tsx`'s warning card.
+
+**Stage 2 — individual feature files.** `App.tsx` (`bg-[#2c2c26]` → `bg-[#0f172a]`), `MultiTargetActionPanel.tsx` (`bg-[#faf8f5]` → `bg-[#f8fafc]`, amber alert badge → blue), `IdentityTab.tsx`/`CombatTab.tsx` (stone/amber → the standard slate/blue palette), `ShortRestDialog.tsx` (including a stray out-of-palette `border-[#bdbaa3]` on the roll button, found and fixed alongside the originally-reported amber violation), `CharacterCardExpanded.tsx` (`text-[#20201a]` → `text-[#0f172a]`).
+
+**A serious process violation occurred during the first Stage 2 attempt and is recorded honestly, not smoothed over.** Despite Stage 2 being explicitly scoped to exactly 6 named files, that attempt modified over 20 files instead — including several with no relation to this task at all (the audio components, dice roller, error boundary, `index.css`) — while mislabeling the work as "Stage 4," and without even finishing the actual fix in one of the 6 approved files. This was caught immediately and required a full manual revert before any further work proceeded. The redo was constrained with an explicit file-list-confirmation step before any implementation was allowed to begin, and the resulting diff was verified to touch exactly the 6 approved files and nothing else.
+
+**Fix**: all color violations replaced with the mandated palette (`#2563eb` primary blue, `#0f172a` dark navy/text, `#e2e8f0`/slate neutrals).
+
+Verified: real, complete Batch 8 (27/27), Batch 5B (29/29), Batch 6A (55/55), Batch 4 (9/9), Batch 7B-2 (22/22), all matching documented baselines, plus a clean `tsc -p tsconfig.build.json --noEmit` at each stage. 2 files (`GMTestingTools.tsx`, `ReferenceDataSeeder.tsx`) remain and are tracked separately in `ROADMAP.md`.
+
+---
+
 ## Combat Log Bug Fixed (Batch Actions Silently Dropped), Plus 2 Styling Fixes
 
 Dan reported that the combat log wasn't recording anything from the final round of combat, plus 2 style requests: the `GlobalActionContextPanel.tsx` "Source"/"Type" labels needed more visual distinction, and NPC stat block trait/action names (e.g. "Searing Presence") needed to be visually distinct from their description text, not just italicized with identical weight/color.

@@ -18,15 +18,11 @@ None currently open.
 
 **Full Codebase Audit (bugs → componentization → UI uniformity).** Comprehensive pass for logic errors/bugs, oversized files needing decomposition, and UI/UX uniformity closer to established D&D apps (D&D Beyond, Roll20 conventions). Phase 3 (UI uniformity) has a concrete starting point now (see below) but has not yet been worked.
 
-**Phase 3 starting point — real, evidenced `STYLE_GUIDE.md` violations, confirmed directly against real line numbers and class names.** The app's single mandated theme is "Minimalist Sleek" (`STYLE_GUIDE.md` explicitly forbids the old "warm parchment" palette by name and hex code), but that legacy palette is still actively in use in multiple places:
-- `NewPlayerDialog.tsx`'s sub-tabs (`IdentityTab.tsx`, `CombatTab.tsx`): `border-stone-200`, `text-stone-800`, `focus:border-amber-400`/`focus:ring-amber-400` on inputs — should be the mandated `focus:border-[#2563eb]`.
-- `App.tsx`: the "Authenticating..." loading screen still uses `bg-[#2c2c26]`, the old dark "Stone" charcoal.
-- `ShortRestDialog.tsx`: `border-amber-200/50` — `STYLE_GUIDE.md` explicitly forbids any `bg-amber-`/`text-amber-*` usage.
-- `CharacterCardExpanded.tsx`: `text-[#20201a]`, an old warm-palette near-black.
-- `MultiTargetActionPanel.tsx`, `Badge.tsx`, `ResourcePoolManager.tsx`, `PipTracker.tsx`: residual amber variants.
-- `Callout.tsx`: its `severity="warning"` variant uses `bg-amber-50 border-amber-200 text-amber-800`/`text-amber-500` internally — missed by the original audit, found later while reusing this shared component elsewhere. Worth prioritizing in this list given it's a shared component multiple other places already depend on for their own warning styling.
+**Phase 3 remainder — 2 files left from the original `STYLE_GUIDE.md` violations audit.** All 8 originally-identified files/instances (`NewPlayerDialog.tsx`'s sub-tabs, `App.tsx`, `ShortRestDialog.tsx`, `CharacterCardExpanded.tsx`, `MultiTargetActionPanel.tsx`, `Badge.tsx`, `ResourcePoolManager.tsx`, `PipTracker.tsx`, `Callout.tsx`) have been fixed — see `CHANGELOG.md`. 2 files surfaced during the later theme-compliance audit remain:
+- `GMTestingTools.tsx`: `border-amber-300`/`hover:bg-amber-100` on the "Test Initiative Animation" button — should be the mandated `border-[#2563eb]`.
+- `ReferenceDataSeeder.tsx`: `text-stone-400` — should be the mandated neutral slate equivalent.
 
-Not yet fixed — this needs a real, careful pass (confirm each instance directly against the file, not just this list, before changing anything) given the number of files involved.
+Not yet fixed — confirm each instance directly against the real file before changing anything, given a prior implementation attempt for this audit went badly out of scope and had to be fully reverted.
 
 **Other future audit categories, discussed but not yet started** — beyond bug-hunting, componentization, and the findings above, a professional React/TypeScript codebase review typically also covers:
 

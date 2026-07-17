@@ -106,7 +106,7 @@ export default function App() {
 
   if (isCapturing) {
     return (
-      <div className="fixed inset-0 bg-[#2c2c26] flex items-center justify-center">
+      <div className="fixed inset-0 bg-[#0f172a] flex items-center justify-center">
         <div className="text-white font-sans animate-pulse">Authenticating...</div>
       </div>
     );

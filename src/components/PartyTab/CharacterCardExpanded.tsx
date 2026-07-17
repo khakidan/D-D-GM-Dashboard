@@ -207,7 +207,7 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                 return (
                   <div key={pool.die} className="flex items-center justify-between text-xs py-1 px-1 border-b border-[#ffffff]/50 last:border-b-0" id={`pool-display-d${pool.die}`}>
                     <div className="flex items-center gap-2">
-                      <span className="font-serif font-bold text-[#20201a] inline-block bg-[#f9f8ff] px-1.5 py-0.5 rounded text-[10px]">
+                      <span className="font-serif font-bold text-[#0f172a] inline-block bg-[#f9f8ff] px-1.5 py-0.5 rounded text-[10px]">
                         d{pool.die}
                       </span>
                       <span className="font-mono text-[#8d8db9]">

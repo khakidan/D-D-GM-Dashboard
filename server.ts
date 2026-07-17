@@ -1,7 +1,6 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { createServer as createViteServer } from "vite";
 import morgan from "morgan";
 import healthRouter from './src/server/routes/health';
 import authRouter from './src/server/routes/auth';
@@ -39,13 +38,16 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.resolve(process.cwd(), 'dist');
+    // In production, the bundled server lives in dist/server.cjs
+    // So __dirname is dist/.
+    const distPath = path.resolve(__dirname);
     console.log('[Server] Production mode: Serving static files from', distPath);
     
     // Explicitly serve index.html for the root to be safe

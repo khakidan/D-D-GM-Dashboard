@@ -254,7 +254,7 @@ export function ShortRestDialog({ isOpen, characters, onConfirm, onClose }: Shor
                     isDeceased
                       ? 'bg-gray-50/50 opacity-40 cursor-not-allowed'
                       : isChecked
-                        ? 'bg-[#f0f7ff] hover:bg-[#f0f7ff]/80'
+                        ? 'bg-[#f9f8ff] hover:bg-[#f9f8ff]/80'
                         : 'bg-gray-50/50 opacity-60'
                   }`}
                   id={`short-rest-header-${char.id}`}
@@ -377,7 +377,7 @@ export function ShortRestDialog({ isOpen, characters, onConfirm, onClose }: Shor
                                   <button
                                     type="button"
                                     onClick={() => handleRollDice(char.id, char.characterName, pool.die)}
-                                    className="text-xs flex items-center gap-1 py-1.5 px-3 border border-[#bdbaa3] text-[#8d8db9] hover:text-[#0f172a] hover:bg-gray-100 rounded-lg transition-all"
+                                    className="text-xs flex items-center gap-1 py-1.5 px-3 border border-[#e2e8f0] text-[#8d8db9] hover:text-[#0f172a] hover:bg-gray-100 rounded-lg transition-all"
                                     id={`btn-roll-d${pool.die}-${char.id}`}
                                   >
                                     <RefreshCw className="w-3.5 h-3.5" />
@@ -386,7 +386,7 @@ export function ShortRestDialog({ isOpen, characters, onConfirm, onClose }: Shor
 
                                   {/* Inline Roll Result Indicator */}
                                   {lastRollResult !== null && (
-                                    <span className="text-xs bg-[#f9f8ff] text-[#567eff] font-mono font-bold px-2 py-0.5 rounded border border-amber-200/50">
+                                    <span className="text-xs bg-[#f9f8ff] text-[#567eff] font-mono font-bold px-2 py-0.5 rounded border border-[#c0d4ff]">
                                       Rolled {lastRollResult}
                                     </span>
                                   )}

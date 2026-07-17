@@ -23,7 +23,7 @@ const filledStyles: Record<BadgeProps['color'], string> = {
   red: 'bg-red-500 border-red-500',
   purple: 'bg-purple-500 border-purple-500',
   emerald: 'bg-emerald-500 border-emerald-500',
-  amber: 'bg-amber-500 border-amber-500',
+  amber: 'bg-blue-500 border-blue-500',
   blue: 'bg-blue-500 border-blue-500',
 };
 
@@ -37,7 +37,7 @@ const emptyStyles: Record<BadgeProps['color'], string> = {
   red: 'bg-red-50 border-red-200 hover:bg-red-100',
   purple: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
   emerald: 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100',
-  amber: 'bg-amber-50 border-amber-200 hover:bg-amber-100',
+  amber: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
   blue: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
 };
 
