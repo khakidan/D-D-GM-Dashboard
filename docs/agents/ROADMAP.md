@@ -28,8 +28,6 @@ None currently open.
 
 Not yet fixed — this needs a real, careful pass (confirm each instance directly against the file, not just this list, before changing anything) given the number of files involved.
 
-**Adjacent finding, technically duplication rather than a new category**: `useCombatTurn.ts` still uses raw `.split(',').map(s => s.trim())...` condition-parsing — the exact pattern `parseCommaSeparatedList()` was built to replace earlier this session. (`useCombatantMutations.ts`'s instances of this same gap were fixed as part of its `updateCombatant` god-function decomposition — see `CHANGELOG.md`.)
-
 **Other future audit categories, discussed but not yet started** — beyond bug-hunting, componentization, and the findings above, a professional React/TypeScript codebase review typically also covers:
 
 - **Type safety** — a systematic sweep for `any`/unsafe type casts, missing null checks, and places where TypeScript's strictness is being worked around rather than honored.

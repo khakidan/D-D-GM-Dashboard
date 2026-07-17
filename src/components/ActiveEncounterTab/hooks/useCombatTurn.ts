@@ -4,6 +4,7 @@ import { useDashboardStore } from '../../../hooks/dashboardStore';
 import { updateEncounterStateDB } from '../../../services/dbOperations';
 import { getNextActiveTurnIndex, getExpiredConditions } from '../../../lib/combatLogic';
 import { buildConditionSummary, CONCENTRATION_EFFECTS } from '../../../lib/conditions';
+import { parseCommaSeparatedList } from '../../../lib/stringUtils';
 import { toast } from 'sonner';
 import { useDeathSaves } from '../../../hooks/useDeathSaves';
 import { Combatant } from '../../../types';
@@ -165,10 +166,7 @@ export function useCombatTurn(updateCombatant: (id: string, updates: Partial<Com
     }
 
     if (newlyActiveCombatant) {
-      const activeConditionsList = newlyActiveCombatant.conditions
-        ?.split(',')
-        .map(s => s.trim())
-        .filter(Boolean) || [];
+      const activeConditionsList = parseCommaSeparatedList(newlyActiveCombatant.conditions);
 
       const deathSaveInfo = getDeathSaveReminder(newlyActiveCombatant);
 
@@ -232,9 +230,8 @@ export function useCombatTurn(updateCombatant: (id: string, updates: Partial<Com
               const target = snapshot.combatState.combatants.find(c => c.id === combatantId);
               if (!target) return;
 
-              const nextConds = (target.conditions || '').split(',')
-                .map(s => s.trim())
-                .filter(s => s.toLowerCase() !== conditionName.toLowerCase() && s !== '');
+              const nextConds = parseCommaSeparatedList(target.conditions)
+                .filter(s => s.toLowerCase() !== conditionName.toLowerCase());
                 
               const conEffectsArray = Array.from(CONCENTRATION_EFFECTS);
               const hasOtherCon = nextConds.some(s => conEffectsArray.includes(s.toLowerCase()));

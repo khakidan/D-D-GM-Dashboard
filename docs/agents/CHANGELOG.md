@@ -6,6 +6,22 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## `useCombatTurn.ts`/`PlayerView.tsx` — Remaining Raw Condition-Parsing Consolidated
+
+`useCombatTurn.ts` still used raw `.split(',').map(s => s.trim())...` condition-parsing in 2 places — the exact pattern `parseCommaSeparatedList()` was built to replace earlier this session, missed by that original consolidation's file list (`useCombatantMutations.ts` had the same gap, fixed separately as part of its `updateCombatant` decomposition).
+
+**Verified as a genuinely clean, zero-risk swap before touching anything**, given the two call sites' exact trim/case-sensitivity behavior was traced by hand against `parseCommaSeparatedList`'s real defaults rather than assumed identical. One instance feeds a toast summarizing a combatant's active conditions at turn start; the other filters an expired condition out of a combatant's condition list from a toast's "Remove" action. Both confirmed to produce identical output arrays to the existing utility.
+
+**A third clean-swap instance (`PlayerView.tsx`'s `formatConditionsForDisplay`) was found incidentally while investigating and folded into the same pass** rather than deferred to a separate task, since it was the identical trivial swap already sitting right there.
+
+**Verification took several rounds to actually land.** The real TypeScript build check output was asked for twice and not actually shown in either of the first two attempts — the response asserted "clean" without pasting anything, and then reran the command but still only narrated the result rather than showing it. It was only accepted once the literal terminal output (redirected to a file, `cat`'d back, with the exit code explicitly appended) was genuinely visible. A gap in the initial test-batch coverage was also caught: the original investigation had named `useEncounterLifecycle.test.ts` (part of Batch 3) as relevant coverage for `useCombatTurn.ts`, but Batch 3 wasn't actually run until asked for directly.
+
+**Fix**: both `useCombatTurn.ts` instances and `PlayerView.tsx`'s instance now use `parseCommaSeparatedList()`, imported from `../../../lib/stringUtils` and `../lib/stringUtils` respectively.
+
+Verified: `tsc -p tsconfig.build.json --noEmit` genuinely confirmed clean (real output shown, not asserted). Real, complete Batch 3 (55/55), Batch 5A (54/54 — `useCombatTurn.ts`'s primary integration coverage via `useCombatSync.test.ts`), and Batch 7B-2 (22/22 — `PlayerView.test.tsx`'s coverage), all matching documented baselines exactly.
+
+---
+
 ## Error Handling Consistency — 11 Silent-Failure Sites Resolved (2 Stages)
 
 Flagged during the error-handling audit: 11 places where a client-side failure was caught and only logged to console — genuinely silent from the GM's perspective. Investigated per-item first, since some were genuinely low-stakes (a preview sound failing to play) where a toast could be overkill, and others silently corrupted or lost data the GM would want to know about.

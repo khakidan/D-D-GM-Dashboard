@@ -1,3 +1,4 @@
+import { parseCommaSeparatedList } from '../lib/stringUtils';
 import { getHealthStatus } from '../lib/conditions';
 import { useAppState } from '../hooks/useAppState';
 import { cn } from '../lib/utils';
@@ -16,10 +17,7 @@ const healthStatusMap: Record<string, 'emerald' | 'green' | 'yellow' | 'red' | '
 };
 
 const formatConditionsForDisplay = (conditions: string): string =>
-  conditions
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
+  parseCommaSeparatedList(conditions)
     .map(s => s.charAt(0).toUpperCase() + s.slice(1))
     .join(', ');
 
