@@ -16,13 +16,7 @@ None currently open.
 
 ### 🟡 Features to Add
 
-**Full Codebase Audit (bugs → componentization → UI uniformity).** Comprehensive pass for logic errors/bugs, oversized files needing decomposition, and UI/UX uniformity closer to established D&D apps (D&D Beyond, Roll20 conventions). Phase 3 (UI uniformity) has a concrete starting point now (see below) but has not yet been worked.
-
-**Phase 3 remainder — 2 files left from the original `STYLE_GUIDE.md` violations audit.** All 8 originally-identified files/instances (`NewPlayerDialog.tsx`'s sub-tabs, `App.tsx`, `ShortRestDialog.tsx`, `CharacterCardExpanded.tsx`, `MultiTargetActionPanel.tsx`, `Badge.tsx`, `ResourcePoolManager.tsx`, `PipTracker.tsx`, `Callout.tsx`) have been fixed — see `CHANGELOG.md`. 2 files surfaced during the later theme-compliance audit remain:
-- `GMTestingTools.tsx`: `border-amber-300`/`hover:bg-amber-100` on the "Test Initiative Animation" button — should be the mandated `border-[#2563eb]`.
-- `ReferenceDataSeeder.tsx`: `text-stone-400` — should be the mandated neutral slate equivalent.
-
-Not yet fixed — confirm each instance directly against the real file before changing anything, given a prior implementation attempt for this audit went badly out of scope and had to be fully reverted.
+**Full Codebase Audit (bugs → componentization → UI uniformity).** Comprehensive pass for logic errors/bugs, oversized files needing decomposition, and UI/UX uniformity closer to established D&D apps (D&D Beyond, Roll20 conventions). Bug-hunting, componentization, and Phase 3 (UI uniformity/`STYLE_GUIDE.md` compliance) are all now complete — see `CHANGELOG.md`.
 
 **Other future audit categories, discussed but not yet started** — beyond bug-hunting, componentization, and the findings above, a professional React/TypeScript codebase review typically also covers:
 

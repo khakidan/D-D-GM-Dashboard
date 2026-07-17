@@ -6,21 +6,15 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
-## [2026-07-17] Cross-tab Sync and Overlay Event Fix
+## Phase 3 Styling Cleanup Complete — Final 2 Files (`GMTestingTools.tsx`, `ReferenceDataSeeder.tsx`)
 
-The Active Encounter page was exhibiting several critical state-sync issues when multiple tabs (e.g., the GM Dashboard and Player View) were open simultaneously: broken overlays, "bouncing" UI (optimistic updates reverting to stale values), and wiped tab-local UI state (selection mode, syncing indicators).
+The last 2 files from the Phase 3 `STYLE_GUIDE.md` compliance audit, kept tightly scoped after the earlier over-broad implementation attempt: `GMTestingTools.tsx`'s "Test Initiative Animation" button (amber border/hover) and `ReferenceDataSeeder.tsx`'s database icon (`text-stone-400`).
 
-The root cause was a destructive `storage` event listener in `src/hooks/dashboardStore.ts` that nulled overlay events and wiped tab-local fields like `syncingIds` on every sync, combined with a lack of change-detection guards that allowed infinite write-back loops.
+**Fix**: both moved to the mandated palette — `GMTestingTools.tsx`'s button now fully blue-bordered (`border-[#2563eb]`) with no amber anywhere in the file; `ReferenceDataSeeder.tsx`'s icon now `text-[#475569]`, the standard neutral slate.
 
-**Solution:**
-1. **Overlay Sync**: Included overlay events in the `persist` middleware's `partialize` configuration to allow them to broadcast to other tabs, while adding an `onRehydrateStorage` hook to clear them on page refresh to prevent stale replays.
-2. **Selective State Merging**: Updated the `storage` listener to selectively merge "Global" state while strictly preserving "Local" tab state (`syncingIds`, `selectedIds`, `isSelectionMode`, `expandedIds`).
-3. **Redundancy Guard**: Implemented a shallow stringified comparison of the global state parts to skip `setState` calls when no meaningful changes are detected, breaking the infinite write-back loop.
+Verified: file list confirmed to match exactly the 2 approved files before any change was made, given the prior violation on this same audit. Real, complete Batch 7B-2 (22/22, matching the documented baseline) plus a clean `tsc -p tsconfig.build.json --noEmit`.
 
-**Verification Results:**
-- **Batch 3 (Hooks)**: 55 tests passed.
-- **Batch 5A (AET Hooks)**: 54 tests passed.
-- **Manual Verification**: Fixed the reported issue where opening `PlayerView` broke the GM Dashboard overlays and caused initiative/healing reverts.
+This closes out the entire Phase 3 UI-uniformity pass — bug-hunting, componentization, and `STYLE_GUIDE.md` compliance are all complete for this codebase.
 
 ---
 

@@ -224,7 +224,7 @@ export function ReferenceDataSeeder({ isGoogleConnected }: ReferenceDataSeederPr
             spreadsheet, sourced from the open5e public API (open game content).
           </p>
         </div>
-        <Database className="w-5 h-5 text-stone-400 shrink-0" />
+        <Database className="w-5 h-5 text-[#475569] shrink-0" />
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">

@@ -114,7 +114,7 @@ export function GMTestingTools({
             fireInitiativeEvent(true);
             toast('Toggle initiative animation');
           }}
-          className="border border-amber-300 bg-[#f9f8ff]/50 hover:bg-amber-100 text-[#567eff] font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer inline-flex items-center gap-2"
+          className="border border-[#2563eb] bg-[#f9f8ff]/50 hover:bg-[#f1f5f9] text-[#2563eb] font-bold px-5 py-2.5 rounded-xl text-xs uppercase tracking-widest transition-all cursor-pointer inline-flex items-center gap-2"
         >
           <Dice6 className="w-4 h-4" />
           Test Initiative Animation
