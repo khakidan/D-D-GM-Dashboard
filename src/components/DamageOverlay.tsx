@@ -183,11 +183,12 @@ export function DamageOverlay({
             style={{
               fontFamily: 
                 'Georgia, "Times New Roman", serif',
-              fontSize: 'clamp(4rem, 12vw, 8rem)',
-              fontWeight: 'bold',
+              fontSize: 'clamp(6rem, 15vw, 12rem)',
+              fontWeight: '900',
               color: '#ffffff',
               lineHeight: 1,
               textShadow: [
+                '0 0 20px rgba(0, 0, 0, 1)',
                 '0 0 40px rgba(220, 0, 0, 1)',
                 '0 0 100px rgba(140, 0, 0, 0.8)',
                 '0 4px 12px rgba(0, 0, 0, 1)',
@@ -206,12 +207,12 @@ export function DamageOverlay({
               style={{
                 fontFamily: 
                   '"Helvetica Neue", Arial, sans-serif',
-                fontSize: 'clamp(1.2rem, 3vw, 2rem)',
-                fontWeight: 600,
+                fontSize: 'clamp(2rem, 5vw, 3rem)',
+                fontWeight: 800,
                 letterSpacing: '0.15em',
-                color: '#e2d6b5', // Muted gold
+                color: '#ffffff', // Brighter color
                 textTransform: 'capitalize',
-                textShadow: '0 0 16px rgba(200, 0, 0, 0.6)',
+                textShadow: '0 0 16px rgba(0, 0, 0, 1), 0 0 24px rgba(200, 0, 0, 0.6)',
                 opacity: 0,
                 animation: 
                   'dmg-nameIn 400ms ease-out 250ms forwards',
@@ -227,12 +228,12 @@ export function DamageOverlay({
             style={{
               fontFamily: 
                 '"Helvetica Neue", Arial, sans-serif',
-              fontSize: 'clamp(1rem, 2vw, 1.4rem)',
-              fontWeight: 700,
+              fontSize: 'clamp(1.5rem, 3vw, 2.5rem)',
+              fontWeight: 800,
               letterSpacing: '0.55em',
               color: '#ffffff',
               textTransform: 'uppercase',
-              textShadow: '0 0 16px rgba(200, 0, 0, 0.8)',
+              textShadow: '0 0 16px rgba(0, 0, 0, 1), 0 0 24px rgba(200, 0, 0, 0.8)',
               opacity: 0,
               animation: 
                 'dmg-nameIn 400ms ease-out 380ms forwards',

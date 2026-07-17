@@ -213,16 +213,20 @@ export const useDashboardStore =
           // sheet sync
           hasInitialSynced: false,
           // combatState IS persisted for cross-tab 
-          // sync (PlayerView needs it) but overlay 
-          // events are stripped — they are transient
+          // sync (PlayerView needs it).
+          // We now include overlay events so they sync across tabs,
+          // but we will clear them on rehydration to avoid "stale" replays.
           combatState: {
             ...state.combatState,
-            deathEvent: null,
-            damageEvent: null,
-            healEvent: null,
-            rageEvent: null,
-            unconsciousEvent: null,
-            initiativeEvent: false,
+            // These are now included for live sync
+            deathEvent: state.combatState.deathEvent,
+            damageEvent: state.combatState.damageEvent,
+            healEvent: state.combatState.healEvent,
+            rageEvent: state.combatState.rageEvent,
+            unconsciousEvent: state.combatState.unconsciousEvent,
+            initiativeEvent: state.combatState.initiativeEvent,
+            // These stay omitted from long-term persistence 
+            // but the storage listener will handle them
             syncingIds: [],
             selectedIds: [],
             isSelectionMode: false,
@@ -230,6 +234,30 @@ export const useDashboardStore =
           },
           activeCombatLog: state.activeCombatLog,
         }),
+
+        // Clear transient state on rehydration so we don't 
+        // replay old overlays on page refresh
+        onRehydrateStorage: (state) => {
+          return (rehydratedState) => {
+            if (rehydratedState) {
+              rehydratedState.updateState(prev => ({
+                ...prev,
+                combatState: {
+                  ...prev.combatState,
+                  deathEvent: null,
+                  damageEvent: null,
+                  healEvent: null,
+                  rageEvent: null,
+                  unconsciousEvent: null,
+                  initiativeEvent: false,
+                  syncingIds: [],
+                  selectedIds: [],
+                  isSelectionMode: false,
+                }
+              }));
+            }
+          };
+        },
       }
     )
   );
@@ -248,34 +276,76 @@ if (typeof window !== 'undefined') {
       try {
         const parsed = JSON.parse(event.newValue);
         const incoming = parsed?.state;
-        if (incoming?.combatState) {
-          useDashboardStore.setState({
-            combatState: {
-              ...incoming.combatState,
-              deathEvent: null,
-              damageEvent: null,
-              healEvent: null,
-              rageEvent: null,
-              unconsciousEvent: null,
-              initiativeEvent: false,
-            },
+        if (!incoming) return;
+
+        const current = useDashboardStore.getState();
+
+        if (incoming.combatState) {
+          // Merge incoming global state with current local state.
+          // We specifically PRESERVE fields that are tab-local 
+          // to prevent ping-pong reverts.
+          const nextCombatState = {
+            ...current.combatState,
+            ...incoming.combatState,
+            // Re-apply local fields from CURRENT state
+            syncingIds: current.combatState.syncingIds,
+            selectedIds: current.combatState.selectedIds,
+            isSelectionMode: current.combatState.isSelectionMode,
+            expandedIds: current.combatState.expandedIds,
+          };
+
+          // Only update if there's a meaningful change in the global parts.
+          // This avoids the infinite write-back loop between tabs.
+          const currentGlobal = JSON.stringify({
+            activeEncounterId: current.combatState.activeEncounterId,
+            activeTurnId: current.combatState.activeTurnId,
+            round: current.combatState.round,
+            combatants: current.combatState.combatants,
+            concentrationLinks: current.combatState.concentrationLinks,
+            combatStarted: current.combatState.combatStarted,
+            actionContext: current.combatState.actionContext,
+            deathEvent: current.combatState.deathEvent,
+            damageEvent: current.combatState.damageEvent,
+            healEvent: current.combatState.healEvent,
+            rageEvent: current.combatState.rageEvent,
+            unconsciousEvent: current.combatState.unconsciousEvent,
+            initiativeEvent: current.combatState.initiativeEvent,
           });
+
+          const incomingGlobal = JSON.stringify({
+            activeEncounterId: incoming.combatState.activeEncounterId,
+            activeTurnId: incoming.combatState.activeTurnId,
+            round: incoming.combatState.round,
+            combatants: incoming.combatState.combatants,
+            concentrationLinks: incoming.combatState.concentrationLinks,
+            combatStarted: incoming.combatState.combatStarted,
+            actionContext: incoming.combatState.actionContext,
+            deathEvent: incoming.combatState.deathEvent,
+            damageEvent: incoming.combatState.damageEvent,
+            healEvent: incoming.combatState.healEvent,
+            rageEvent: incoming.combatState.rageEvent,
+            unconsciousEvent: incoming.combatState.unconsciousEvent,
+            initiativeEvent: incoming.combatState.initiativeEvent,
+          });
+
+          if (currentGlobal !== incomingGlobal) {
+            useDashboardStore.setState({ combatState: nextCombatState });
+          }
         }
-        if (incoming?.campaignName !== undefined) {
-          useDashboardStore.setState({
-            campaignName: incoming.campaignName,
-          });
+
+        if (incoming.campaignName !== undefined && incoming.campaignName !== current.campaignName) {
+          useDashboardStore.setState({ campaignName: incoming.campaignName });
         }
-        if (incoming?.activeCombatLog !== undefined) {
-          useDashboardStore.setState({
-            activeCombatLog: incoming.activeCombatLog,
-          });
+
+        if (incoming.activeCombatLog !== undefined) {
+          const currentLogStr = JSON.stringify(current.activeCombatLog);
+          const incomingLogStr = JSON.stringify(incoming.activeCombatLog);
+          if (currentLogStr !== incomingLogStr) {
+            useDashboardStore.setState({ activeCombatLog: incoming.activeCombatLog });
+          }
         }
       } catch (error) {
-        console.error(
-          '[Cross-tab sync error]', 
-          error
-        );
+        console.error('[Cross-tab sync error]', error);
       }
     }
   });

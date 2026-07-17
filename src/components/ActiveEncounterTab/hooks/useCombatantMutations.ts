@@ -117,6 +117,8 @@ export function useCombatantMutations() {
         nextCombatants = [...nextCombatants].sort((a, b) => b.initiative - a.initiative);
       }
 
+      const nextSyncingIds = Array.from(new Set([...(prev.combatState.syncingIds || []), id]));
+
       return {
         ...prev,
         characters: prev.characters.map(c => {
@@ -151,14 +153,12 @@ export function useCombatantMutations() {
           }
           return item;
         }),
-        combatState: { ...prev.combatState, combatants: nextCombatants },
+        combatState: { 
+          ...prev.combatState, 
+          combatants: nextCombatants,
+          syncingIds: nextSyncingIds
+        },
       };
-    });
-
-    setSyncingIds(prev => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
     });
 
     try {

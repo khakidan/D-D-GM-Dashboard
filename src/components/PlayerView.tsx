@@ -3,6 +3,7 @@ import { getHealthStatus } from '../lib/conditions';
 import { useAppState } from '../hooks/useAppState';
 import { cn } from '../lib/utils';
 import { Skull, Heart, ShieldAlert, Shield, Swords, HeartCrack, ShieldCheck } from 'lucide-react';
+import { motion } from "motion/react";
 import { EmptyState } from './ui/EmptyState';
 import { CardShell } from './ui/CardShell';
 import { Badge } from './ui/Badge';
@@ -27,14 +28,22 @@ export function PlayerView() {
 
   if (!state.activeEncounterId || state.combatants.length === 0) {
     return (
-      <div className="min-h-screen bg-[#ffffff] p-4 md:p-8 flex flex-col items-center justify-center">
-        <EmptyState
-          icon={Swords}
-          title="Waiting for GM to start the encounter..."
-          description="The GM has not activated combat yet. Standby..."
-          className="max-w-md"
-        />
-      </div>
+      <motion.div
+        className="min-h-screen bg-[#ffffff] p-8 flex flex-col items-center justify-center text-center"
+        animate={{
+          y: [0, -30, 0, 30, 0],
+          x: [0, -30, 0, 30, 0],
+        }}
+        transition={{
+          duration: 60,
+          repeat: Infinity,
+          ease: "linear",
+        }}
+      >
+        <Swords className="w-32 h-32 text-[#8d8db9] opacity-20 mb-8" />
+        <h2 className="text-5xl font-serif font-bold text-[#0f172a] mb-4">Waiting for GM to start the encounter...</h2>
+        <p className="text-3xl text-[#8d8db9] max-w-2xl">The GM has not activated combat yet. Standby...</p>
+      </motion.div>
     );
   }
 
@@ -42,14 +51,14 @@ export function PlayerView() {
     <CardShell className="overflow-hidden h-fit">
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="bg-[#e2e8f0] border-b border-[#e2e8f0] text-[#8d8db9] font-sans text-sm uppercase tracking-widest text-left">
+          <tr className="bg-[#e2e8f0] border-b border-[#e2e8f0] text-[#475569] font-sans text-base uppercase tracking-widest text-left">
             <th className="p-4 font-bold w-16 text-center border-r border-[#e2e8f0]">Init</th>
             <th className="p-4 font-bold px-6">Combatant</th>
             <th className="p-4 font-bold text-center">Status</th>
             <th className="p-4 font-bold w-28 text-center min-w-[7rem]">HP</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#e2e8f0] font-sans text-base">
+        <tbody className="divide-y divide-[#e2e8f0] font-sans text-lg">
           {combatants.map((c) => {
             const isActive = c.id === state.activeTurnId;
             const health = getHealthStatus(c.currentHp, c.maxHp);
@@ -69,8 +78,8 @@ export function PlayerView() {
               >
                 <td className="p-4 border-r border-[#e2e8f0]">
                   <div className={cn(
-                    "w-11 h-11 mx-auto rounded-full flex items-center justify-center font-bold text-xl border transition-all shadow-sm",
-                    isActive ? "bg-[#2563eb] border-transparent text-white scale-110" : "bg-white border-[#e2e8f0] text-[#8d8db9]"
+                    "w-12 h-12 mx-auto rounded-full flex items-center justify-center font-bold text-2xl border transition-all shadow-sm",
+                    isActive ? "bg-[#2563eb] border-transparent text-white scale-110" : "bg-white border-[#e2e8f0] text-[#475569]"
                   )}>
                     {c.initiative}
                   </div>
@@ -82,16 +91,16 @@ export function PlayerView() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap min-w-0">
                           <span className={cn(
-                            "font-bold text-xl md:text-2xl truncate transition-colors",
+                            "font-bold text-2xl md:text-3xl truncate transition-colors",
                             isActive ? "text-[#2563eb]" : "text-[#0f172a]",
-                            isDead && "line-through text-[#8d8db9]"
+                            isDead && "line-through text-[#64748b]"
                           )}>
                             {c.name}
                           </span>
                         </div>
                         {c.conditions && !isPcDefeated && !showPcStable && (
                           <div 
-                            className="text-lg text-red-600 font-bold italic mt-1 truncate max-w-[300px]" 
+                            className="text-xl text-red-700 font-bold italic mt-1 truncate max-w-[300px]" 
                             title={formatConditionsForDisplay(c.conditions)}
                           >
                             {formatConditionsForDisplay(c.conditions)}
@@ -101,8 +110,8 @@ export function PlayerView() {
                     </div>
                     {c.type === 'pc' && c.currentHp <= 0 && !isPcDefeated && !c.isStable && (
                       <div className="flex flex-col gap-2 mt-1 select-none shrink-0">
-                        <div className="flex items-center gap-4 text-xl md:text-2xl font-bold font-sans">
-                          <span className="text-red-800 uppercase tracking-wide min-w-[120px] md:min-w-[145px]">FAILS</span>
+                        <div className="flex items-center gap-4 text-2xl md:text-3xl font-bold font-sans">
+                          <span className="text-red-900 uppercase tracking-wide min-w-[140px] md:min-w-[170px]">FAILS</span>
                           <PipTracker
                             max={3}
                             remaining={c.deathSavesFails || 0}
@@ -112,8 +121,8 @@ export function PlayerView() {
                             label="Death save failure"
                           />
                         </div>
-                        <div className="flex items-center gap-4 text-xl md:text-2xl font-bold font-sans">
-                          <span className="text-emerald-800 uppercase tracking-wide min-w-[120px] md:min-w-[145px]">SUCCESSES</span>
+                        <div className="flex items-center gap-4 text-2xl md:text-3xl font-bold font-sans">
+                          <span className="text-emerald-900 uppercase tracking-wide min-w-[140px] md:min-w-[170px]">SUCCESSES</span>
                           <PipTracker
                             max={3}
                             remaining={c.deathSavesSuccesses || 0}
@@ -127,38 +136,38 @@ export function PlayerView() {
                     )}
                   </div>
                 </td>
-                <td className="p-4 font-bold text-sm uppercase tracking-wider">
+                <td className="p-4 font-bold text-base uppercase tracking-wider">
                 <div className="flex justify-center">
                   {isPcDefeated ? (
                     <Badge color="gray" size="large" className="gap-2">
-                      <Skull className="w-6 h-6" />
+                      <Skull className="w-8 h-8" />
                       <span>Dead</span>
                     </Badge>
                   ) : showPcStable ? (
                     <Badge color="blue" size="large" className="gap-2">
-                      <ShieldCheck className="w-6 h-6" />
+                      <ShieldCheck className="w-8 h-8" />
                       <span>Stable</span>
                     </Badge>
                   ) : showPcUnconscious ? (
                     <Badge color="orange" size="large" className="gap-2">
-                      <HeartCrack className="w-6 h-6" />
+                      <HeartCrack className="w-8 h-8" />
                       <span>Unconscious</span>
                     </Badge>
                   ) : (
                     <Badge color={healthStatusMap[health.label] || 'gray'} size="large" className="gap-2">
-                      {isDead ? <Skull className="w-6 h-6" /> : (['Full', 'Healthy'].includes(health.label) ? <Heart className="w-6 h-6" /> : <ShieldAlert className="w-6 h-6" />)}
+                      {isDead ? <Skull className="w-8 h-8" /> : (['Full', 'Healthy'].includes(health.label) ? <Heart className="w-8 h-8" /> : <ShieldAlert className="w-8 h-8" />)}
                       <span>{health.label}</span>
                     </Badge>
                   )}
                 </div>
                 </td>
-                <td className="p-4 text-center text-lg md:text-xl min-w-[7rem] whitespace-nowrap">
+                <td className="p-4 text-center text-xl md:text-2xl min-w-[7rem] whitespace-nowrap">
                   {c.type === 'pc' ? (
                     <div className="font-sans font-bold text-[#0f172a] whitespace-nowrap">
-                      {c.currentHp} <span className="text-[#8d8db9] opacity-70">/ {c.maxHp}</span>
+                      {c.currentHp} <span className="text-[#64748b] opacity-70">/ {c.maxHp}</span>
                     </div>
                   ) : (
-                    <span className="text-[#8d8db9] opacity-50 font-bold text-base">-</span>
+                    <span className="text-[#64748b] opacity-50 font-bold text-lg">-</span>
                   )}
                 </td>
               </tr>
@@ -177,9 +186,9 @@ export function PlayerView() {
     <div className="min-h-screen bg-[#ffffff] text-[#0f172a] p-4 md:p-8 font-serif flex flex-col items-center">
       
       <div className="w-full max-w-7xl mb-8 flex items-center justify-center">
-        <div className="flex items-center gap-4 text-[#8d8db9] bg-white border border-[#e2e8f0] px-8 py-3 rounded-full shadow-sm">
-          <Shield className="w-6 h-6 opacity-70" />
-          <span className="text-base uppercase tracking-widest font-sans font-bold">Round {state.round}</span>
+        <div className="flex items-center gap-4 text-[#475569] bg-white border border-[#e2e8f0] px-8 py-3 rounded-full shadow-sm">
+          <Shield className="w-7 h-7 opacity-70" />
+          <span className="text-lg uppercase tracking-widest font-sans font-bold">Round {state.round}</span>
         </div>
       </div>
 

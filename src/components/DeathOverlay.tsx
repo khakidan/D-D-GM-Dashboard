@@ -178,12 +178,13 @@ export function DeathOverlay({ characterName }: DeathOverlayProps) {
               style={{
                 margin: 0,
                 fontFamily: 'Georgia, "Times New Roman", serif',
-                fontSize: 'clamp(2.2rem, 5vw, 3.5rem)',
-                fontWeight: 'bold',
+                fontSize: 'clamp(3.5rem, 8vw, 6rem)',
+                fontWeight: '900',
                 color: '#ffffff',
                 letterSpacing: '0.08em',
                 lineHeight: 1,
                 textShadow: [
+                  '0 0 20px rgba(0, 0, 0, 1)',
                   '0 0 30px rgba(180, 0, 0, 0.95)',
                   '0 0 80px rgba(100, 0, 0, 0.6)',
                   '0 3px 8px rgba(0, 0, 0, 0.99)',
@@ -199,12 +200,12 @@ export function DeathOverlay({ characterName }: DeathOverlayProps) {
                 margin: '16px 0 0 0',
                 fontFamily:
                   '"Helvetica Neue", Arial, sans-serif',
-                fontSize: 'clamp(1rem, 2vw, 1.4rem)',
+                fontSize: 'clamp(1.5rem, 3vw, 2.5rem)',
                 fontWeight: 900,
                 letterSpacing: '0.55em',
                 color: '#ffffff',
                 textTransform: 'uppercase',
-                textShadow: '0 0 16px rgba(200, 0, 0, 0.8)',
+                textShadow: '0 0 16px rgba(0, 0, 0, 1), 0 0 24px rgba(200, 0, 0, 0.8)',
                 opacity: 0,
                 animation:
                   'dof-taglineReveal 800ms ease-out 1100ms forwards',

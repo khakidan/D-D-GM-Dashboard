@@ -6,6 +6,24 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## [2026-07-17] Cross-tab Sync and Overlay Event Fix
+
+The Active Encounter page was exhibiting several critical state-sync issues when multiple tabs (e.g., the GM Dashboard and Player View) were open simultaneously: broken overlays, "bouncing" UI (optimistic updates reverting to stale values), and wiped tab-local UI state (selection mode, syncing indicators).
+
+The root cause was a destructive `storage` event listener in `src/hooks/dashboardStore.ts` that nulled overlay events and wiped tab-local fields like `syncingIds` on every sync, combined with a lack of change-detection guards that allowed infinite write-back loops.
+
+**Solution:**
+1. **Overlay Sync**: Included overlay events in the `persist` middleware's `partialize` configuration to allow them to broadcast to other tabs, while adding an `onRehydrateStorage` hook to clear them on page refresh to prevent stale replays.
+2. **Selective State Merging**: Updated the `storage` listener to selectively merge "Global" state while strictly preserving "Local" tab state (`syncingIds`, `selectedIds`, `isSelectionMode`, `expandedIds`).
+3. **Redundancy Guard**: Implemented a shallow stringified comparison of the global state parts to skip `setState` calls when no meaningful changes are detected, breaking the infinite write-back loop.
+
+**Verification Results:**
+- **Batch 3 (Hooks)**: 55 tests passed.
+- **Batch 5A (AET Hooks)**: 54 tests passed.
+- **Manual Verification**: Fixed the reported issue where opening `PlayerView` broke the GM Dashboard overlays and caused initiative/healing reverts.
+
+---
+
 ## Phase 3 Styling Cleanup — 8 of the Original Files Fixed (Stages 1-2)
 
 Flagged during the earlier style-guide audit: the app's single mandated "Minimalist Sleek" theme was still being undermined by legacy warm-parchment amber/stone colors in several places. Done in 2 stages: shared UI components first (since multiple other files depend on them), then individual feature files.

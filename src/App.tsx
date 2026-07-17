@@ -44,23 +44,18 @@ function AppContent() {
           damageType={damageEvent.damageType}
         />
       )}
-      {healEvent && !deathEvent && !unconsciousEvent && !damageEvent && (
+      {healEvent && !deathEvent && !unconsciousEvent && (
         <HealOverlay
           combatantNames={healEvent.combatantNames}
           healAmount={healEvent.healAmount}
         />
       )}
-      {rageEvent && !deathEvent && !unconsciousEvent && !damageEvent && !healEvent && (
+      {rageEvent && !deathEvent && !unconsciousEvent && (
         <RageOverlay
           characterName={rageEvent.characterName}
         />
       )}
-      {initiativeEvent && 
-       !deathEvent && 
-       !unconsciousEvent && 
-       !damageEvent && 
-       !healEvent && 
-       !rageEvent && (
+      {initiativeEvent && !deathEvent && !unconsciousEvent && (
         <InitiativeOverlay />
       )}
       <HashRouter>

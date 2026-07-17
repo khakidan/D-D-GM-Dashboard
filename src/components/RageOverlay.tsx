@@ -216,12 +216,13 @@ import { ANIMATION_TIMING } from '../lib/constants';
                 fontFamily: 
                   'Georgia, "Times New Roman", serif',
                 fontSize: 
-                  'clamp(2.4rem, 5.5vw, 3.8rem)',
-                fontWeight: 'bold',
+                  'clamp(4rem, 10vw, 8rem)',
+                fontWeight: '900',
                 color: '#ffffff',
                 letterSpacing: '0.06em',
                 lineHeight: 1,
                 textShadow: [
+                  '0 0 20px rgba(0, 0, 0, 1)',
                   '0 0 40px rgba(255, 40, 0, 1)',
                   '0 0 100px rgba(180, 0, 0, 0.9)',
                   '0 4px 12px rgba(0, 0, 0, 1)',
@@ -241,12 +242,12 @@ import { ANIMATION_TIMING } from '../lib/constants';
                 fontFamily: 
                   '"Helvetica Neue", Arial, sans-serif',
                 fontSize: 
-                  'clamp(1rem, 2vw, 1.4rem)',
+                  'clamp(1.5rem, 3vw, 2.5rem)',
                 fontWeight: 900,
                 letterSpacing: '0.55em',
                 color: '#ffffff',
                 textTransform: 'uppercase',
-                textShadow: '0 0 16px rgba(200, 0, 0, 0.8)',
+                textShadow: '0 0 16px rgba(0, 0, 0, 1), 0 0 24px rgba(200, 0, 0, 0.8)',
                 opacity: 0,
                 animation: 
                   'rage-taglineIn 400ms cubic-bezier(0.34,1.4,0.64,1) 480ms forwards',

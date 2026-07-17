@@ -12,7 +12,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 |-------|-------------|------------|
 | 1 | `src/lib/__tests__` | 469 |
 | 2 | `src/services/__tests__` | 37 |
-| 3 | `src/hooks/__tests__` | 53 |
+| 3 | `src/hooks/__tests__` | 55 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 9 |
 | 5A | ActiveEncounterTab hooks (`.test.ts`) | 54 |
 | 5B | ActiveEncounterTab components (`.test.tsx`) | 29 |
@@ -31,7 +31,7 @@ npx vitest run src/lib/__tests__
 # BATCH 2 — 37 tests
 npx vitest run src/services/__tests__
 
-# BATCH 3 — 53 tests
+# BATCH 3 — 55 tests
 npx vitest run src/hooks/__tests__
 
 # BATCH 4 — 9 tests

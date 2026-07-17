@@ -109,6 +109,25 @@ export function useHealthChange(
         isDamage
       );
 
+      // Trigger overlay events immediately (optimistically)
+      const isFirstUnconscious = isDamage && c.type === 'pc' && newCurrentHp === 0 && c.currentHp > 0;
+      if (isDamage && finalDamageAmount > 0 && !skipOverlay) {
+        if (isFirstUnconscious) {
+          fireUnconsciousEvent({ characterName: c.name });
+        } else {
+          fireDamageEvent({ 
+            combatantNames: [c.name], 
+            damageAmount: finalDamageAmount,
+            damageType: damageType || undefined
+          });
+        }
+      } else if (!isDamage && !skipOverlay) {
+        const actualHeal = newCurrentHp - c.currentHp;
+        if (actualHeal > 0) {
+          fireHealEvent({ combatantNames: [c.name], healAmount: actualHeal });
+        }
+      }
+
       if (!isDamage && isUnconscious) {
         // Healing clears death saves
         const conditionsList = parseCommaSeparatedList(c.conditions);
@@ -193,27 +212,6 @@ export function useHealthChange(
         }
       }
 
-      const isFirstUnconscious = isDamage && c.type === 'pc' && newCurrentHp === 0 && c.currentHp > 0;
-
-      if (isDamage && finalDamageAmount > 0 && !skipOverlay) {
-        if (isFirstUnconscious) {
-          fireUnconsciousEvent({ characterName: c.name });
-        } else {
-          fireDamageEvent({ 
-            combatantNames: [c.name], 
-            damageAmount: finalDamageAmount,
-            damageType: damageType || undefined
-          });
-        }
-      }
-      
-      if (!isDamage && !skipOverlay) {
-        const actualHeal = newCurrentHp - c.currentHp;
-        if (actualHeal > 0) {
-          fireHealEvent({ combatantNames: [c.name], healAmount: actualHeal });
-        }
-      }
-      
       if (isDamage && finalDamageAmount > 0) {
         let isConc = false;
         let name = c.name;
