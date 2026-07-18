@@ -6,6 +6,47 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## [2026-07-17] Visibility and Screen Burn-in Prevention
+
+**Note: this entry was written by AI Studio directly, without Claude's review** — Dan applied it manually while Claude was unavailable. Recorded here for a complete history, but its verification standard is notably lighter than the rest of this document: no automated test batch was run, only manual/subjective verification and a successful lint+build.
+
+Improved the readability of the PlayerView and all overlay components by increasing font sizes and enhancing text contrast. Additionally, implemented a subtle screensaver-like animation for the PlayerView page during inactive combat to prevent potential screen burn-in on displays used as passive monitors.
+
+**Changes:**
+1. **Font Visibility**: Increased font sizes (`clamp` values) and improved text-shadow contrast for `DamageOverlay`, `HealOverlay`, `DeathOverlay`, `RageOverlay`, `UnconsciousOverlay`, and `InitiativeOverlay`.
+2. **PlayerView Readability**: Updated `PlayerView.tsx` font styles and `EmptyState` design for better readability on distant displays.
+3. **Screen Burn-in Prevention**: Added a subtle, slow motion `motion.div` animation to the "Waiting for GM" screen in `PlayerView.tsx` when no active combat encounter exists.
+
+**Verification Results:**
+- **Manual Verification**: Verified improved font readability on TV display; confirmed slow animation on PlayerView during inactive combat.
+- **Build**: Successfully linted and built the application. No automated test batch was run for this change.
+
+---
+
+## [2026-07-17] Cross-tab Sync and Overlay Event Fix
+
+**Note: this entry was originally written by AI Studio directly, without Claude's review** — Dan applied it manually while Claude was unavailable. Since then, the actual diff was independently verified by pulling the real commit from GitHub (`8d4878dbb2a4f5411ae7f737276982ff96466a9`) and reading it directly — the `dashboardStore.ts` implementation, the `useCombatantMutations.ts`/`useHealthChange.ts` changes, and the test batch numbers (Batch 3: 55/55, Batch 5A: 54/54, Batch 7B-2: 22/22) all checked out against the real code, not just the description.
+
+The Active Encounter page was exhibiting several critical state-sync issues when multiple tabs (e.g., the GM Dashboard and Player View) were open simultaneously: broken overlays, "bouncing" UI (optimistic updates reverting to stale values), and wiped tab-local UI state (selection mode, syncing indicators).
+
+The root cause was a destructive `storage` event listener in `src/hooks/dashboardStore.ts` that nulled overlay events and wiped tab-local fields like `syncingIds` on every sync, combined with a lack of change-detection guards that allowed infinite write-back loops.
+
+**Solution:**
+1. **Overlay Sync**: Included overlay events in the `persist` middleware's `partialize` configuration to allow them to broadcast to other tabs, while adding an `onRehydrateStorage` hook to clear them on page refresh to prevent stale replays.
+2. **Selective State Merging**: Updated the `storage` listener to selectively merge "Global" state while strictly preserving "Local" tab state (`syncingIds`, `selectedIds`, `isSelectionMode`, `expandedIds`).
+3. **Redundancy Guard**: Implemented a shallow stringified comparison of the global state parts to skip `setState` calls when no meaningful changes are detected, breaking the infinite write-back loop.
+4. **`syncingIds` race fix** (`useCombatantMutations.ts`): `syncingIds` is now updated atomically within the same `updateState` call that updates `combatants`, rather than via a separate follow-up `setSyncingIds` call — closing a window where the cross-tab storage listener could read a stale `syncingIds` value between the two previously-separate updates.
+5. **Optimistic overlay timing** (`useHealthChange.ts`): moved the overlay-firing block (`fireDamageEvent`/`fireHealEvent`/`fireUnconsciousEvent`) to before the `updateCombatant()` DB write rather than after, so the cinematic overlay displays immediately instead of waiting on the DB round-trip.
+
+Note: these last 2 items were not in the original version of this entry and were confirmed directly against the real commit diff on GitHub after the fact — not from the original description.
+
+**Verification Results:**
+- **Batch 3 (Hooks)**: 55 tests passed.
+- **Batch 5A (AET Hooks)**: 54 tests passed.
+- **Manual Verification**: Fixed the reported issue where opening `PlayerView` broke the GM Dashboard overlays and caused initiative/healing reverts.
+
+---
+
 ## Phase 3 Styling Cleanup Complete — Final 2 Files (`GMTestingTools.tsx`, `ReferenceDataSeeder.tsx`)
 
 The last 2 files from the Phase 3 `STYLE_GUIDE.md` compliance audit, kept tightly scoped after the earlier over-broad implementation attempt: `GMTestingTools.tsx`'s "Test Initiative Animation" button (amber border/hover) and `ReferenceDataSeeder.tsx`'s database icon (`text-stone-400`).
