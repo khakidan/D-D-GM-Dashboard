@@ -6,6 +6,22 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Hasted Condition Wiped by Concentrating on Self-Cast Haste — Fixed
+
+Reported from a real game session: casting Haste on oneself and applying the "Concentrating" condition wiped out "Hasted" instead of the two coexisting.
+
+**Root cause**: `handleSelectCaster` (in `useCombatConcentration.ts`) enforces the real, legitimate D&D rule "you can only concentrate on one thing at a time" by clearing any existing `CONCENTRATION_EFFECTS` member from the caster's conditions before adding "Concentrating." That logic is correct for the intended case (a caster already concentrating on an *old* spell switches to a new one) — but it can't distinguish a genuinely stale leftover effect from the *brand-new* effect that was just applied by the very spell cast that triggered this same caster-selection flow. On a self-cast, "Hasted" gets caught by the same filter meant for old effects and is wiped along with them.
+
+**Verifying `CONCENTRATION_EFFECTS`'s real contents took an unusually large amount of back-and-forth, and it's worth recording honestly.** The same fact — the literal contents of this one `Set<string>` — was given 3 different, contradictory answers across the investigation, including reverting back to an already-debunked version *after* it had been correctly corrected with a real command once already. The root cause, once asked directly: the model was pattern-matching against generic, familiar D&D concentration-spell lists from training data rather than actually reading the real file each time. It was only trusted once a live `cat`/`grep` command's raw, unedited output was pasted directly, and even then had to be re-verified a second time after a later response silently reverted to the wrong list. A similar, smaller instance of the same pattern also affected the design plan itself — an early draft correctly avoided a signature change by using an existing closure variable, then a later draft proposed adding a new parameter and changing a caller instead, without acknowledging it as a change; asked directly, this also turned out to be an unforced inconsistency rather than a discovered technical constraint, and the plan was correctly reverted to the simpler, closure-based approach.
+
+**Fix**: `handleSelectCaster` now captures `concentrationPrompt.effectName` (the specific new effect that triggered this flow) and excludes it from being cleared, in both the conditions-list filter and the `conditionTimers` cleanup — while still correctly clearing any other, genuinely old concentration effects. Separately, `ConditionChips.tsx`'s `removeChip()` now cascades: manually removing "Concentrating" removes all other active `CONCENTRATION_EFFECTS` members with it (matching the existing, already-correct behavior of the failed-concentration-save path), and removing the last remaining effect while "Concentrating" is still present auto-removes "Concentrating" too.
+
+**A related gap in a different trigger path was noticed but not fixed, and is tracked separately in `ROADMAP.md`.** `ConditionChips.tsx`'s existing "incapacitation breaks concentration" automation removes "Concentrating" when an incapacitating condition is applied, but doesn't cascade to the associated effect the way the manual-removal path now does — same underlying bug pattern, different trigger, left for a future pass.
+
+Verified: real, complete Batch 5A (54/54), Batch 5B (29/29), and Batch 8 (27/27), all matching documented baselines, plus a clean `tsc -p tsconfig.build.json --noEmit`.
+
+---
+
 ## [2026-07-17] Visibility and Screen Burn-in Prevention
 
 **Note: this entry was written by AI Studio directly, without Claude's review** — Dan applied it manually while Claude was unavailable. Recorded here for a complete history, but its verification standard is notably lighter than the rest of this document: no automated test batch was run, only manual/subjective verification and a successful lint+build.

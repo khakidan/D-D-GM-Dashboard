@@ -29,11 +29,15 @@ export function useCombatConcentration(updateCombatant: (id: string, updates: Pa
     const caster = currentState.combatState.combatants.find(c => c.id === casterId);
     if (!caster) return;
 
+    const currentPromptEffectLower = concentrationPrompt.effectName.toLowerCase().trim();
     const conEffectsArray = Array.from(CONCENTRATION_EFFECTS);
     const currentCasterConds = parseCommaSeparatedList(caster.conditions);
     
     const nextCasterConds = currentCasterConds.filter(cName => {
-      const lowerC = cName.toLowerCase();
+      const lowerC = cName.toLowerCase().trim();
+      if (lowerC === currentPromptEffectLower) {
+        return true;
+      }
       return lowerC !== 'concentrating' && !conEffectsArray.includes(lowerC);
     });
     
@@ -41,7 +45,10 @@ export function useCombatConcentration(updateCombatant: (id: string, updates: Pa
     
     const nextTimers = { ...(caster.conditionTimers || {}) };
     Object.keys(nextTimers).forEach(key => {
-      const lowerKey = key.toLowerCase();
+      const lowerKey = key.toLowerCase().trim();
+      if (lowerKey === currentPromptEffectLower) {
+        return;
+      }
       if (lowerKey === 'concentrating' || conEffectsArray.includes(lowerKey)) {
         delete nextTimers[key];
       }

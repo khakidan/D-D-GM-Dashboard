@@ -191,7 +191,11 @@ export function ConditionChips({
     let nextChips = chips.filter(c => c !== chip);
     
     const CON_LABEL = 'concentrating';
-    if (CONCENTRATION_EFFECTS.has(trimmed.toLowerCase().trim()) || trimmed.toLowerCase().trim() === CON_LABEL) {
+    const lowerTrimmed = trimmed.toLowerCase().trim();
+    if (lowerTrimmed === CON_LABEL) {
+      // Cascade-remove all other concentration effects when 'concentrating' is manually removed
+      nextChips = nextChips.filter(c => !CONCENTRATION_EFFECTS.has(c.toLowerCase().trim()));
+    } else if (CONCENTRATION_EFFECTS.has(lowerTrimmed)) {
       const remainingConEffects = nextChips.filter(c => 
         CONCENTRATION_EFFECTS.has(c.toLowerCase().trim()) && 
         c.toLowerCase().trim() !== CON_LABEL
