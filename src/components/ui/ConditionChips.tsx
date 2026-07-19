@@ -8,7 +8,7 @@ import { cn } from '../../lib/utils';
 import { ConditionPopover } from './ConditionPopover';
 import { checkIrvMatch } from '../../lib/combatLogic';
 import { toast } from 'sonner';
-import { isIncapacitating } from '../../lib/concentrationCheck';
+import { isIncapacitating, stripConcentrationEffects } from '../../lib/concentrationCheck';
 
 interface ConditionChipsProps {
   value: string;                      // comma-separated string
@@ -250,9 +250,10 @@ export function ConditionChips({
       const hasConcentrating = currentFullList.includes('concentrating');
       
       if (hasConcentrating) {
-        // Remove concentrating from the next state
-        const nextChips = [...chips, trimmed].filter(c => c.toLowerCase().trim() !== 'concentrating');
-        debouncedOnChange(nextChips.join(', '));
+        // Remove concentrating and all active concentration effects from the next state
+        const joined = [...chips, trimmed].join(', ');
+        const stripped = stripConcentrationEffects(joined);
+        debouncedOnChange(stripped);
         
         toast.info('Concentration broken', {
           description: `${label} causes incapacitation — concentration ended automatically.`,

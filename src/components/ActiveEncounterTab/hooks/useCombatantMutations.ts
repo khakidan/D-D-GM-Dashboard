@@ -13,7 +13,7 @@ import {
   updateNpcInstanceRechargeDB
 } from '../../../services/dbOperations';
 import { Combatant } from '../../../types';
-import { buildConditionSummary } from '../../../lib/conditions';
+import { buildConditionSummary, stripConcentrationEffects, isIncapacitating } from '../../../lib/conditions';
 import { parseCommaSeparatedList } from '../../../lib/stringUtils';
 import { CombatEvent } from '../../../lib/combatLog';
 import { calculateConditionAcModifier, calculateExhaustionHpCap } from '../../../lib/combatLogic';
@@ -392,7 +392,17 @@ export function calculateCombatantStateUpdates(
   let rageTriggered = false;
 
   if (mergedUpdates.conditions !== undefined) {
-    const newConditions = Array.from(new Set(parseCommaSeparatedList(mergedUpdates.conditions, { toLowerCase: true })));
+    let newConditions = Array.from(new Set(parseCommaSeparatedList(mergedUpdates.conditions, { toLowerCase: true })));
+    const oldConditions = parseCommaSeparatedList(currentCombatant.conditions, { toLowerCase: true });
+    const hadConcentrating = oldConditions.includes('concentrating');
+    const nowHasConcentrating = newConditions.includes('concentrating');
+    const hasIncapacitating = newConditions.some(c => isIncapacitating(c));
+
+    if ((hadConcentrating && !nowHasConcentrating) || hasIncapacitating) {
+      const strippedConditions = stripConcentrationEffects(mergedUpdates.conditions);
+      mergedUpdates.conditions = strippedConditions;
+      newConditions = Array.from(new Set(parseCommaSeparatedList(mergedUpdates.conditions, { toLowerCase: true })));
+    }
     const newConditionSet = new Set(newConditions);
 
     if (currentCombatant.conditionTimers) {
@@ -442,7 +452,6 @@ export function calculateCombatantStateUpdates(
       }
     }
 
-    const oldConditions = parseCommaSeparatedList(currentCombatant.conditions, { toLowerCase: true });
     const hadRaging = oldConditions.includes('raging');
     const nowHasRaging = newConditions.includes('raging');
 

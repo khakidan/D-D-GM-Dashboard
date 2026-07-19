@@ -7,7 +7,7 @@ export {
   IRV_OPTIONS,
 } from '../irvOptions';
 
-export { isConcentrating } from '../concentrationCheck';
+export { isConcentrating, stripConcentrationEffects, isIncapacitating } from '../concentrationCheck';
 
 export {
   CONDITION_MECHANICS,

@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { CONDITION_MECHANICS } from './conditionDefinitions';
 import { parseCommaSeparatedList } from './stringUtils';
+import { CONCENTRATION_EFFECTS } from './irvOptions';
 
 // Calculates the Constitution save DC for a concentration check.
 // DC = max(10, floor(damage / 2))
@@ -38,4 +39,14 @@ export function fireConcentrationAlert(creatureName: string, damageTaken: number
       icon: '🎯',
     }
   );
+}
+
+export function stripConcentrationEffects(conditions: string | undefined | null): string {
+  const conEffectsArray = Array.from(CONCENTRATION_EFFECTS);
+  return parseCommaSeparatedList(conditions)
+    .filter(c => {
+      const lower = c.toLowerCase().trim();
+      return lower && !conEffectsArray.includes(lower);
+    })
+    .join(', ');
 }

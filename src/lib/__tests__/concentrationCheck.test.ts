@@ -5,6 +5,7 @@ import {
   isConcentrating,
   fireConcentrationAlert,
   isIncapacitating,
+  stripConcentrationEffects,
 } from '../concentrationCheck';
 
 vi.mock('sonner', () => ({
@@ -164,5 +165,21 @@ describe('isIncapacitating', () => {
 
   it('unknown returns false', () => {
     expect(isIncapacitating('unknown')).toBe(false);
+  });
+});
+
+describe('stripConcentrationEffects', () => {
+  it('strips concentrating and active concentration effects from the string', () => {
+    expect(stripConcentrationEffects('blessed, poisoned, concentrating, hasted')).toBe('poisoned');
+  });
+
+  it('keeps other conditions untouched', () => {
+    expect(stripConcentrationEffects('poisoned, blinded')).toBe('poisoned, blinded');
+  });
+
+  it('handles empty/undefined/null inputs gracefully', () => {
+    expect(stripConcentrationEffects('')).toBe('');
+    expect(stripConcentrationEffects(undefined)).toBe('');
+    expect(stripConcentrationEffects(null)).toBe('');
   });
 });

@@ -159,4 +159,20 @@ describe('useCombatantMutations', () => {
     // Verify encounterCombatants (related slice) was restored
     expect(mockAppState.encounterCombatants).toEqual([{ id: 'ec-1', quantity: 1 }]);
   });
+
+  it('updateCombatant on PC with Hasted, Concentrating when setting to Unconscious strips both', async () => {
+    vi.mocked(updateCharacterDB).mockResolvedValue(true);
+    const c1 = { id: 'c1', characterId: 'char-1', type: 'pc', name: 'PC', maxHp: 10, currentHp: 10, conditions: 'Hasted, Concentrating' };
+    mockAppState.combatState.combatants = [c1];
+    mockAppState.characters = [ { id: 'char-1', name: 'PC', maxHp: 10, currentHp: 10, conditions: 'Hasted, Concentrating' } ];
+
+    const { result } = renderHook(() => useCombatantMutations());
+
+    await act(async () => {
+      await result.current.updateCombatant('c1', { conditions: 'Hasted, Concentrating, Unconscious' });
+    });
+
+    // The conditions should now have Unconscious, but Hasted and Concentrating should be stripped
+    expect(mockAppState.combatState.combatants[0].conditions).toBe('Unconscious');
+  });
 });

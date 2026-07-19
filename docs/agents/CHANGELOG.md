@@ -6,6 +6,27 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Concentration-Ending Now Cascades Correctly Everywhere, Not Just One Path
+
+Follow-up to the Hasted/Concentrating fix: Dan asked for the underlying rule to be general — whenever a combatant stops concentrating for *any* reason, every active `CONCENTRATION_EFFECTS` member should be removed along with "Concentrating" itself, not just for the one trigger already fixed.
+
+**Real-world motivation**: a Bard casts Haste on themselves ("Hasted, Concentrating"), then gets Paralyzed by an enemy effect. Being incapacitated correctly ends concentration per the rules, and the app's existing automation correctly removed "Concentrating" — but left "Hasted" behind, so the Bard's card kept showing (and could keep granting) Haste's benefits indefinitely after the spell should have ended.
+
+**All 5 real places a combatant's concentration can end were traced and confirmed individually, not assumed:**
+1. Manual chip removal (`removeChip()` in `ConditionChips.tsx`) — already correct from the earlier fix.
+2. Failed concentration save (`removeConcentration()` in `useHealthChange.ts`) — already correct.
+3. Incapacitation automation (`addChip()`'s `isIncapacitating` block in `ConditionChips.tsx`) — confirmed broken, the original target of this fix.
+4. **A PC dropping to 0 HP and being auto-marked "Unconscious"** (`useHealthChange.ts`) — a genuinely new finding. This is a separate, code-driven path that doesn't go through `ConditionChips.tsx` at all, and wasn't checking for or cascading concentration loss in any way.
+5. No other paths apply incapacitating conditions.
+
+**Fix, designed as a proper generalization rather than a third copy-pasted filter**: a new `stripConcentrationEffects()` helper in `concentrationCheck.ts` is the single source of truth for removing "Concentrating" plus all active `CONCENTRATION_EFFECTS` members from a conditions string. Rather than only patching paths #3 and #4 individually, an authoritative check was added inside `calculateCombatantStateUpdates()` in `useCombatantMutations.ts` — the one central function every condition update in the app already flows through — so any path that introduces an incapacitating condition, or otherwise loses "Concentrating," gets swept automatically. This is a real safety net: even a future code path that forgets to call the helper directly would still be caught here. `ConditionChips.tsx`'s `addChip()` also calls the helper directly for snappier optimistic UI feedback, on top of the authoritative backstop.
+
+**One deliberate design choice worth recording**: the middleware's trigger condition was broadened during implementation to fire on any incapacitating condition being introduced, regardless of whether the combatant was previously flagged as concentrating — rather than only firing when concentration was confirmed present beforehand, as originally specified. Asked directly, this was confirmed as an intentional simplification, not an unnoticed drift: since running the strip on a combatant with no concentration effects present is a harmless no-op, broadening the trigger establishes an absolute invariant (an incapacitated combatant can never retain a concentration effect) without depending on a separate flag staying correctly in sync.
+
+Verified: a new, targeted test was added for the specific previously-uncovered scenario — a PC with "Hasted, Concentrating" dropping to 0 HP and being marked Unconscious, confirming both get stripped, leaving just "Unconscious." Real, complete Batch 1 (472/472, +3 new unit tests for the helper), Batch 5A (55/55, +1 new integration test), Batch 5B (29/29) and Batch 6A (55/55), all matching documented baselines, plus a clean `tsc -p tsconfig.build.json --noEmit`.
+
+---
+
 ## Hasted Condition Wiped by Concentrating on Self-Cast Haste — Fixed
 
 Reported from a real game session: casting Haste on oneself and applying the "Concentrating" condition wiped out "Hasted" instead of the two coexisting.
