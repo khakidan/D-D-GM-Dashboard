@@ -16,8 +16,6 @@ None currently open.
 
 ### 🟡 Features to Add
 
-**Recharge-ability prompt on NPC turn start.** When an NPC has an action or legendary action with a recharge trait (e.g. "Recharge 5-6"), there's currently no prompt reminding the GM to roll for it — easy to forget. Needs a prompt/reminder (similar to the existing death-save reminder shown on `nextTurn`) that fires when it becomes an NPC's turn and they have at least one un-recharged recharge ability, offering a quick roll action. Reported from tonight's game session (2026-07-18).
-
 **Full Codebase Audit (bugs → componentization → UI uniformity).** Comprehensive pass for logic errors/bugs, oversized files needing decomposition, and UI/UX uniformity closer to established D&D apps (D&D Beyond, Roll20 conventions). Bug-hunting, componentization, and Phase 3 (UI uniformity/`STYLE_GUIDE.md` compliance) are all now complete — see `CHANGELOG.md`.
 
 **Other future audit categories, discussed but not yet started** — beyond bug-hunting, componentization, and the findings above, a professional React/TypeScript codebase review typically also covers:

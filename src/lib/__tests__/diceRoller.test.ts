@@ -1,5 +1,5 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from 'vitest';
-import { parseDiceNotation, rollDice } from '../diceRoller';
+import { parseDiceNotation, rollDice, performRechargeRoll } from '../diceRoller';
 
 describe('Dice Roller Parser', () => {
   it("parseDiceNotation('2d6') returns count 2, sides 6, no modifier", () => {
@@ -120,3 +120,49 @@ describe('Dice Roller Rolling Engine', () => {
     expect(result.total).toBe(15);
   });
 });
+
+describe('performRechargeRoll', () => {
+  let mathRandomSpy: any;
+
+  beforeEach(() => {
+    mathRandomSpy = vi.spyOn(Math, 'random');
+  });
+
+  afterEach(() => {
+    mathRandomSpy.mockRestore();
+  });
+
+  it('correctly recharges the ability when roll matches or exceeds threshold', () => {
+    // We want a roll of 5. Math.random() = 4 / 6 = 0.666...
+    // (0.666 * 6) + 1 = 5
+    mathRandomSpy.mockReturnValue(0.7);
+
+    const abilities = [
+      { name: 'Fire Breath', rechargeOn: 5, isCharged: false },
+      { name: 'Web', rechargeOn: 6, isCharged: false },
+    ];
+
+    const result = performRechargeRoll(abilities, 'Fire Breath');
+    expect(result.rolledNum).toBe(5);
+    expect(result.isSuccess).toBe(true);
+    expect(result.updatedAbilities[0]).toEqual({ name: 'Fire Breath', rechargeOn: 5, isCharged: true });
+    // Verify other ability is untouched
+    expect(result.updatedAbilities[1]).toEqual({ name: 'Web', rechargeOn: 6, isCharged: false });
+  });
+
+  it('fails to recharge when roll is below the threshold', () => {
+    // We want a roll of 4. Math.random() = 3 / 6 = 0.5
+    // (0.5 * 6) + 1 = 4
+    mathRandomSpy.mockReturnValue(0.5);
+
+    const abilities = [
+      { name: 'Fire Breath', rechargeOn: 5, isCharged: false },
+    ];
+
+    const result = performRechargeRoll(abilities, 'Fire Breath');
+    expect(result.rolledNum).toBe(4);
+    expect(result.isSuccess).toBe(false);
+    expect(result.updatedAbilities[0]).toEqual({ name: 'Fire Breath', rechargeOn: 5, isCharged: false });
+  });
+});
+

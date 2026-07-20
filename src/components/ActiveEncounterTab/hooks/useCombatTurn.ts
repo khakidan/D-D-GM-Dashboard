@@ -8,6 +8,7 @@ import { parseCommaSeparatedList } from '../../../lib/stringUtils';
 import { toast } from 'sonner';
 import { useDeathSaves } from '../../../hooks/useDeathSaves';
 import { Combatant } from '../../../types';
+import { RechargeToastContent } from '../RechargeToastContent';
 
 export function useCombatTurn(updateCombatant: (id: string, updates: Partial<Combatant>) => void) {
   const { updateState } = useAppState();
@@ -166,6 +167,27 @@ export function useCombatTurn(updateCombatant: (id: string, updates: Partial<Com
     }
 
     if (newlyActiveCombatant) {
+      // Check for un-recharged recharge abilities on NPCs
+      const unrechargedAbilities = (newlyActiveCombatant.rechargeAbilities || []).filter(
+        a => !a.isCharged
+      );
+
+      if (newlyActiveCombatant.type === 'npc' && unrechargedAbilities.length > 0) {
+        const toastId = `recharge-${newlyActiveCombatant.id}`;
+        toast(
+          createElement(RechargeToastContent, {
+            combatant: newlyActiveCombatant,
+            unrechargedAbilities,
+            toastId,
+            onUpdateCombatant: updateCombatant,
+          }),
+          {
+            duration: Infinity,
+            id: toastId,
+          }
+        );
+      }
+
       const activeConditionsList = parseCommaSeparatedList(newlyActiveCombatant.conditions);
 
       const deathSaveInfo = getDeathSaveReminder(newlyActiveCombatant);

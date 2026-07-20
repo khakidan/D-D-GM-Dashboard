@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Zap } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
-import { parseDiceNotation, rollDice } from '../../lib/diceRoller';
+import { parseDiceNotation, rollDice, performRechargeRoll } from '../../lib/diceRoller';
 import { Combatant, DamageType, Character, NPC } from '../../types';
 import { CombatantCardHeader } from './CombatantCardHeader';
 import { CombatantCardExpanded } from './CombatantCardExpanded';
@@ -58,7 +58,11 @@ export function CombatantCard({
   };
 
   const handleRechargeRoll = (abilityName: string, rechargeOn: number) => {
-    const rolledNum = rollDice(parseDiceNotation('1d6')).total;
+    const { rolledNum, isSuccess, updatedAbilities } = performRechargeRoll(
+      c.rechargeAbilities || [],
+      abilityName
+    );
+
     setRecentRechargeRolls(prev => ({ ...prev, [abilityName]: rolledNum }));
     
     if (rechargeTimersRef.current[abilityName]) {
@@ -74,7 +78,6 @@ export function CombatantCard({
       delete rechargeTimersRef.current[abilityName];
     }, 2000);
 
-    const isSuccess = rolledNum >= rechargeOn;
     if (isSuccess) {
       toast.success(`${abilityName} recharged! (rolled ${rolledNum})`);
     } else {
@@ -82,7 +85,7 @@ export function CombatantCard({
         style: { backgroundColor: '#f3f4f6', color: '#1f2937', border: '1px solid #e5e7eb' }
       });
     }
-    onUpdateCombatant({ rechargeAbilities: (c.rechargeAbilities || []).map(a => a.name === abilityName ? { ...a, isCharged: isSuccess } : a) });
+    onUpdateCombatant({ rechargeAbilities: updatedAbilities });
   };
 
   const handleMarkSpent = (abilityName: string) => onUpdateCombatant({ rechargeAbilities: (c.rechargeAbilities || []).map(a => a.name === abilityName ? { ...a, isCharged: false } : a) });

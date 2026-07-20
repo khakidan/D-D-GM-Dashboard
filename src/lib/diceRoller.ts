@@ -1,3 +1,5 @@
+import { RECHARGE_DIE_SIDES } from './constants';
+
 export interface ParsedRoll {
   groups: Array<{
     count: number;
@@ -222,3 +224,43 @@ function formatNotation(parsed: ParsedRoll): string {
 
   return parts.join(" ").replace(/\s\+/g, "+").replace(/\s-/g, "-");
 }
+
+export interface RechargeRollResult {
+  rolledNum: number;
+  isSuccess: boolean;
+  updatedAbilities: Array<{
+    name: string;
+    rechargeOn: number;
+    isCharged: boolean;
+  }>;
+}
+
+/**
+ * Rolls a d6 (or defined RECHARGE_DIE_SIDES) for a specific recharge ability,
+ * determines success/failure, and returns the rolled number, success status,
+ * and the updated abilities list.
+ */
+export function performRechargeRoll(
+  rechargeAbilities: Array<{ name: string; rechargeOn: number; isCharged: boolean }>,
+  abilityName: string
+): RechargeRollResult {
+  const diceStr = `1d${RECHARGE_DIE_SIDES}`;
+  const parsed = parseDiceNotation(diceStr);
+  const result = rollDice(parsed, diceStr);
+  const rolledNum = result.total;
+
+  const ability = rechargeAbilities.find(a => a.name === abilityName);
+  const rechargeOn = ability ? ability.rechargeOn : 6;
+  const isSuccess = rolledNum >= rechargeOn;
+
+  const updatedAbilities = rechargeAbilities.map(a =>
+    a.name === abilityName ? { ...a, isCharged: isSuccess } : a
+  );
+
+  return {
+    rolledNum,
+    isSuccess,
+    updatedAbilities,
+  };
+}
+

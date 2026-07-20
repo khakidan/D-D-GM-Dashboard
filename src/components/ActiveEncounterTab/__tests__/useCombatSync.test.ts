@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { useCombatSync } from '../hooks/useCombatSync';
 import { useDashboardStore, getSnapshot } from '../../../hooks/useAppState';
+import { toast } from 'sonner';
 import {
   updateEncounterStateDB,
   updateInitiativeDB,
@@ -313,6 +314,59 @@ describe('useCombatSync', () => {
       sourceOverride: null,
       actionType: 'attack'
     });
+  });
+
+  it('nextTurn triggers recharge prompt for newly active NPC with unrecharged abilities', () => {
+    act(() => {
+      useDashboardStore.setState(prev => ({
+        ...prev,
+        combatState: {
+          ...prev.combatState,
+          activeTurnId: 'c1',
+          combatants: [
+            { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 },
+            { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10, rechargeAbilities: [{ name: 'Fire Breath', rechargeOn: 5, isCharged: false }] },
+            { id: 'c3', name: 'PC 2', type: 'pc', initiative: 10, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 }
+          ]
+        }
+      }));
+    });
+
+    const { result } = renderHook(() => useCombatSync());
+
+    act(() => {
+      result.current.nextTurn();
+    });
+
+    expect(toast).toHaveBeenCalled();
+  });
+
+  it('nextTurn does NOT trigger recharge prompt for newly active PC or NPC with already charged abilities', () => {
+    act(() => {
+      useDashboardStore.setState(prev => ({
+        ...prev,
+        combatState: {
+          ...prev.combatState,
+          activeTurnId: 'c1',
+          combatants: [
+            { id: 'c1', name: 'PC 1', type: 'pc', initiative: 20, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 },
+            { id: 'c2', name: 'NPC 1', type: 'npc', initiative: 15, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10, rechargeAbilities: [{ name: 'Fire Breath', rechargeOn: 5, isCharged: true }] },
+            { id: 'c3', name: 'PC 2', type: 'pc', initiative: 10, ac: 15, maxHp: 30, currentHp: 30, passivePerception: 10 }
+          ]
+        }
+      }));
+    });
+
+    vi.mocked(toast).mockClear();
+
+    const { result } = renderHook(() => useCombatSync());
+
+    act(() => {
+      result.current.nextTurn();
+    });
+
+    const calledIds = vi.mocked(toast).mock.calls.map(call => (call[1] as any)?.id);
+    expect(calledIds.includes('recharge-c2')).toBe(false);
   });
 
   it('removeCombatant calls deleteEncounterCombatantDB when quantity is 1', async () => {

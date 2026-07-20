@@ -6,6 +6,18 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## NPC Recharge-Ability Reminder on Turn Start
+
+Reported from a real game session: recharge abilities (e.g. "Recharge 5-6") were easy to forget to roll for, with nothing prompting the GM. Two specific requirements: the reminder must not auto-dismiss like a typical toast, and it needs a button to roll the die directly rather than just being a text reminder.
+
+**Design**: when it becomes an NPC's turn, if they have any un-recharged recharge abilities, a persistent (`duration: Infinity`) `sonner` toast (`RechargeToastContent.tsx`) appears — reusing the same custom-element toast pattern already established for the death-save reminder, but without that pattern's auto-dismiss timer. Each un-recharged ability gets its own "Roll" button; clicking it rolls the die and immediately replaces the button with the result (`Rolled X`, `Success!`/`Failed`) — correctly matching real D&D 5e rules, which allow exactly one recharge attempt per turn, not a retry after a failed roll. A manual "Dismiss" button is always available. Once every pending ability on the toast has been rolled, it auto-closes after a short delay (so the GM can still see the last result), rather than requiring an extra manual dismiss for a fully-resolved prompt.
+
+**Shared logic, not a third copy**: a `handleRechargeRoll` implementation already existed locally in `CombatantCard.tsx` for the expanded-card "Roll Recharge" button. Rather than writing the roll-and-apply logic a second time for the new toast, the actual die-roll/threshold-check/state-update logic was extracted into a single pure utility, `performRechargeRoll()` in `diceRoller.ts` (correctly built from the existing `RECHARGE_DIE_SIDES` constant rather than a hardcoded `'1d6'` literal), which both `CombatantCard.tsx`'s existing handler and the new toast now call — one implementation, two call sites, each keeping only its own presentation-specific state (e.g. `CombatantCard.tsx`'s temporary "recently rolled" display timer).
+
+Verified: real, complete Batch 1 (474/474, +2 for the `performRechargeRoll` unit tests), Batch 5A (62/62, +2 for the `nextTurn` trigger/non-trigger tests), Batch 5B (41/41, +2 for the new `RechargeToastContent` component tests), all matching expected counts for the tests genuinely added, plus a clean `tsc -p tsconfig.build.json --noEmit`.
+
+---
+
 ## Temp HP/AC Quick Entry and Display, Plus a Real Collision Bug Caught Along the Way
 
 Two items reported from a real game session, refined via mockups before implementation. Temp HP already had an editing mechanism (in the expanded card) that Dan had simply missed — the real gap was display, not entry. Temp AC had no quick-entry mechanism at all.
