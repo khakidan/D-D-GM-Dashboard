@@ -1,4 +1,5 @@
 // src/services/dbOperations/encounters.ts
+import { SheetRow } from '../sheetsService';
 
 import {
   fetchSheetData,
@@ -49,12 +50,12 @@ export async function deleteEncounterFully(
       const logRows = logData.values || [];
       
       const logsToDelete = logRows
-        .map((row, i) => ({ row, i }))
-        .filter(({ row }) => row && String(row[1]).trim() === String(encounterId).trim())
-        .map(({ i }) => i + 1)
-        .sort((a, b) => b - a);
+        .map((row: SheetRow, i: number) => ({ row, i }))
+        .filter(({ row }: { row: SheetRow }) => row && String(row[1]).trim() === String(encounterId).trim())
+        .map(({ i }: { i: number }) => i + 1)
+        .sort((a: number, b: number) => b - a);
 
-      logsToDelete.forEach(idx => {
+      logsToDelete.forEach((idx: number) => {
         requests.push({
           deleteDimension: {
             range: {

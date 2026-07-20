@@ -66,16 +66,18 @@ let cachedClientId: string | null = null;
 export async function getGoogleClientId(): Promise<string> {
   if (cachedClientId) return cachedClientId;
   if (import.meta.env.VITE_GOOGLE_CLIENT_ID) {
-    cachedClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    return cachedClientId;
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    cachedClientId = clientId;
+    return clientId;
   }
   try {
     const res = await fetch('/api/auth/config');
     if (res.ok) {
       const data = await res.json();
       if (data.clientId) {
-        cachedClientId = data.clientId;
-        return cachedClientId;
+        const clientId = data.clientId;
+        cachedClientId = clientId;
+        return clientId;
       }
     }
   } catch (err) {

@@ -8,7 +8,7 @@ interface IdentityTabProps {
   level: number;
   statusId: number;
   statuses: Record<string, string>;
-  onChange: (key: string, value: any) => void;
+  onChange: (key: 'playerName' | 'characterName' | 'class' | 'level' | 'statusId', value: any) => void;
 }
 
 export function IdentityTab({

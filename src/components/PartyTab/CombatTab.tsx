@@ -13,7 +13,7 @@ interface CombatTabProps {
   vulnerabilities: string;
   notes: string;
   isHitDiceValid: boolean;
-  onChange: (key: string, value: any) => void;
+  onChange: (key: 'ac' | 'maxHp' | 'hitDiceConfig' | 'notes' | 'resistances' | 'immunities' | 'vulnerabilities', value: any) => void;
 }
 
 export function CombatTab({
@@ -84,7 +84,7 @@ export function CombatTab({
           immunities={immunities}
           vulnerabilities={vulnerabilities}
           onUpdate={updates => {
-            Object.entries(updates).forEach(([key, val]) => {
+            (Object.entries(updates) as ['resistances' | 'immunities' | 'vulnerabilities', string][]).forEach(([key, val]) => {
               onChange(key, val);
             });
           }}

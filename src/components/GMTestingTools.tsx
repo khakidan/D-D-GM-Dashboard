@@ -10,7 +10,7 @@ interface GMTestingToolsProps {
   fireHealEvent: (payload: { combatantNames: string[]; healAmount: number }) => void;
   fireUnconsciousEvent: (payload: { characterName: string }) => void;
   fireRageEvent: (payload: { characterName: string }) => void;
-  fireInitiativeEvent: (isActive: boolean) => void;
+  fireInitiativeEvent: (isActive: true) => void;
 }
 
 export function GMTestingTools({

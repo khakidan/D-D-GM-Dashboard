@@ -1,3 +1,4 @@
+import { AbilityName } from '../lib/abilityFundamentals';
 import { useEffect, MutableRefObject } from 'react';
 import { suggestHitDiceConfig, parseClassString } from '../lib/hitDice';
 import {
@@ -20,7 +21,7 @@ interface UsePlayerFormAutomationProps {
     proficiencies: any;
     resourcePools: ResourcePool[];
   };
-  handleChange: (key: string, value: any) => void;
+  handleChange: (key: 'hitDiceConfig' | 'resourcePools' | 'proficiencies', value: any) => void;
   poolsCustomized: MutableRefObject<boolean>;
 }
 
@@ -126,7 +127,7 @@ export function usePlayerFormAutomation({
     // This ensures class throws are always present while preserving GM customizations.
     const merged = [
       ...autoThrows,
-      ...existing.filter(t => !autoThrows.includes(t)),
+      ...existing.filter((t: AbilityName) => !autoThrows.includes(t)),
     ];
 
     // Only update if the saving throws actually changed to avoid loops

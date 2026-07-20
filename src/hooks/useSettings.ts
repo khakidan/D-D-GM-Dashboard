@@ -103,7 +103,7 @@ export function useSettings({
         // resulting in loose inferred types that do not match the full AppState type definitions.
         updateState((prev) => ({
           ...prev,
-          ...(data.campaignName !== undefined && { campaignName: data.campaignName }),
+          ...(data.campaignName != null && { campaignName: data.campaignName }),
           ...(data.characters !== undefined && { characters: data.characters as unknown as Character[] }),
           ...(data.npcs !== undefined && { npcs: data.npcs as unknown as NPC[] }),
           ...(data.encounters !== undefined && { encounters: data.encounters as unknown as Encounter[] }),

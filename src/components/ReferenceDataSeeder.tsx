@@ -148,11 +148,11 @@ export function ReferenceDataSeeder({ isGoogleConnected }: ReferenceDataSeederPr
 
         while (spellsUrl) {
           setProgress(`Fetching spells (page ${page})...`);
-          const spellResponse = await fetch(spellsUrl);
+          const spellResponse: Response = await fetch(spellsUrl);
           if (!spellResponse.ok) {
             throw new Error(`Open5e API error fetching spells: ${spellResponse.statusText}`);
           }
-          const spellData = await spellResponse.json();
+          const spellData: any = await spellResponse.json();
           const results = spellData.results || [];
           allSpells.push(...results);
           spellsUrl = spellData.next;

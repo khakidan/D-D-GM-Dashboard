@@ -76,6 +76,9 @@ export function useNpcLibrary() {
   };
 
   const handleUpdateNpc = async (npcId: string, updates: Partial<NPC>) => {
+    const hasMaxHpUpdate = updates.maxHp !== undefined;
+    const guardedMaxHp: number = updates.maxHp ?? 0;
+
     // If CR changed, recalculate and embed the
     // proficiency bonus in proficiencies JSON
     if (updates.challengeRating !== undefined) {
@@ -113,8 +116,8 @@ export function useNpcLibrary() {
 
       // Update matching EncounterCombatants' npcCurrentHp only if template maxHp changes so limits stay correct
       const nextEncounterCombatants = prev.encounterCombatants.map(ec => {
-        if (ec.npcId === npcId && updates.maxHp !== undefined) {
-          return { ...ec, npcCurrentHp: Math.min(ec.npcCurrentHp, updates.maxHp) };
+        if (ec.npcId === npcId && hasMaxHpUpdate) {
+          return { ...ec, npcCurrentHp: Math.min(ec.npcCurrentHp ?? guardedMaxHp, guardedMaxHp) };
         }
         return ec;
       });
@@ -125,7 +128,7 @@ export function useNpcLibrary() {
           return {
             ...c,
             ...(updates.ac !== undefined ? { ac: updates.ac } : {}),
-            ...(updates.maxHp !== undefined ? { maxHp: updates.maxHp, currentHp: Math.min(c.currentHp, updates.maxHp) } : {}),
+            ...(hasMaxHpUpdate ? { maxHp: guardedMaxHp, currentHp: Math.min(c.currentHp, guardedMaxHp) } : {}),
             ...(updates.notes !== undefined ? { notes: updates.notes } : {}),
             ...(updates.resistances !== undefined ? { resistances: updates.resistances } : {}),
             ...(updates.immunities !== undefined ? { immunities: updates.immunities } : {}),
