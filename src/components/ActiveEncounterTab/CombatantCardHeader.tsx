@@ -270,7 +270,7 @@ export function CombatantCardHeader({
                           e.stopPropagation();
                           setShowTempAcStepper(true);
                         }}
-                        className="flex items-center justify-center bg-blue-50/80 border border-blue-200 rounded-full px-1.5 py-0.5 text-xs font-bold text-blue-800 hover:bg-blue-100/80 hover:border-blue-300 transition-colors cursor-pointer shrink-0 animate-none h-5"
+                        className="flex items-center justify-center bg-blue-50/80 border border-blue-200 rounded-full px-1.5 py-0.5 text-xs font-bold text-blue-800 hover:bg-blue-100/80 hover:border-blue-300 transition-colors cursor-pointer shrink-0 animate-none h-5 no-blue-hover"
                         aria-label={`Temporary AC modifier: ${acMod > 0 ? '+' : ''}${acMod}`}
                         data-testid="tempac-pill"
                       >
@@ -371,7 +371,7 @@ export function CombatantCardHeader({
                       e.stopPropagation();
                       setShowTempHpStepper(true);
                     }}
-                    className="flex items-center gap-1 bg-blue-50/80 border border-blue-200 rounded-full px-2 py-0.5 text-xs font-semibold text-blue-800 hover:bg-blue-100/80 hover:border-blue-300 transition-colors cursor-pointer shrink-0 animate-none"
+                    className="flex items-center gap-1 bg-blue-50/80 border border-blue-200 rounded-full px-2 py-0.5 text-xs font-semibold text-blue-800 hover:bg-blue-100/80 hover:border-blue-300 transition-colors cursor-pointer shrink-0 animate-none no-blue-hover"
                     aria-label={`Temporary HP: ${c.tempHp}`}
                     data-testid="temphp-pill"
                   >

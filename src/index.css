@@ -80,7 +80,7 @@
 /* Ensure that any button using a blue background has white text */
 [data-theme='sleek-modern'] button.bg-blue-500,
 [data-theme='sleek-modern'] button.bg-blue-600,
-[data-theme='sleek-modern'] button[class*="bg-blue"]:not(#condition-chips-dropdown button) {
+[data-theme='sleek-modern'] button[class*="bg-blue"]:not(#condition-chips-dropdown button):not(.no-blue-hover) {
   color: #ffffff !important;
 }
 

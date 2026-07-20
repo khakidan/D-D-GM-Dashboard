@@ -20,6 +20,8 @@ Two items reported from a real game session, refined via mockups before implemen
 
 Verified: real, complete test batches at each of the 3 implementation stages, all matching expected counts for the tests genuinely added — Batch 5A (60/60, +2 for the delta-preservation tests), Batch 5B (39/39, +4 each for the temp HP and temp AC UI work), Batch 7B-2 (23/23, +1 for the PlayerView pill) — plus a clean `tsc -p tsconfig.build.json --noEmit` at every stage.
 
+**Follow-up visual bug, found immediately after shipping**: both pills' text was invisible in their default (non-hover) state — a global `index.css` theme rule (`button[class*="bg-blue"]`) was forcing `color: #ffffff` on any button with a blue background class, including these 2 pills' light `bg-blue-50/80`, making dark-on-light text render as white-on-near-white. Text only became visible on hover, when a separate global hover rule happened to force a darker background alongside it. Fixed by adding both pills to the existing `.no-blue-hover` exclusion class already used elsewhere in this stylesheet for buttons that should keep their own explicit colors rather than being swept into the primary-button treatment — this also correctly restores their own intended subtle hover state (`hover:bg-blue-100/80`) instead of the global solid-blue/white-text hover meant for primary CTAs. This class of bug (CSS cascade/specificity) isn't meaningfully verifiable via jsdom-based automated tests, so this needs Dan's visual confirmation against the real rendered app before being considered fully closed.
+
 ---
 
 ## Progressive Combat Logging — Record/End Encounter Button, Sheet-Backed Event Log
