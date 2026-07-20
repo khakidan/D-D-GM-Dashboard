@@ -6,6 +6,20 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Security Audit Fixes — Refresh Token Masking, Secret Naming, Rate Limiting
+
+Closes out the 3 findings from the earlier security audit (see the "Security Audit" entry above for the investigation itself).
+
+**Refresh token plaintext exposure**: `AuthRelay.tsx`'s refresh token display now masks the value by default (dots, matching a password-field pattern) with an explicit "Show"/"Hide" toggle. The copy action always copies the real token regardless of mask state — verified directly, not just assumed, since a masked-display bug that accidentally copied the mask string instead of the real value would have been a functional regression hiding behind a security fix. This was deliberately the *only* option pursued of the 3 investigated: an alternative that conditionally hid the fallback UI entirely on success would have required building a new two-way handshake between the OAuth popup and the main window just to solve a display problem — real risk of breaking the actual connection flow to fix something cosmetic, not worth it.
+
+**`VITE_`-prefixed server secret**: `GOOGLE_CLIENT_SECRET` (no prefix) is now the primary, recommended variable across `.env.example`, the help text in `AuthRelay.tsx`, and the string-comparison check in `googleAuth.ts`. Crucially, this was implemented as an addition, not a breaking rename — `src/server/routes/auth.ts`'s fallback chain still checks the deprecated `VITE_GOOGLE_CLIENT_SECRET` last, so anyone (including Dan) with it already set in their real, untracked `.env` file doesn't lose their working persistent connection the moment this ships. A one-time console warning nudges toward migrating, firing only when the deprecated variable is the sole one set.
+
+**Rate limiting gaps**: `createRateLimiter` was extended with optional `max`/`windowMs` parameters (defaulting to the original values, so the existing `authLimiter` didn't need to change at all) and applied to both previously-unprotected endpoints with limits reasoned specifically for each — `GET /api/auth/config` at 100 requests/15 min (a lightweight, once-per-page-load read), and `GET /api/health` at 60 requests/1 min, deliberately much more lenient given monitoring tooling commonly polls health endpoints every 10-30 seconds and a stricter limit risked false-negative downtime alerts.
+
+Verified: real, complete test batches at each step — Batch 9 (15→16, the refresh-token masking test), Batch 4 (9/9, unchanged, since the secret-naming and rate-limiting fixes didn't require new tests) — plus a clean `tsc -p tsconfig.build.json --noEmit` at every step.
+
+---
+
 ## Security Audit — Read-Only Investigation, Findings Tracked in ROADMAP.md
 
 Picked security as the first of the 4 remaining audit categories (over type safety, accessibility, performance), given this app handles real OAuth tokens and writes to a GM's actual Google account — the one category where a real gap has tangible consequences, not just a code-quality nitpick. Split into 3 focused prompts rather than one broad sweep, following the same discipline as the earlier componentization audit: OAuth token handling, server-side routes, and a client-side pattern sweep (`dangerouslySetInnerHTML`, `eval`/`Function`, injection-prone `href`/`src` construction).

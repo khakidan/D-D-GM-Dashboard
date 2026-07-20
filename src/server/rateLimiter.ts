@@ -1,9 +1,9 @@
 import rateLimit from 'express-rate-limit';
 
-export function createRateLimiter(message: string) {
+export function createRateLimiter(message: string, max: number = 20, windowMs: number = 15 * 60 * 1000) {
   return rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 20,
+    windowMs,
+    max,
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {

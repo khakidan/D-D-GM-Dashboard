@@ -13,14 +13,19 @@ const GOOGLE_CLIENT_ID =
   process.env.GOOGLE_CLIENT_ID;
 
 const GOOGLE_CLIENT_SECRET =
-  process.env.VITE_GOOGLE_CLIENT_SECRET ||
+  process.env.GOOGLE_CLIENT_SECRET ||
   process.env.CLIENT_SECRET ||
-  process.env.GOOGLE_CLIENT_SECRET;
+  process.env.VITE_GOOGLE_CLIENT_SECRET;
+
+if (process.env.VITE_GOOGLE_CLIENT_SECRET && !process.env.GOOGLE_CLIENT_SECRET && !process.env.CLIENT_SECRET) {
+  console.warn('⚠️ [Server] Deprecated: Using VITE_GOOGLE_CLIENT_SECRET for server-side secret. Please migrate to GOOGLE_CLIENT_SECRET to prevent accidental client exposure.');
+}
 
 const authLimiter = createRateLimiter('Too many auth requests, please try again later.');
+const configLimiter = createRateLimiter('Too many config requests, please try again later.', 100, 15 * 60 * 1000);
 
 // GET /api/auth/config
-router.get('/config', (req, res) => {
+router.get('/config', configLimiter, (req, res) => {
   res.json({ clientId: GOOGLE_CLIENT_ID || null });
 });
 
@@ -39,7 +44,7 @@ router.post('/google-token', authLimiter, requireBody, async (req, res) => {
 
     if (!clientId || !clientSecret) {
       console.warn('⚠️ [Server] Persistent Sync Disabled: Missing Google Client Secret or ID.');
-      console.info('   To enable persistent background sync, set VITE_GOOGLE_CLIENT_ID and VITE_GOOGLE_CLIENT_SECRET in your .env or AI Studio Secrets.');
+      console.info('   To enable persistent background sync, set VITE_GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env or AI Studio Secrets.');
       return sendError(res, 400, 'CONFIGURATION_REQUIRED', 'Google Client Secret/ID is not configured in the environment.');
     }
 

@@ -299,8 +299,8 @@ export async function refreshAccessToken(): Promise<string | null> {
       if (errData.error === 'invalid_grant') {
         console.warn('⚠️ [Sheets] Refresh token is invalid (expired or revoked). Clearing credentials.');
         clearTokens();
-      } else if (errData.message && errData.message.includes('VITE_GOOGLE_CLIENT_SECRET')) {
-        console.error('❌ [Sheets] REFRESH FAILED: VITE_GOOGLE_CLIENT_SECRET is missing in AI Studio Secrets.');
+      } else if (errData.message && errData.message.includes('GOOGLE_CLIENT_SECRET')) {
+        console.error('❌ [Sheets] REFRESH FAILED: GOOGLE_CLIENT_SECRET is missing in AI Studio Secrets.');
       }
       return null;
     }

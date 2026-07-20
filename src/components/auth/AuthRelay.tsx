@@ -98,7 +98,7 @@ export function AuthRelay() {
                  <h3 className="font-bold text-[#0f172a] text-xs uppercase tracking-widest">Configuration</h3>
               </div>
               <p className="text-[11px] text-[#8d8db9] mb-6 leading-relaxed">
-                For persistent login, ensure <code>VITE_GOOGLE_CLIENT_SECRET</code> is set in your AI Studio Secrets. This allows you to stay synced indefinitely.
+                For persistent login, ensure <code>GOOGLE_CLIENT_SECRET</code> is set in your AI Studio Secrets. This allows you to stay synced indefinitely.
               </p>
               
               <button 
