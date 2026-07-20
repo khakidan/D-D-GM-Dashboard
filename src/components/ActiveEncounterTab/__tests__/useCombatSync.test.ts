@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { useCombatSync } from '../hooks/useCombatSync';
 import { useDashboardStore, getSnapshot } from '../../../hooks/useAppState';
+import { getSpreadsheetId, setSpreadsheetId } from '../../../services/sheetsService';
 import { toast } from 'sonner';
 import {
   updateEncounterStateDB,
@@ -42,6 +43,7 @@ vi.mock('../../../services/dbOperations', () => ({
   appendEncounterLog: vi.fn().mockResolvedValue(undefined),
   fetchEncounterLogEventsDB: vi.fn().mockResolvedValue([]),
   updateEncounterLoggingRequestedDB: vi.fn().mockResolvedValue(undefined),
+  appendEncounterLogEventDB: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('useCombatSync', () => {
@@ -967,5 +969,416 @@ describe('useCombatSync', () => {
     });
 
     expect(resourceChangedCalls.length).toBe(0);
+  });
+
+  describe('loggingRequested optimistic updates and rollback', () => {
+    it('recordEncounter optimistically sets loggingRequested to true and rolls back on failure', async () => {
+      act(() => {
+        useDashboardStore.setState(prev => ({
+          ...prev,
+          encounters: [{
+            id: 'test-enc-id',
+            name: 'Test Encounter',
+            location: 'Test Location',
+            status: 'active',
+            difficultyId: 1,
+            difficultyName: 'Easy',
+            npcDefinitions: '',
+            loggingRequested: false,
+          }],
+          combatState: {
+            ...prev.combatState,
+            activeEncounterId: 'test-enc-id',
+            round: 2,
+            combatants: [
+              { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10 }
+            ]
+          },
+          activeCombatLog: null
+        }));
+      });
+
+      // 1. Successful case
+      vi.mocked(updateEncounterLoggingRequestedDB).mockResolvedValueOnce(undefined);
+
+      const { result } = renderHook(() => useCombatSync());
+
+      await act(async () => {
+        await result.current.recordEncounter();
+      });
+
+      const encounterAfterSuccess = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+      expect(encounterAfterSuccess?.loggingRequested).toBe(true);
+
+      // 2. Failure case with rollback
+      vi.mocked(updateEncounterLoggingRequestedDB).mockRejectedValueOnce(new Error('DB Error'));
+
+      // Set state back to false
+      act(() => {
+        useDashboardStore.setState(prev => ({
+          ...prev,
+          encounters: prev.encounters.map(e => e.id === 'test-enc-id' ? { ...e, loggingRequested: false } : e)
+        }));
+      });
+
+      await act(async () => {
+        await result.current.recordEncounter();
+      });
+
+      // Verification that loggingRequested is false due to rollback
+      const encounterAfterFailure = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+      expect(encounterAfterFailure?.loggingRequested).toBe(false);
+    });
+
+    it('resetCombat optimistically sets loggingRequested to false and rolls back on failure', async () => {
+      act(() => {
+        useDashboardStore.setState(prev => ({
+          ...prev,
+          encounters: [{
+            id: 'test-enc-id',
+            name: 'Test Encounter',
+            location: 'Test Location',
+            status: 'active',
+            difficultyId: 1,
+            difficultyName: 'Easy',
+            npcDefinitions: '',
+            loggingRequested: true,
+          }],
+          combatState: {
+            ...prev.combatState,
+            activeEncounterId: 'test-enc-id',
+            combatants: [
+              { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
+            ]
+          },
+          activeCombatLog: {
+            encounterId: 'test-enc-id',
+            encounterName: 'Test Encounter',
+            location: 'Test Loc',
+            startedAt: '2025-01-01',
+            currentRound: 3,
+            partySnapshot: [{ id: 'c1', type: 'pc', name: 'Char 1', startingHp: 10, maxHp: 10 }],
+            initiativeOrder: [],
+            events: []
+          }
+        }));
+      });
+
+      // 1. Successful case
+      vi.mocked(updateEncounterLoggingRequestedDB).mockResolvedValueOnce(undefined);
+      vi.mocked(fetchEncounterLogEventsDB).mockResolvedValueOnce([]);
+
+      const { result } = renderHook(() => useCombatSync());
+
+      await act(async () => {
+        await result.current.resetCombat();
+      });
+
+      const encounterAfterSuccess = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+      expect(encounterAfterSuccess?.loggingRequested).toBe(false);
+
+      // Reset state for failure testing
+      act(() => {
+        useDashboardStore.setState(prev => ({
+          ...prev,
+          encounters: [{
+            id: 'test-enc-id',
+            name: 'Test Encounter',
+            location: 'Test Location',
+            status: 'active',
+            difficultyId: 1,
+            difficultyName: 'Easy',
+            npcDefinitions: '',
+            loggingRequested: true,
+          }],
+          combatState: {
+            ...prev.combatState,
+            activeEncounterId: 'test-enc-id',
+            combatants: [
+              { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
+            ]
+          },
+          activeCombatLog: {
+            encounterId: 'test-enc-id',
+            encounterName: 'Test Encounter',
+            location: 'Test Loc',
+            startedAt: '2025-01-01',
+            currentRound: 3,
+            partySnapshot: [{ id: 'c1', type: 'pc', name: 'Char 1', startingHp: 10, maxHp: 10 }],
+            initiativeOrder: [],
+            events: []
+          }
+        }));
+      });
+
+      // 2. Failure case with rollback
+      vi.mocked(updateEncounterLoggingRequestedDB).mockRejectedValueOnce(new Error('DB Error'));
+      vi.mocked(fetchEncounterLogEventsDB).mockResolvedValueOnce([]);
+
+      await act(async () => {
+        await result.current.resetCombat();
+      });
+
+      const encounterAfterFailure = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+      expect(encounterAfterFailure?.loggingRequested).toBe(true);
+    });
+
+    it('cancelCombat optimistically sets loggingRequested to false and rolls back on failure', async () => {
+      act(() => {
+        useDashboardStore.setState(prev => ({
+          ...prev,
+          encounters: [{
+            id: 'test-enc-id',
+            name: 'Test Encounter',
+            location: 'Test Location',
+            status: 'active',
+            difficultyId: 1,
+            difficultyName: 'Easy',
+            npcDefinitions: '',
+            loggingRequested: true,
+          }],
+          combatState: {
+            ...prev.combatState,
+            activeEncounterId: 'test-enc-id',
+            combatants: [
+              { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
+            ]
+          }
+        }));
+      });
+
+      // 1. Successful case
+      vi.mocked(updateEncounterLoggingRequestedDB).mockResolvedValueOnce(undefined);
+
+      const { result } = renderHook(() => useCombatSync());
+
+      await act(async () => {
+        result.current.cancelCombat();
+      });
+
+      const encounterAfterSuccess = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+      expect(encounterAfterSuccess?.loggingRequested).toBe(false);
+
+      // Reset state for failure testing
+      act(() => {
+        useDashboardStore.setState(prev => ({
+          ...prev,
+          encounters: [{
+            id: 'test-enc-id',
+            name: 'Test Encounter',
+            location: 'Test Location',
+            status: 'active',
+            difficultyId: 1,
+            difficultyName: 'Easy',
+            npcDefinitions: '',
+            loggingRequested: true,
+          }],
+          combatState: {
+            ...prev.combatState,
+            activeEncounterId: 'test-enc-id',
+            combatants: [
+              { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
+            ]
+          }
+        }));
+      });
+
+      // 2. Failure case with rollback
+      vi.mocked(updateEncounterLoggingRequestedDB).mockRejectedValueOnce(new Error('DB Error'));
+
+      await act(async () => {
+        result.current.cancelCombat();
+      });
+
+      const encounterAfterFailure = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+      expect(encounterAfterFailure?.loggingRequested).toBe(true);
+    });
+
+    it('resetCombat with no activeCombatLog but spreadsheet configured should still set loggingRequested to false, write to DB, and roll back on failure', async () => {
+      const originalSheetId = getSpreadsheetId();
+      setSpreadsheetId('mock-sheet-id');
+
+      try {
+        act(() => {
+          useDashboardStore.setState(prev => ({
+            ...prev,
+            encounters: [{
+              id: 'test-enc-id',
+              name: 'Test Encounter',
+              location: 'Test Location',
+              status: 'active',
+              difficultyId: 1,
+              difficultyName: 'Easy',
+              npcDefinitions: '',
+              loggingRequested: true,
+            }],
+            combatState: {
+              ...prev.combatState,
+              activeEncounterId: 'test-enc-id',
+              combatants: [
+                { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
+              ]
+            },
+            activeCombatLog: null
+          }));
+        });
+
+        // 1. Success path
+        vi.mocked(updateEncounterLoggingRequestedDB).mockResolvedValueOnce(undefined);
+
+        const { result } = renderHook(() => useCombatSync());
+
+        await act(async () => {
+          await result.current.resetCombat();
+        });
+
+        const encounterAfterSuccess = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+        expect(encounterAfterSuccess?.loggingRequested).toBe(false);
+        expect(updateEncounterLoggingRequestedDB).toHaveBeenCalledWith('test-enc-id', false);
+
+        // Reset state for rollback path
+        act(() => {
+          useDashboardStore.setState(prev => ({
+            ...prev,
+            encounters: [{
+              id: 'test-enc-id',
+              name: 'Test Encounter',
+              location: 'Test Location',
+              status: 'active',
+              difficultyId: 1,
+              difficultyName: 'Easy',
+              npcDefinitions: '',
+              loggingRequested: true,
+            }],
+            combatState: {
+              ...prev.combatState,
+              activeEncounterId: 'test-enc-id',
+              combatants: [
+                { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
+              ]
+            },
+            activeCombatLog: null
+          }));
+        });
+
+        // 2. Failure path with rollback
+        vi.mocked(updateEncounterLoggingRequestedDB).mockRejectedValueOnce(new Error('DB Error'));
+
+        await act(async () => {
+          await result.current.resetCombat();
+        });
+
+        const encounterAfterFailure = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+        expect(encounterAfterFailure?.loggingRequested).toBe(true);
+      } finally {
+        setSpreadsheetId(originalSheetId);
+      }
+    });
+
+    it('resetCombat and cancelCombat in local mode (no spreadsheet) should set loggingRequested to false locally without calling DB or rolling back', async () => {
+      const originalSheetId = getSpreadsheetId();
+      setSpreadsheetId('');
+
+      try {
+        act(() => {
+          useDashboardStore.setState(prev => ({
+            ...prev,
+            encounters: [{
+              id: 'test-enc-id',
+              name: 'Test Encounter',
+              location: 'Test Location',
+              status: 'active',
+              difficultyId: 1,
+              difficultyName: 'Easy',
+              npcDefinitions: '',
+              loggingRequested: true,
+            }],
+            combatState: {
+              ...prev.combatState,
+              activeEncounterId: 'test-enc-id',
+              combatants: [
+                { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
+              ]
+            },
+            activeCombatLog: null
+          }));
+        });
+
+        vi.mocked(updateEncounterLoggingRequestedDB).mockClear();
+
+        const { result } = renderHook(() => useCombatSync());
+
+        await act(async () => {
+          await result.current.resetCombat();
+        });
+
+        const encounterAfterReset = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+        expect(encounterAfterReset?.loggingRequested).toBe(false);
+        expect(updateEncounterLoggingRequestedDB).not.toHaveBeenCalled();
+
+        // Reset state to true for cancelCombat testing
+        act(() => {
+          useDashboardStore.setState(prev => ({
+            ...prev,
+            encounters: prev.encounters.map(e => e.id === 'test-enc-id' ? { ...e, loggingRequested: true } : e)
+          }));
+        });
+
+        await act(async () => {
+          result.current.cancelCombat();
+        });
+
+        const encounterAfterCancel = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+        expect(encounterAfterCancel?.loggingRequested).toBe(false);
+        expect(updateEncounterLoggingRequestedDB).not.toHaveBeenCalled();
+      } finally {
+        setSpreadsheetId(originalSheetId);
+      }
+    });
+
+    it('recordEncounter in local mode (no spreadsheet) should set loggingRequested to true locally without calling DB', async () => {
+      const originalSheetId = getSpreadsheetId();
+      setSpreadsheetId('');
+
+      try {
+        act(() => {
+          useDashboardStore.setState(prev => ({
+            ...prev,
+            encounters: [{
+              id: 'test-enc-id',
+              name: 'Test Encounter',
+              location: 'Test Location',
+              status: 'active',
+              difficultyId: 1,
+              difficultyName: 'Easy',
+              npcDefinitions: '',
+              loggingRequested: false,
+            }],
+            combatState: {
+              ...prev.combatState,
+              activeEncounterId: 'test-enc-id',
+              combatants: [
+                { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10 }
+              ]
+            },
+            activeCombatLog: null
+          }));
+        });
+
+        vi.mocked(updateEncounterLoggingRequestedDB).mockClear();
+
+        const { result } = renderHook(() => useCombatSync());
+
+        await act(async () => {
+          await result.current.recordEncounter();
+        });
+
+        const encounterAfterRecord = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
+        expect(encounterAfterRecord?.loggingRequested).toBe(true);
+        expect(updateEncounterLoggingRequestedDB).not.toHaveBeenCalled();
+      } finally {
+        setSpreadsheetId(originalSheetId);
+      }
+    });
   });
 });

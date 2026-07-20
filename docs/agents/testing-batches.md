@@ -4,7 +4,7 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 12 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 859 tests.** (Reconciled after a long stretch of this file being allowed to drift while real batch counts moved across a large, multi-part session of work — the combat-logging progressive-logging feature, the Hasted/concentration fix, the temp HP/AC feature plus its collision fix, and the NPC recharge-ability reminder. Each batch below reflects the last real, literal terminal output actually shown during that work, not a recomputed guess: Batch 1 469→472 (Hasted/Concentrating fix, 3 new unit tests)→474 (recharge feature, `performRechargeRoll` tests, +2). Batch 2 37→40 (combat-logging DB operations layer, Stage 2, +3). Batch 3 53→58 (combat-logging store/hook layer, Stage 3, `combatLogSlice.test.ts`, +3, net of an already-corrected +2 along the way). Batch 5A 54→62 across several stages: the Record/End Encounter button work, its `handleCallInitiative`/`recordEncounter` collision fix, the temp-AC delta-preservation fix, and the recharge trigger tests. Batch 5B 29→41 across the same button work plus the temp HP and temp AC quick-entry UI. Batch 7B-2 20→23 (PlayerView temp HP pill, +1, net of a prior correction along the way). All other batches unchanged.)
+**Current baseline: 865 tests.** (Reconciled after a long stretch of this file being allowed to drift while real batch counts moved across a large, multi-part session of work — the combat-logging progressive-logging feature, the Hasted/concentration fix, the temp HP/AC feature plus its collision fix, the NPC recharge-ability reminder, and a real production bug (the Record Encounter button not visually updating after a successful sheet write) found and fixed in 2 passes after the feature shipped. Each batch below reflects the last real, literal terminal output actually shown during that work, not a recomputed guess: Batch 1 469→472 (Hasted/Concentrating fix, 3 new unit tests)→474 (recharge feature, `performRechargeRoll` tests, +2). Batch 2 37→40 (combat-logging DB operations layer, Stage 2, +3). Batch 3 53→58 (combat-logging store/hook layer, Stage 3, `combatLogSlice.test.ts`, +3, net of an already-corrected +2 along the way). Batch 5A 54→68 across several stages: the Record/End Encounter button work, its `handleCallInitiative`/`recordEncounter` collision fix, the temp-AC delta-preservation fix, the recharge trigger tests, and the `loggingRequested` local-state-sync bug fix (+6 across its 2 passes). Batch 5B 29→41 across the same button work plus the temp HP and temp AC quick-entry UI. Batch 7B-2 20→23 (PlayerView temp HP pill, +1, net of a prior correction along the way). All other batches unchanged.)
 
 Run each batch individually. Never chain with `&&`. Never use glob patterns. Never run all tests at once with `npx vitest run`.
 
@@ -14,7 +14,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 2 | `src/services/__tests__` | 40 |
 | 3 | `src/hooks/__tests__` | 58 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 9 |
-| 5A | ActiveEncounterTab hooks (`.test.ts`) | 62 |
+| 5A | ActiveEncounterTab hooks (`.test.ts`) | 68 |
 | 5B | ActiveEncounterTab components (`.test.tsx`) | 41 |
 | 6A | `src/components/PartyTab/__tests__` | 55 |
 | 6B | `src/components/EncountersTab/__tests__` | 23 |
@@ -37,7 +37,7 @@ npx vitest run src/hooks/__tests__
 # BATCH 4 — 9 tests
 npx vitest run src/server/__tests__ src/__tests__
 
-# BATCH 5A — 62 tests
+# BATCH 5A — 68 tests
 npx vitest run src/components/ActiveEncounterTab/__tests__/useBatchActions.test.ts src/components/ActiveEncounterTab/__tests__/useCombatSync.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantCard.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantExpanded.test.ts src/components/ActiveEncounterTab/__tests__/useEncounterPresetLoader.test.ts src/components/ActiveEncounterTab/__tests__/useHealthChange.test.ts src/components/ActiveEncounterTab/__tests__/useSelectionMode.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantMutations.test.ts
 
 # BATCH 5B — 41 tests

@@ -65,7 +65,7 @@ export function useCombatLifecycle() {
         round: 1,
         combatants: prev.combatState.combatants.map(c => ({ ...c, initiative: 0 })),
         actionContext: { sourceOverride: null, actionType: 'attack' }
-      },
+      }
     }));
 
     useDashboardStore.getState().setCombatStarted(false);
@@ -160,18 +160,35 @@ export function useCombatLifecycle() {
           });
         })
 
-        // Turn off logging
-        updateEncounterLoggingRequestedDB(encounterId, false).catch(err => console.error(err));
-        
       } catch (error) {
         console.error('Failed to fetch and save encounter log', error);
         toast.error('Failed to fetch events from EncounterLogEvents.');
       }
     } else {
-      if (!activeCombatLog) {
+      if (!activeCombatLog && encounterId) {
         toast.warning('No combat log was recorded for this encounter — initiative may not have been called, or the log was cleared unexpectedly.');
-      } else if (!currentSpreadsheetId) {
+      } else if (!currentSpreadsheetId && encounterId) {
         toast.warning('Encounter ended, but no Google Spreadsheet is configured — the combat log was not saved.');
+      }
+    }
+
+    // Handle loggingRequested update symmetrically
+    if (encounterId) {
+      if (currentSpreadsheetId) {
+        updateState(prev => ({
+          ...prev,
+          encounters: prev.encounters.map(e => e.id === encounterId ? { ...e, loggingRequested: false } : e)
+        }));
+
+        updateEncounterLoggingRequestedDB(encounterId, false).catch(err => {
+          console.error(err);
+          updateState(prev => ({ ...prev, encounters: latestSnapshot.encounters }));
+        });
+      } else {
+        updateState(prev => ({
+          ...prev,
+          encounters: prev.encounters.map(e => e.id === encounterId ? { ...e, loggingRequested: false } : e)
+        }));
       }
     }
 
@@ -190,7 +207,7 @@ export function useCombatLifecycle() {
         round: 1,
         combatants: prev.combatState.combatants.map(c => ({ ...c, initiative: 0 })),
         actionContext: { sourceOverride: null, actionType: 'attack' }
-      },
+      }
     }));
 
     useDashboardStore.getState().setCombatStarted(false);
@@ -203,8 +220,25 @@ export function useCombatLifecycle() {
       }
     });
 
+    const currentSpreadsheetId = getSpreadsheetId();
+
     if (encounterId) {
-      updateEncounterLoggingRequestedDB(encounterId, false).catch(err => console.error(err));
+      if (currentSpreadsheetId) {
+        updateState(prev => ({
+          ...prev,
+          encounters: prev.encounters.map(e => e.id === encounterId ? { ...e, loggingRequested: false } : e)
+        }));
+
+        updateEncounterLoggingRequestedDB(encounterId, false).catch(err => {
+          console.error(err);
+          updateState(prev => ({ ...prev, encounters: latestSnapshot.encounters }));
+        });
+      } else {
+        updateState(prev => ({
+          ...prev,
+          encounters: prev.encounters.map(e => e.id === encounterId ? { ...e, loggingRequested: false } : e)
+        }));
+      }
     }
 
     useDashboardStore.getState().clearCombatLog();
@@ -248,13 +282,29 @@ export function useCombatLifecycle() {
       logProgressiveEvent
     );
 
-    try {
-      await updateEncounterLoggingRequestedDB(encounterId, true);
-    } catch (err) {
-      console.error('[CombatLog] Failed to enable encounter logging:', err);
-      toast.error('Failed to enable encounter logging.');
+    const previousState = getSnapshot();
+    const currentSpreadsheetId = getSpreadsheetId();
+
+    if (currentSpreadsheetId) {
+      updateState(prev => ({
+        ...prev,
+        encounters: prev.encounters.map(e => e.id === encounterId ? { ...e, loggingRequested: true } : e)
+      }));
+
+      try {
+        await updateEncounterLoggingRequestedDB(encounterId, true);
+      } catch (err) {
+        console.error('[CombatLog] Failed to enable encounter logging:', err);
+        updateState(prev => ({ ...prev, encounters: previousState.encounters }));
+        toast.error('Failed to enable encounter logging.');
+      }
+    } else {
+      updateState(prev => ({
+        ...prev,
+        encounters: prev.encounters.map(e => e.id === encounterId ? { ...e, loggingRequested: true } : e)
+      }));
     }
-  }, []);
+  }, [updateState]);
 
   return {
     rollInitForNPCs,
