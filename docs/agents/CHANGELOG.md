@@ -6,6 +6,18 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Security Audit — Read-Only Investigation, Findings Tracked in ROADMAP.md
+
+Picked security as the first of the 4 remaining audit categories (over type safety, accessibility, performance), given this app handles real OAuth tokens and writes to a GM's actual Google account — the one category where a real gap has tangible consequences, not just a code-quality nitpick. Split into 3 focused prompts rather than one broad sweep, following the same discipline as the earlier componentization audit: OAuth token handling, server-side routes, and a client-side pattern sweep (`dangerouslySetInnerHTML`, `eval`/`Function`, injection-prone `href`/`src` construction).
+
+**3 real findings, now tracked as open bugs in `ROADMAP.md`**: the OAuth refresh token displays in plaintext on every successful login in `AuthRelay.tsx` (not a rare fallback, confirmed via the real state/render logic); the server-only client secret uses the `VITE_` naming prefix, a real hazard even though it's confirmed not to be an active leak; and 2 lightweight endpoints (`GET /api/auth/config`, `GET /api/health`) are missing rate limiting applied elsewhere.
+
+**Everything else came back clean, with real evidence, not just an assertion of safety**: no `dangerouslySetInnerHTML` anywhere in the codebase, no `eval`/`Function`/raw DOM manipulation, the one dynamic `href` (the "Open Sheet" link) is safely constructed with a hardcoded protocol prefix that neutralizes injection regardless of what's interpolated into the path, `react-markdown` is used safely for reference content, tokens are never logged/URL-exposed/sent to non-Google endpoints, bearer token handling is sound server-side, and no shell-command or URL-injection paths were found in the server routes.
+
+**Worth recording honestly: a single, simple factual question — the exact name of one environment variable — was answered 3 different, contradictory ways across this investigation** before being resolved with certainty. First described informally as `VITE_`-prefixed; then a real grep appeared to show it wasn't; then a later prompt reintroduced the `VITE_`-prefixed claim as a "confirmed high-severity vulnerability" without being asked to re-check it; a demanded fresh, full-file `cat` (not another targeted grep) finally settled that the variable genuinely is `VITE_GOOGLE_CLIENT_SECRET`, existing as a fallback alongside 2 non-prefixed alternatives. Even then, the initial conclusion drawn from that fact — that the secret's *value* was actively leaking into the production bundle — didn't actually follow from the evidence shown, and was corrected by identifying the specific, narrower check that resolved it: whether any client-side code references the variable via `import.meta.env` (none does), as opposed to the variable's *name* merely appearing as unrelated string literals (UI help text, an error-message comparison) that a bundle grep would also match.
+
+---
+
 ## NPC Recharge-Ability Reminder on Turn Start
 
 Reported from a real game session: recharge abilities (e.g. "Recharge 5-6") were easy to forget to roll for, with nothing prompting the GM. Two specific requirements: the reminder must not auto-dismiss like a typical toast, and it needs a button to roll the die directly rather than just being a text reminder.

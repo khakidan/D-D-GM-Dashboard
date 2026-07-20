@@ -72,11 +72,11 @@ describe('AuthRelay Component Tests', () => {
     expect(screen.getByRole('heading', { name: /Login Successful!/i })).toBeInTheDocument();
     expect(screen.getByText(/Persistent Sync Code \(Refresh Token\):/i)).toBeInTheDocument();
     
-    // Verify the tokens are in the textareas
+    // Verify the tokens are in the textareas (refresh token should be masked)
     const textareas = screen.getAllByRole('textbox');
     const values = textareas.map(t => (t as HTMLTextAreaElement).value);
     expect(values).toContain('mock-access-token');
-    expect(values).toContain('mock-refresh-token');
+    expect(values).toContain('•'.repeat(64));
   });
 
   // 5. Render persistence error state when access token is present but refresh token is missing
@@ -144,7 +144,7 @@ describe('AuthRelay Component Tests', () => {
     const textareas = screen.getAllByRole('textbox');
     const values = textareas.map(t => (t as HTMLTextAreaElement).value);
     expect(values).toContain('new-storage-access-token');
-    expect(values).toContain('new-storage-refresh-token');
+    expect(values).toContain('•'.repeat(64));
   });
 
   // 8. Poll localStorage on interval and transition to logged-in state when tokens appear
@@ -185,11 +185,11 @@ describe('AuthRelay Component Tests', () => {
 
     render(<AuthRelay />);
 
-    const copyBtn = screen.getByRole('button', { name: /Copy Refresh Token/i });
+    const copyBtn = screen.getAllByRole('button', { name: /Copy/i }).find(b => b.textContent?.includes('Copy'));
     expect(copyBtn).toBeInTheDocument();
 
     // Click copy
-    fireEvent.click(copyBtn);
+    if (copyBtn) fireEvent.click(copyBtn);
     expect(writeTextMock).toHaveBeenLastCalledWith('mock-refresh-token');
     expect(screen.getByRole('button', { name: /Copied!/i })).toBeInTheDocument();
 
@@ -201,7 +201,7 @@ describe('AuthRelay Component Tests', () => {
     expect(screen.getByRole('button', { name: /Copied!/i })).toBeInTheDocument();
 
     // Click copy again to trigger race condition reset
-    fireEvent.click(copyBtn);
+    if (copyBtn) fireEvent.click(copyBtn);
 
     // Advance by another 1500ms. If the first timer was not cancelled, it would have fired at 2000ms total (reverting it).
     // But since we reset it, it should stay "Copied!" until 1500ms + 1000ms = 2500ms from the second click, which is 3500ms total.
@@ -216,8 +216,62 @@ describe('AuthRelay Component Tests', () => {
     });
     // Reverts back
     expect(screen.queryByRole('button', { name: /Copied!/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Copy Refresh Token/i })).toBeInTheDocument();
+    
+    // the textContent of copyBtn is just "Copy"
+    expect(screen.getAllByRole('button', { name: /Copy/i }).find(b => b.textContent?.trim() === 'Copy')).toBeInTheDocument();
 
     vi.useRealTimers();
+  });
+
+  // 10. Mask refresh token by default, reveal when clicked, and copy real token regardless of mask state
+  it('should mask refresh token by default, reveal when clicked, and copy real token regardless of mask state', () => {
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', {
+      clipboard: {
+        writeText: writeTextMock,
+      },
+    });
+
+    localStorage.setItem(STORAGE_KEYS.googleAccessToken, 'mock-access-token');
+    localStorage.setItem(STORAGE_KEYS.googleRefreshToken, 'mock-refresh-token');
+
+    render(<AuthRelay />);
+
+    // By default, the text area should have bullets, not the real token
+    const textareas = screen.getAllByRole('textbox');
+    // One for refresh token, one for access token. Access token is still plaintext.
+    const refreshTokenArea = textareas[0] as HTMLTextAreaElement;
+    
+    expect(refreshTokenArea.value).not.toBe('mock-refresh-token');
+    expect(refreshTokenArea.value).toContain('••••');
+
+    // Find the show button
+    const showBtn = screen.getByRole('button', { name: /Show/i });
+    expect(showBtn).toBeInTheDocument();
+
+    // Copying while masked should still copy the real token
+    const copyBtns = screen.getAllByRole('button', { name: /Copy/i }).filter(b => b.textContent?.trim() === 'Copy');
+    const refreshTokenCopyBtn = copyBtns[0]; // Assuming it's the first one
+
+    fireEvent.click(refreshTokenCopyBtn);
+    expect(writeTextMock).toHaveBeenLastCalledWith('mock-refresh-token');
+
+    // Click Show
+    fireEvent.click(showBtn);
+
+    // Now it should be revealed
+    expect(refreshTokenArea.value).toBe('mock-refresh-token');
+    
+    // Button should now say Hide
+    const hideBtn = screen.getByRole('button', { name: /Hide/i });
+    expect(hideBtn).toBeInTheDocument();
+
+    // Copying while revealed should still copy the real token
+    fireEvent.click(refreshTokenCopyBtn);
+    expect(writeTextMock).toHaveBeenLastCalledWith('mock-refresh-token');
+
+    // Click Hide
+    fireEvent.click(hideBtn);
+    expect(refreshTokenArea.value).toContain('••••');
   });
 });
