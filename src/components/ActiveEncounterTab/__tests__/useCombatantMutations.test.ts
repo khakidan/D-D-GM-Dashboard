@@ -1,6 +1,6 @@
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { useCombatantMutations } from '../hooks/useCombatantMutations';
+import { useCombatantMutations, calculateCombatantStateUpdates } from '../hooks/useCombatantMutations';
 import { toast } from 'sonner';
 import { 
   deleteEncounterCombatantDB, 
@@ -174,5 +174,60 @@ describe('useCombatantMutations', () => {
 
     // The conditions should now have Unconscious, but Hasted and Concentrating should be stripped
     expect(mockAppState.combatState.combatants[0].conditions).toBe('Unconscious');
+  });
+
+  describe('calculateCombatantStateUpdates tempAcModifier delta preservation', () => {
+    it('preserves manually-set tempAcModifier when an unrelated condition is added', () => {
+      const currentCombatant = {
+        id: 'c1',
+        type: 'pc' as const,
+        name: 'Gimli',
+        maxHp: 30,
+        currentHp: 25,
+        conditions: '',
+        tempAcModifier: 3, // manually set via stepper
+      };
+
+      const result = calculateCombatantStateUpdates(currentCombatant, {
+        conditions: 'poisoned', // unrelated condition with 0 AC modifier
+      });
+
+      // The new tempAcModifier should remain 3, meaning no update registered (undefined)
+      expect(result.updates.tempAcModifier).toBeUndefined();
+    });
+
+    it('correctly applies delta when a condition with AC effects (Hasted) is added on top of manual tempAcModifier, and subtracts it back out when removed', () => {
+      const currentCombatant = {
+        id: 'c1',
+        type: 'pc' as const,
+        name: 'Gimli',
+        maxHp: 30,
+        currentHp: 25,
+        conditions: '',
+        tempAcModifier: 3, // manually set via stepper
+      };
+
+      // Adding Hasted (which has a +2 AC modifier)
+      const resultAdd = calculateCombatantStateUpdates(currentCombatant, {
+        conditions: 'hasted',
+      });
+
+      // Delta should be +2, so new tempAcModifier should be 3 + 2 = 5
+      expect(resultAdd.updates.tempAcModifier).toBe(5);
+
+      // Symmetrically, removing Hasted back to empty
+      const combatantWithHaste = {
+        ...currentCombatant,
+        conditions: 'hasted',
+        tempAcModifier: 5, // manual 3 + hasted 2
+      };
+
+      const resultRemove = calculateCombatantStateUpdates(combatantWithHaste, {
+        conditions: '',
+      });
+
+      // Delta should be -2, so new tempAcModifier should be 5 - 2 = 3 (the original manual value)
+      expect(resultRemove.updates.tempAcModifier).toBe(3);
+    });
   });
 });

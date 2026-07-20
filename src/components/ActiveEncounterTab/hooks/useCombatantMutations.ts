@@ -416,9 +416,14 @@ export function calculateCombatantStateUpdates(
       }
     }
 
+    const oldAcMod = calculateConditionAcModifier(oldConditions);
     const newAcMod = calculateConditionAcModifier(newConditions);
-    if (newAcMod !== (currentCombatant.tempAcModifier || 0)) {
-      mergedUpdates = { ...mergedUpdates, tempAcModifier: newAcMod };
+    const delta = newAcMod - oldAcMod;
+    if (delta !== 0) {
+      const currentVal = mergedUpdates.tempAcModifier !== undefined 
+        ? mergedUpdates.tempAcModifier 
+        : (currentCombatant.tempAcModifier || 0);
+      mergedUpdates = { ...mergedUpdates, tempAcModifier: currentVal + delta };
     }
 
     if (currentCombatant.type === 'pc') {

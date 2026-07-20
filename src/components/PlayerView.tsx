@@ -163,8 +163,17 @@ export function PlayerView() {
                 </td>
                 <td className="p-4 text-center text-xl md:text-2xl min-w-[7rem] whitespace-nowrap">
                   {c.type === 'pc' ? (
-                    <div className="font-sans font-bold text-[#0f172a] whitespace-nowrap">
-                      {c.currentHp} <span className="text-[#64748b] opacity-70">/ {c.maxHp}</span>
+                    <div className="font-sans font-bold text-[#0f172a] flex items-center justify-center gap-2 whitespace-nowrap">
+                      <span>{c.currentHp} <span className="text-[#64748b] opacity-70">/ {c.maxHp}</span></span>
+                      {c.tempHp && c.tempHp > 0 ? (
+                        <span 
+                          className="inline-flex items-center gap-1.5 bg-blue-50 border-2 border-blue-400 rounded-full px-3 py-1 text-lg md:text-xl font-black text-blue-800 shadow-sm shrink-0 select-none animate-none"
+                          data-testid="player-temphp-pill"
+                        >
+                          <Shield className="w-6 h-6 md:w-7 md:h-7 text-blue-600 fill-blue-100" />
+                          <span>{c.tempHp}</span>
+                        </span>
+                      ) : null}
                     </div>
                   ) : (
                     <span className="text-[#64748b] opacity-50 font-bold text-lg">-</span>

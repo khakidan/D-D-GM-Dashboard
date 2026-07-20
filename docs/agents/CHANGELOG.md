@@ -6,6 +6,22 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Temp HP/AC Quick Entry and Display, Plus a Real Collision Bug Caught Along the Way
+
+Two items reported from a real game session, refined via mockups before implementation. Temp HP already had an editing mechanism (in the expanded card) that Dan had simply missed — the real gap was display, not entry. Temp AC had no quick-entry mechanism at all.
+
+**Collapsed combatant card (`CombatantCardHeader.tsx`):** both temp HP and temp AC now show as a small light-blue pill (shield icon + value for HP, signed value for AC) immediately next to the stat they modify, when active. When inactive, a faint dashed-border "+" ghost affordance takes its place, only becoming visible on row hover, so combatants without any temp effects don't add visual clutter. Clicking either state opens a small inline −/input/+ stepper with click-away-to-close behavior. Temp HP's stepper floors at 0 (can't go negative); temp AC's does not, since real AC-lowering effects exist (e.g. the Slow spell). Both write to the existing fields (`tempHp`, `tempAcModifier`) via the same `onUpdateCombatant` path already used elsewhere — no parallel mechanism introduced.
+
+**`PlayerView.tsx`** (the 50-inch TV display): temp HP now shows as a bold pill after the "/max" HP text, read-only, with a deliberately thicker 2px border and icon/text sized close to the page's existing Status badges (24-28px icon, `text-lg`/`text-xl` numerals) rather than a smaller afterthought — a first pass undersized this relative to the rest of the page and was corrected after direct comparison against the Status column's scale. AC is deliberately not shown on this page at all, consistent with the rest of the page.
+
+**A real bug was caught and fixed as a direct consequence of adding the manual temp AC stepper.** The app already has a general, pre-existing condition-to-AC system (`calculateConditionAcModifier`, driven by a `tempAcModifier` field on every entry in the `CONDITION_MECHANICS` registry — confirmed via evidence that this is a required interface field applied uniformly across all conditions including ones with a 0 modifier, not something invented for this task) that automatically recalculates `tempAcModifier` whenever a combatant's conditions change. Before this session, that was fine since nothing else wrote to `tempAcModifier`. The new manual stepper introduced a second writer to the same field, and the existing recalculation logic *replaced* the field outright rather than adjusting it — meaning any GM who manually set a temp AC value, then had *any* unrelated condition added or removed on that combatant, would have that value silently reset to whatever the conditions alone summed to.
+
+**Fix**: the recalculation in `calculateCombatantStateUpdates` was changed from a full replacement to a delta-based update — it now computes the AC-modifier difference between the combatant's old and new condition lists, and adds that delta to whatever `tempAcModifier` currently is, rather than replacing it. This means a manually-set value is preserved through unrelated condition changes, while a condition that genuinely affects AC (like Hasted, already pre-configured at +2) still correctly raises or lowers the total by exactly its own contribution — verified by tracing a manual value of 3 through Hasted being added (→5) and then removed (→3, the original value, restored exactly).
+
+Verified: real, complete test batches at each of the 3 implementation stages, all matching expected counts for the tests genuinely added — Batch 5A (60/60, +2 for the delta-preservation tests), Batch 5B (39/39, +4 each for the temp HP and temp AC UI work), Batch 7B-2 (23/23, +1 for the PlayerView pill) — plus a clean `tsc -p tsconfig.build.json --noEmit` at every stage.
+
+---
+
 ## Progressive Combat Logging — Record/End Encounter Button, Sheet-Backed Event Log
 
 Fixes the combat-logging robustness bug reported from a real game session: following what felt like the standard flow still resulted in an empty, unrecoverable log at End Encounter. Investigation found 3 distinct real failure modes, not one — "Call for Initiative" being skipped, a silent cross-tab overwrite of `activeCombatLog` (a genuine gap in the earlier cross-tab sync fix, caught during this investigation), and the log never surviving a multi-device or cleared-storage resume since it lived only in `localStorage`. Fixing this properly meant a real architecture change, not a patch — implemented in 4 stages.
