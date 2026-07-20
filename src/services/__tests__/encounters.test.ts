@@ -2,7 +2,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as sheetsService from '../sheetsService';
-import { deleteEncounterFully } from '../dbOperations';
+import { deleteEncounterFully, updateEncounterLoggingRequestedDB } from '../dbOperations';
 
 vi.mock('../sheetsService', () => ({
   fetchSheetData: vi.fn(),
@@ -131,5 +131,46 @@ describe('deleteEncounterFully — cascade delete', () => {
     // Verify they are sorted descending: startIndex 3 (log-3) should be deleted first, then startIndex 1 (log-1)
     expect(logDeletes[0].deleteDimension?.range?.startIndex).toBe(3);
     expect(logDeletes[1].deleteDimension?.range?.startIndex).toBe(1);
+  });
+});
+
+describe('updateEncounterLoggingRequestedDB', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('correctly finds the row and writes TRUE/FALSE to the right column', async () => {
+    // Mock fetchSheetData so findRowIndexById finds the encounter at row index 1 (A3)
+    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({
+      values: [
+        ['enc-0', 'Test 0'],
+        ['enc-1', 'Test 1'] // This is row index 1.
+      ]
+    });
+
+    await updateEncounterLoggingRequestedDB('enc-1', true);
+
+    expect(sheetsService.updateSheetData).toHaveBeenCalled();
+    const call1 = vi.mocked(sheetsService.updateSheetData).mock.calls[0];
+    expect(call1[0]).toBe('mock-spreadsheet-id');
+    // Row index 1 + 2 = A3. A1 row is 3. Column is H.
+    expect(call1[1]).toBe('Encounters!H3:H3');
+    expect(call1[2]).toEqual([['TRUE']]);
+
+    // Test false case
+    vi.clearAllMocks();
+    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({
+      values: [
+        ['enc-0', 'Test 0'],
+        ['enc-1', 'Test 1'] 
+      ]
+    });
+
+    await updateEncounterLoggingRequestedDB('enc-1', false);
+    
+    expect(sheetsService.updateSheetData).toHaveBeenCalled();
+    const call2 = vi.mocked(sheetsService.updateSheetData).mock.calls[0];
+    expect(call2[1]).toBe('Encounters!H3:H3');
+    expect(call2[2]).toEqual([['FALSE']]);
   });
 });

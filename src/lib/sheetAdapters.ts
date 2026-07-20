@@ -173,7 +173,7 @@ export function mapEncounterRowToEncounter(
   rowIndex: number,
   difficulties: Record<string, string>
 ): Encounter {
-  const [id, name, location, difficultyId, npcDefinitions, currentRound, activeTurnId] = data;
+  const [id, name, location, difficultyId, npcDefinitions, currentRound, activeTurnId, loggingRequested] = data;
 
   return {
     id,
@@ -186,6 +186,7 @@ export function mapEncounterRowToEncounter(
     sheetRowIndex: rowIndex,
     currentRound: currentRound ?? 0,
     activeTurnId: activeTurnId ?? '',
+    loggingRequested: loggingRequested ?? false,
   };
 }
 

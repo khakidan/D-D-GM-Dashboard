@@ -1,5 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useDashboardStore } from '../dashboardStore';
+import { appendEncounterLogEventDB } from '../../services/dbOperations';
+
+vi.mock('../../services/dbOperations', () => ({
+  appendEncounterLogEventDB: vi.fn().mockResolvedValue(undefined),
+}));
 
 describe('combatLogSlice', () => {
   beforeEach(() => {
@@ -84,6 +89,31 @@ describe('combatLogSlice', () => {
     expect(event?.type).toBe('damage');
   });
 
+  it('TEST 2.2b — addCombatEvent preserves provided id and timestamp', () => {
+    useDashboardStore.getState().initCombatLog(
+      'enc-1', 'Test', 'Test', [], [], 1
+    );
+
+    useDashboardStore.getState().addCombatEvent({
+      id: 'pre-generated-id',
+      timestamp: '2023-01-01T00:00:00.000Z',
+      round: 1,
+      type: 'damage',
+      actorId: 'pc-1',
+      actorName: 'Aria',
+      targetId: 'npc-1',
+      targetName: 'Goblin',
+      value: 5,
+      isManualAdjustment: false,
+    });
+
+    const log = useDashboardStore.getState().activeCombatLog;
+    expect(log?.events).toHaveLength(1);
+    const event = log?.events[0];
+    expect(event?.id).toBe('pre-generated-id');
+    expect(event?.timestamp).toBe('2023-01-01T00:00:00.000Z');
+  });
+
   it('TEST 2.3 — addCombatEvent is a no-op when activeCombatLog is null', () => {
     useDashboardStore.getState().addCombatEvent({
       round: 1,
@@ -137,5 +167,80 @@ describe('combatLogSlice', () => {
 
     useDashboardStore.getState().setCombatStarted(false);
     expect(useDashboardStore.getState().combatState.combatStarted).toBe(false);
+  });
+
+  it('TEST 2.8 — logProgressiveEvent commits locally and fires network write if loggingRequested is true', async () => {
+    vi.clearAllMocks();
+    useDashboardStore.setState((state) => ({
+      ...state,
+      encounters: [{
+        id: 'enc-1',
+        name: 'Test',
+        location: 'Test',
+        difficultyId: 1,
+        difficultyName: 'Easy',
+        npcDefinitions: '',
+        status: 'active',
+        loggingRequested: true
+      }]
+    }));
+    useDashboardStore.getState().initCombatLog(
+      'enc-1', 'Test', 'Test', [], [], 1
+    );
+
+    await useDashboardStore.getState().logProgressiveEvent({
+      round: 1,
+      type: 'damage',
+      actorId: 'pc-1',
+      actorName: 'Aria',
+      targetId: 'npc-1',
+      targetName: 'Goblin',
+      value: 5,
+      isManualAdjustment: false,
+    });
+
+    const log = useDashboardStore.getState().activeCombatLog;
+    expect(log?.events).toHaveLength(1);
+    const event = log?.events[0];
+    
+    // Should have called the DB service
+    expect(appendEncounterLogEventDB).toHaveBeenCalledWith('enc-1', event);
+  });
+
+  it('TEST 2.9 — logProgressiveEvent commits locally but does NOT fire network write if loggingRequested is false', async () => {
+    vi.clearAllMocks();
+    useDashboardStore.setState((state) => ({
+      ...state,
+      encounters: [{
+        id: 'enc-1',
+        name: 'Test',
+        location: 'Test',
+        difficultyId: 1,
+        difficultyName: 'Easy',
+        npcDefinitions: '',
+        status: 'active',
+        loggingRequested: false
+      }]
+    }));
+    useDashboardStore.getState().initCombatLog(
+      'enc-1', 'Test', 'Test', [], [], 1
+    );
+
+    await useDashboardStore.getState().logProgressiveEvent({
+      round: 1,
+      type: 'damage',
+      actorId: 'pc-1',
+      actorName: 'Aria',
+      targetId: 'npc-1',
+      targetName: 'Goblin',
+      value: 5,
+      isManualAdjustment: false,
+    });
+
+    const log = useDashboardStore.getState().activeCombatLog;
+    expect(log?.events).toHaveLength(1);
+    
+    // Should NOT have called the DB service
+    expect(appendEncounterLogEventDB).not.toHaveBeenCalled();
   });
 });

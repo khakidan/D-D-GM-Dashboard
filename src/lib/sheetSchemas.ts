@@ -26,7 +26,7 @@ export const NPC_HEADERS = [
 export const ENCOUNTER_HEADERS = [
   'Encounter_ID', 'Encounter_Name', 'Location',
   'Difficulty', 'NPC_Definitions',
-  'Current_Round', 'Active_Turn_ID'
+  'Current_Round', 'Active_Turn_ID', 'Logging_Requested'
 ] as const;
 
 export const ENCOUNTER_COMBATANT_HEADERS = [
@@ -40,6 +40,12 @@ export const ENCOUNTER_COMBATANT_HEADERS = [
 
 export const ENCOUNTER_LOG_HEADERS = [
   'id', 'encounterId', 'encounterName', 'location', 'date', 'durationRounds', 'outcome', 'partySnapshot', 'events', 'transcript'
+] as const;
+
+export const ENCOUNTER_LOG_EVENT_HEADERS = [
+  'Event_ID', 'Encounter_ID', 'Round', 'Timestamp', 'Type',
+  'Actor_ID', 'Actor_Name', 'Target_ID', 'Target_Name',
+  'Details', 'Is_Manual_Adjustment'
 ] as const;
 
 const idSchema = z
@@ -140,6 +146,7 @@ export const EncounterRowSchema = z.preprocess(padRow(ENCOUNTER_HEADERS.length),
   stringDefault(''),                   // [4] NPC_Definitions
   coerceNumber(0),                     // [5] currentRound
   stringDefault(''),                   // [6] activeTurnId
+  z.any().transform(val => val === 'TRUE' || val === true || val === 'true'), // [7] loggingRequested
 ]));
 
 export const EncounterCombatantRowSchema = z.preprocess(padRow(ENCOUNTER_COMBATANT_HEADERS.length), z.tuple([

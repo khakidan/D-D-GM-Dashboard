@@ -12,7 +12,7 @@ export function useCombatSync() {
   const { state, updateState } = useAppState();
   
   const { syncingIds, updateCombatant, removeCombatant } = useCombatantMutations();
-  const { rollInitForNPCs, resetCombat, cancelCombat, handleCallInitiative } = useCombatLifecycle();
+  const { rollInitForNPCs, resetCombat, cancelCombat, handleCallInitiative, recordEncounter } = useCombatLifecycle();
   const { nextTurn } = useCombatTurn(updateCombatant);
   const {
     concentrationPrompt,
@@ -66,6 +66,7 @@ export function useCombatSync() {
     resetCombat,
     cancelCombat,
     handleCallInitiative,
+    recordEncounter,
     nextTurn,
     handleConcentrationPrompt,
     handleSelectCaster,

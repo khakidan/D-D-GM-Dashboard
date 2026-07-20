@@ -35,9 +35,9 @@ export function useCombatantExpanded(c: Combatant) {
         const prevPool = prevPools.find(p => p.name.toLowerCase() === nextPool.name.toLowerCase());
         if (prevPool) {
           if (prevPool.current !== nextPool.current) {
-            const { activeCombatLog, addCombatEvent } = useDashboardStore.getState();
+            const { activeCombatLog, logProgressiveEvent } = useDashboardStore.getState();
             if (activeCombatLog) {
-              addCombatEvent({
+              logProgressiveEvent({
                 round: activeCombatLog.currentRound,
                 type: 'resource-changed',
                 actorId: null,

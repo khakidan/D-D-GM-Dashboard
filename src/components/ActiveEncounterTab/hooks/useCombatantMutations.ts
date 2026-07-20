@@ -247,7 +247,7 @@ export function useCombatantMutations() {
     }
 
     // Section F: Post-success combat logging
-    const { addCombatEvent, activeCombatLog, combatState } = useDashboardStore.getState();
+    const { logProgressiveEvent, activeCombatLog, combatState } = useDashboardStore.getState();
     if (activeCombatLog) {
       const activeTurnCombatant = combatState.combatants.find(x => x.id === combatState.activeTurnId);
       const preMutationCombatant = snapshot.combatState.combatants.find(x => x.id === id);
@@ -260,7 +260,7 @@ export function useCombatantMutations() {
         activeCombatLog.currentRound
       );
 
-      eventsToLog.forEach(evt => addCombatEvent(evt));
+      eventsToLog.forEach(evt => logProgressiveEvent(evt));
     }
   };
 

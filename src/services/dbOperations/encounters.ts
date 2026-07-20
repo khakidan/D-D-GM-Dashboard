@@ -286,3 +286,50 @@ export async function updateEncounterDB(
     throw err;
   }
 }
+
+export async function updateEncounterLoggingRequestedDB(
+  encounterId: string,
+  loggingRequested: boolean
+): Promise<void>;
+export async function updateEncounterLoggingRequestedDB(
+  spreadsheetId: string | undefined,
+  encounterId: string,
+  loggingRequested: boolean
+): Promise<void>;
+export async function updateEncounterLoggingRequestedDB(
+  arg1: any,
+  arg2: any,
+  arg3?: any
+) {
+  let spreadsheetId: string | undefined;
+  let encounterId: string;
+  let loggingRequested: boolean;
+
+  if (arg3 === undefined) {
+    spreadsheetId = undefined;
+    encounterId = arg1;
+    loggingRequested = arg2;
+  } else {
+    spreadsheetId = arg1;
+    encounterId = arg2;
+    loggingRequested = arg3;
+  }
+
+  try {
+    const resolvedId = resolveSpreadsheetId(spreadsheetId);
+    const rowIdx = await findRowIndexById(resolvedId, 'Encounters', encounterId);
+    if (rowIdx === null) {
+      throw new Error(`Encounter ${encounterId} not found`);
+    }
+    const a1Row = rowIdx + 1;
+    
+    // Column H is the 8th column (Logging_Requested)
+    await updateSheetData(resolvedId, `Encounters!H${a1Row}:H${a1Row}`, [
+      [loggingRequested ? 'TRUE' : 'FALSE']
+    ]);
+  } catch (err) {
+    console.error('[DB] updateEncounterLoggingRequestedDB failed:', err);
+    throw err;
+  }
+}
+

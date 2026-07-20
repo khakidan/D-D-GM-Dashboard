@@ -11,6 +11,9 @@ import {
   updateNpcInstanceHpDB,
   updateNpcInstanceConditionsDB,
   updateNpcInstanceAcModDB,
+  appendEncounterLog,
+  fetchEncounterLogEventsDB,
+  updateEncounterLoggingRequestedDB,
 } from '../../../services/dbOperations';
 
 vi.mock('sonner', () => ({
@@ -35,6 +38,9 @@ vi.mock('../../../services/dbOperations', () => ({
   updateNpcInstanceConditionsDB: vi.fn().mockResolvedValue(undefined),
   updateNpcInstanceAcModDB: vi.fn().mockResolvedValue(undefined),
   updateNpcInstanceLegendaryDB: vi.fn().mockResolvedValue(undefined),
+  appendEncounterLog: vi.fn().mockResolvedValue(undefined),
+  fetchEncounterLogEventsDB: vi.fn().mockResolvedValue([]),
+  updateEncounterLoggingRequestedDB: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('useCombatSync', () => {
@@ -590,7 +596,96 @@ describe('useCombatSync', () => {
     randomSpy.mockRestore();
   });
 
-  it('resetCombat calls updateInitiativeDB with 0 for each combatant', () => {
+
+  it('recordEncounter initializes combat log and updates DB if not already initialized', async () => {
+    act(() => {
+      useDashboardStore.setState(prev => ({
+        ...prev,
+        encounters: [{
+          id: 'test-enc-id',
+          name: 'Test Encounter',
+          location: 'Test Location',
+          status: 'active',
+          difficultyId: 1,
+          difficultyName: 'Easy',
+          npcDefinitions: ''
+        }],
+        combatState: {
+          ...prev.combatState,
+          activeEncounterId: 'test-enc-id',
+          round: 2,
+          combatants: [
+            { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10 }
+          ]
+        },
+        activeCombatLog: null // Not initialized
+      }));
+    });
+
+    const { result } = renderHook(() => useCombatSync());
+
+    await act(async () => {
+      await result.current.recordEncounter();
+    });
+
+    // Verify initCombatLog was called (activeCombatLog is now set)
+    expect(useDashboardStore.getState().activeCombatLog).not.toBeNull();
+    expect(useDashboardStore.getState().activeCombatLog?.encounterId).toBe('test-enc-id');
+    expect(useDashboardStore.getState().activeCombatLog?.events.length).toBeGreaterThan(0); // the combat-start event
+
+    // Verify DB update
+    expect(vi.mocked(updateEncounterLoggingRequestedDB)).toHaveBeenCalledWith('test-enc-id', true);
+  });
+
+  it('resetCombat fetches fresh events and appends to encounter log', async () => {
+    act(() => {
+      useDashboardStore.setState(prev => ({
+        ...prev,
+        combatState: {
+          ...prev.combatState,
+          activeEncounterId: 'test-enc-id',
+          combatants: [
+            { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
+          ]
+        },
+        activeCombatLog: {
+          encounterId: 'test-enc-id',
+          encounterName: 'Test Encounter',
+          location: 'Test Loc',
+          startedAt: '2025-01-01',
+          currentRound: 3,
+          partySnapshot: [{ id: 'c1', type: 'pc', name: 'Char 1', startingHp: 10, maxHp: 10 }],
+          initiativeOrder: [],
+          events: [] // Initial events
+        }
+      }));
+    });
+
+    // Mock fresh events
+    vi.mocked(fetchEncounterLogEventsDB).mockResolvedValueOnce([
+      { round: 1, type: 'damage', actorId: 'c1', targetId: 'c2', value: 5, isManualAdjustment: false, timestamp: '2025' }
+    ]);
+
+    const { result } = renderHook(() => useCombatSync());
+
+    await act(async () => {
+      await await result.current.resetCombat();
+    });
+
+    // Verify fetch was called
+    expect(vi.mocked(fetchEncounterLogEventsDB)).toHaveBeenCalledWith('test-enc-id');
+
+    // Verify append was called with the fresh events
+    expect(vi.mocked(appendEncounterLog)).toHaveBeenCalled();
+    const appendCall = vi.mocked(appendEncounterLog).mock.calls[0][1];
+    expect(JSON.parse(appendCall.events)).toHaveLength(1);
+    expect(JSON.parse(appendCall.events)[0].type).toBe('damage');
+
+    // Verify logging turned off
+    expect(vi.mocked(updateEncounterLoggingRequestedDB)).toHaveBeenCalledWith('test-enc-id', false);
+  });
+
+  it('resetCombat calls updateInitiativeDB with 0 for each combatant', async () => {
     act(() => {
       useDashboardStore.setState(prev => ({
         ...prev,
@@ -618,8 +713,8 @@ describe('useCombatSync', () => {
       () => useCombatSync()
     );
 
-    act(() => {
-      result.current.resetCombat();
+    await act(async () => {
+      await result.current.resetCombat();
     });
 
     expect(
@@ -634,7 +729,7 @@ describe('useCombatSync', () => {
   });
 
   it('updateCombatant logs legendary action and resistance changes when activeCombatLog is present', async () => {
-    const addCombatEventSpy = vi.spyOn(useDashboardStore.getState(), 'addCombatEvent');
+    const logProgressiveEventSpy = vi.spyOn(useDashboardStore.getState(), 'logProgressiveEvent');
     
     act(() => {
       useDashboardStore.setState(prev => ({
@@ -681,7 +776,7 @@ describe('useCombatSync', () => {
       });
     });
 
-    expect(addCombatEventSpy).toHaveBeenCalledWith({
+    expect(logProgressiveEventSpy).toHaveBeenCalledWith({
       round: 3,
       type: 'resource-changed',
       actorId: 'c1',
@@ -695,7 +790,7 @@ describe('useCombatSync', () => {
       isManualAdjustment: false,
     });
 
-    expect(addCombatEventSpy).toHaveBeenCalledWith({
+    expect(logProgressiveEventSpy).toHaveBeenCalledWith({
       round: 3,
       type: 'resource-changed',
       actorId: 'c1',
@@ -711,7 +806,7 @@ describe('useCombatSync', () => {
   });
 
   it('updateCombatant does NOT log resource-changed events when legendary action/resistance values do not change', async () => {
-    const addCombatEventSpy = vi.spyOn(useDashboardStore.getState(), 'addCombatEvent');
+    const logProgressiveEventSpy = vi.spyOn(useDashboardStore.getState(), 'logProgressiveEvent');
     
     act(() => {
       useDashboardStore.setState(prev => ({
@@ -759,7 +854,7 @@ describe('useCombatSync', () => {
     });
 
     // Verify no resource-changed events were added for c2
-    const resourceChangedCalls = addCombatEventSpy.mock.calls.filter(call => {
+    const resourceChangedCalls = logProgressiveEventSpy.mock.calls.filter(call => {
       const arg = call[0] as any;
       return arg.type === 'resource-changed' && arg.targetId === 'c2';
     });

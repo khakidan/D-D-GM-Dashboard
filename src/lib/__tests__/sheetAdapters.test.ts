@@ -271,6 +271,7 @@ describe('sheetAdapters', () => {
         sheetRowIndex: 1,
         currentRound: 5,
         activeTurnId: 'ec-42',
+        loggingRequested: false,
       });
 
       const dataUnknown: EncounterRowData = [

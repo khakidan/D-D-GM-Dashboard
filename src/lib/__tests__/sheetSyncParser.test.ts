@@ -96,7 +96,7 @@ describe('sheetSyncParser', () => {
 
   describe('parseEncounters', () => {
     it('returns correctly mapped output on valid row', () => {
-      const data = [['1', 'Forest Ambush', 'Forest', '2', '[]', '1', 'turn123']];
+      const data = [['1', 'Forest Ambush', 'Forest', '2', '[]', '1', 'turn123', 'FALSE']];
       const result = parseEncounters(data, { '2': 'Easy' });
       expect(result[0]).toEqual({
         id: '1',
@@ -109,6 +109,7 @@ describe('sheetSyncParser', () => {
         activeTurnId: 'turn123',
         sheetRowIndex: 2,
         npcDefinitions: '[]',
+        loggingRequested: false,
       });
     });
 

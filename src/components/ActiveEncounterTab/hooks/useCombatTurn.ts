@@ -112,10 +112,10 @@ export function useCombatTurn(updateCombatant: (id: string, updates: Partial<Com
 
     if (currentIndex !== -1 && nextIndex <= currentIndex) {
       const { advanceCombatLogRound,
-        addCombatEvent, activeCombatLog }
+        logProgressiveEvent, activeCombatLog }
         = useDashboardStore.getState()
       advanceCombatLogRound()
-      addCombatEvent({
+      logProgressiveEvent({
         round: activeCombatLog
           ? activeCombatLog.currentRound + 1
           : 1,

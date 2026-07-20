@@ -36,7 +36,7 @@ const mockActiveCombatLog = {
 vi.mock('../dashboardStore', () => ({
   useDashboardStore: {
     getState: () => ({
-      addCombatEvent: mockAddCombatEvent,
+      logProgressiveEvent: mockAddCombatEvent,
       activeCombatLog: mockActiveCombatLog,
     }),
   },

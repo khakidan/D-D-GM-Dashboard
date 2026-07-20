@@ -73,9 +73,9 @@ export function useDeathSaves() {
           throw new Error(`Character ${combatant.characterId} not found in state`);
         }
 
-        const { addCombatEvent, activeCombatLog } = useDashboardStore.getState();
+        const { logProgressiveEvent, activeCombatLog } = useDashboardStore.getState();
         if (activeCombatLog) {
-          addCombatEvent({
+          logProgressiveEvent({
             round: activeCombatLog.currentRound,
             type: 'combatant-defeated',
             actorId: null,
@@ -156,9 +156,9 @@ export function useDeathSaves() {
         }
       }));
 
-      const { addCombatEvent, activeCombatLog } = useDashboardStore.getState();
+      const { logProgressiveEvent, activeCombatLog } = useDashboardStore.getState();
       if (activeCombatLog) {
-        addCombatEvent({
+        logProgressiveEvent({
           round: activeCombatLog.currentRound,
           type: 'death-save',
           actorId: null,
@@ -234,9 +234,9 @@ export function useDeathSaves() {
         }
       }));
 
-      const { addCombatEvent, activeCombatLog } = useDashboardStore.getState();
+      const { logProgressiveEvent, activeCombatLog } = useDashboardStore.getState();
       if (activeCombatLog) {
-        addCombatEvent({
+        logProgressiveEvent({
           round: activeCombatLog.currentRound,
           type: 'death-save',
           actorId: null,

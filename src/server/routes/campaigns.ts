@@ -10,7 +10,8 @@ import {
   NPC_HEADERS,
   ENCOUNTER_HEADERS,
   ENCOUNTER_COMBATANT_HEADERS,
-  ENCOUNTER_LOG_HEADERS
+  ENCOUNTER_LOG_HEADERS,
+  ENCOUNTER_LOG_EVENT_HEADERS
 } from '../../lib/sheetSchemas';
 
 const router = Router();
@@ -103,6 +104,11 @@ router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
       {
         title: 'EncounterLogs',
         headers: [...ENCOUNTER_LOG_HEADERS],
+        rows: []
+      },
+      {
+        title: 'EncounterLogEvents',
+        headers: [...ENCOUNTER_LOG_EVENT_HEADERS],
         rows: []
       }
     ];

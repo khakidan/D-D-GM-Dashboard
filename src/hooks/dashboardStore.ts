@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AppState, CombatState } from '../types';
 import { STORAGE_KEYS } from '../lib/constants';
+import { appendEncounterLogEventDB } from '../services/dbOperations';
 import {
   ActiveCombatLog,
   CombatEvent,
@@ -87,7 +88,8 @@ export interface DashboardStore extends Omit<AppState, 'combatState'> {
     initiativeOrder: InitiativeEntry[],
     startingRound: number
   ) => void;
-  addCombatEvent: (event: Omit<CombatEvent, 'id' | 'timestamp'>) => void;
+  addCombatEvent: (event: Omit<CombatEvent, 'id' | 'timestamp'> & { id?: string; timestamp?: string }) => void;
+  logProgressiveEvent: (event: Omit<CombatEvent, 'id' | 'timestamp'> & { id?: string; timestamp?: string }) => Promise<void>;
   advanceCombatLogRound: () => void;
   clearCombatLog: () => void;
 }
@@ -167,8 +169,8 @@ export const useDashboardStore =
             if (!state.activeCombatLog) return {};
             const newEvent: CombatEvent = {
               ...event,
-              id: generateCombatEventId(),
-              timestamp: new Date().toISOString(),
+              id: event.id || generateCombatEventId(),
+              timestamp: event.timestamp || new Date().toISOString(),
             };
             return {
               activeCombatLog: {
@@ -177,6 +179,32 @@ export const useDashboardStore =
               },
             };
           });
+        },
+
+        logProgressiveEvent: async (event) => {
+          const state = get();
+          const { activeCombatLog, encounters } = state;
+          
+          if (!activeCombatLog) return;
+          
+          const newEvent: CombatEvent = {
+            ...event,
+            id: event.id || generateCombatEventId(),
+            timestamp: event.timestamp || new Date().toISOString(),
+          };
+          
+          // Commit locally
+          get().addCombatEvent(newEvent);
+          
+          // Check if logging is requested
+          const activeEncounter = encounters.find(e => e.id === activeCombatLog.encounterId);
+          if (activeEncounter && activeEncounter.loggingRequested) {
+            try {
+              await appendEncounterLogEventDB(activeCombatLog.encounterId, newEvent);
+            } catch (error) {
+              console.error('[Store] Failed to append combat event to EncounterLogEvents', error);
+            }
+          }
         },
 
         advanceCombatLogRound: () => {

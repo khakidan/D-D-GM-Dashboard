@@ -69,8 +69,8 @@ describe('Campaigns Router', () => {
     expect(sheetsCall[0]).toBe('https://sheets.googleapis.com/v4/spreadsheets/spread-123:batchUpdate');
     const sheetsBody = JSON.parse(sheetsCall[1]!.body as string);
     
-    // Should have 8 requests (7 addSheets + 1 delete default sheet)
-    expect(sheetsBody.requests).toHaveLength(8);
+    // Should have 9 requests (8 addSheets + 1 delete default sheet)
+    expect(sheetsBody.requests).toHaveLength(9);
     expect(sheetsBody.requests[0].addSheet.properties.title).toBe('Characters');
     expect(sheetsBody.requests[1].addSheet.properties.title).toBe('NPCs');
     expect(sheetsBody.requests[2].addSheet.properties.title).toBe('Encounters');
@@ -78,13 +78,14 @@ describe('Campaigns Router', () => {
     expect(sheetsBody.requests[4].addSheet.properties.title).toBe('Status');
     expect(sheetsBody.requests[5].addSheet.properties.title).toBe('Difficulty_Level');
     expect(sheetsBody.requests[6].addSheet.properties.title).toBe('EncounterLogs');
-    expect(sheetsBody.requests[7].deleteSheet.sheetId).toBe(0);
+    expect(sheetsBody.requests[7].addSheet.properties.title).toBe('EncounterLogEvents');
+    expect(sheetsBody.requests[8].deleteSheet.sheetId).toBe(0);
 
     // Verify values write request
     const valuesCall = vi.mocked(fetch).mock.calls[2];
     expect(valuesCall[0]).toBe('https://sheets.googleapis.com/v4/spreadsheets/spread-123/values:batchUpdate');
     const valuesBody = JSON.parse(valuesCall[1]!.body as string);
-    expect(valuesBody.data).toHaveLength(7);
+    expect(valuesBody.data).toHaveLength(8);
 
     // Characters sheet header assertion
     const charsData = valuesBody.data.find((d: any) => d.range.startsWith('Characters!'));

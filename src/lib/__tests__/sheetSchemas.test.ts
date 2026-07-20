@@ -263,11 +263,11 @@ describe('sheetSchemas', () => {
 
   describe('EncounterRowSchema', () => {
     it('parses a fully valid row correctly', () => {
-      const row = ['enc-1', 'Ambush', 'Forest', 2, 'npc-1:3', 5, 'ec-42'];
+      const row = ['enc-1', 'Ambush', 'Forest', 2, 'npc-1:3', 5, 'ec-42', false];
       const result = EncounterRowSchema.safeParse(row);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual(['enc-1', 'Ambush', 'Forest', 2, 'npc-1:3', 5, 'ec-42']);
+        expect(result.data).toEqual(['enc-1', 'Ambush', 'Forest', 2, 'npc-1:3', 5, 'ec-42', false]);
       }
     });
 

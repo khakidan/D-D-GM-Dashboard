@@ -68,7 +68,7 @@ describe('useCombatantExpanded', () => {
     });
   });
 
-  it('TEST 2.1 — handleResourcePoolUpdate calls addCombatEvent with correct details during active combat', async () => {
+  it('TEST 2.1 — handleResourcePoolUpdate calls logProgressiveEvent with correct details during active combat', async () => {
     // 1. Set up active combat log in the store
     act(() => {
       useDashboardStore.setState({
@@ -85,8 +85,8 @@ describe('useCombatantExpanded', () => {
       });
     });
 
-    // 2. Spy on addCombatEvent
-    const addCombatEventSpy = vi.spyOn(useDashboardStore.getState(), 'addCombatEvent');
+    // 2. Spy on logProgressiveEvent
+    const logProgressiveEventSpy = vi.spyOn(useDashboardStore.getState(), 'logProgressiveEvent');
 
     // 3. Render hook
     const { result } = renderHook(() => useCombatantExpanded(mockCombatant));
@@ -106,8 +106,8 @@ describe('useCombatantExpanded', () => {
       expect.objectContaining({ id: 'char-1' })
     );
 
-    // 6. Verify addCombatEvent was called with correct data
-    expect(addCombatEventSpy).toHaveBeenCalledWith({
+    // 6. Verify logProgressiveEvent was called with correct data
+    expect(logProgressiveEventSpy).toHaveBeenCalledWith({
       round: 2,
       type: 'resource-changed',
       actorId: null,
@@ -122,13 +122,13 @@ describe('useCombatantExpanded', () => {
     });
   });
 
-  it('TEST 2.2 — handleResourcePoolUpdate does NOT call addCombatEvent when there is no active combat log', async () => {
+  it('TEST 2.2 — handleResourcePoolUpdate does NOT call logProgressiveEvent when there is no active combat log', async () => {
     // 1. Ensure activeCombatLog is null
     act(() => {
       useDashboardStore.setState({ activeCombatLog: null });
     });
 
-    const addCombatEventSpy = vi.spyOn(useDashboardStore.getState(), 'addCombatEvent');
+    const logProgressiveEventSpy = vi.spyOn(useDashboardStore.getState(), 'logProgressiveEvent');
     const { result } = renderHook(() => useCombatantExpanded(mockCombatant));
 
     const updatedPools = JSON.stringify([
@@ -140,10 +140,10 @@ describe('useCombatantExpanded', () => {
     });
 
     expect(updateCharacterDB).toHaveBeenCalled();
-    expect(addCombatEventSpy).not.toHaveBeenCalled();
+    expect(logProgressiveEventSpy).not.toHaveBeenCalled();
   });
 
-  it('TEST 2.3 — handleResourcePoolUpdate does NOT call addCombatEvent when update does not touch resourcePools', async () => {
+  it('TEST 2.3 — handleResourcePoolUpdate does NOT call logProgressiveEvent when update does not touch resourcePools', async () => {
     // 1. Set up active combat log
     act(() => {
       useDashboardStore.setState({
@@ -160,7 +160,7 @@ describe('useCombatantExpanded', () => {
       });
     });
 
-    const addCombatEventSpy = vi.spyOn(useDashboardStore.getState(), 'addCombatEvent');
+    const logProgressiveEventSpy = vi.spyOn(useDashboardStore.getState(), 'logProgressiveEvent');
     const { result } = renderHook(() => useCombatantExpanded(mockCombatant));
 
     await act(async () => {
@@ -168,6 +168,6 @@ describe('useCombatantExpanded', () => {
     });
 
     expect(updateCharacterDB).toHaveBeenCalled();
-    expect(addCombatEventSpy).not.toHaveBeenCalled();
+    expect(logProgressiveEventSpy).not.toHaveBeenCalled();
   });
 });

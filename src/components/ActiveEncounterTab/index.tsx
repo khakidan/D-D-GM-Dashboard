@@ -65,6 +65,7 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
     resetCombat,
     cancelCombat,
     handleCallInitiative,
+    recordEncounter,
     nextTurn,
     handleConcentrationPrompt,
     handleSelectCaster,
@@ -166,6 +167,7 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
             onOpenTools={() => setIsToolsModalOpen(true)}
             onRollNpcInit={rollInitForNPCs}
             onResetCombat={resetCombat}
+            onRecordEncounter={recordEncounter}
             onCancelEncounter={cancelCombat}
             onNextTurn={nextTurn}
             onToggleMultiTargetMode={toggleMultiTargetMode}

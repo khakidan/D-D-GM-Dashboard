@@ -18,6 +18,7 @@ describe('CombatHeader', () => {
     onOpenTools: vi.fn(),
     onRollNpcInit: vi.fn(),
     onResetCombat: vi.fn(),
+    onRecordEncounter: vi.fn(),
     onCancelEncounter: vi.fn(),
     onNextTurn: vi.fn(),
     onToggleMultiTargetMode: vi.fn(),
@@ -39,5 +40,33 @@ describe('CombatHeader', () => {
     );
     expect(screen.getByText('Test Encounter')).toBeInTheDocument();
     expect(screen.getByText(/round 3/i)).toBeInTheDocument();
+  });
+
+  it('shows Record Encounter when loggingRequested is false', () => {
+    render(
+      <MemoryRouter>
+        <CombatHeader
+          {...defaultProps}
+          encounter={{ id: 'e1', name: 'Test Encounter', location: 'Test Loc', difficultyId: 1, difficultyName: 'Easy', npcDefinitions: '', status: 'active', loggingRequested: false }}
+        />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('Record Encounter')).toBeInTheDocument();
+    expect(screen.queryByText('End Encounter')).not.toBeInTheDocument();
+  });
+
+  it('shows End Encounter with red dot when loggingRequested is true', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <CombatHeader
+          {...defaultProps}
+          encounter={{ id: 'e1', name: 'Test Encounter', location: 'Test Loc', difficultyId: 1, difficultyName: 'Easy', npcDefinitions: '', status: 'active', loggingRequested: true }}
+        />
+      </MemoryRouter>
+    );
+    expect(screen.getByText('End Encounter')).toBeInTheDocument();
+    expect(screen.queryByText('Record Encounter')).not.toBeInTheDocument();
+    // Check for the pulsing dot
+    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
   });
 });

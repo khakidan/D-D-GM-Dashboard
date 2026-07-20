@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useAppState, getSnapshot } from '../../../hooks/useAppState';
 import { useDashboardStore } from '../../../hooks/dashboardStore';
 import { getSpreadsheetId } from '../../../services/sheetsService';
-import { updateInitiativeDB, appendEncounterLog } from '../../../services/dbOperations';
+import { updateInitiativeDB, appendEncounterLog, fetchEncounterLogEventsDB, updateEncounterLoggingRequestedDB } from '../../../services/dbOperations';
 import { generateTranscript } from '../../../lib/combatLog';
 import { toast } from 'sonner';
 import { useInitiativeEvent } from '../../../hooks/useCombatOverlayEvents';
@@ -54,8 +54,9 @@ export function useCombatLifecycle() {
     }));
   }, [updateState]);
 
-  const resetCombat = useCallback(() => {
+  const resetCombat = useCallback(async () => {
     const latestSnapshot = getSnapshot();
+    const encounterId = latestSnapshot.combatState.activeEncounterId;
     updateState(prev => ({
       ...prev,
       combatState: {
@@ -80,14 +81,14 @@ export function useCombatLifecycle() {
     const {
       activeCombatLog,
       clearCombatLog,
-      addCombatEvent,
+      logProgressiveEvent,
     } = useDashboardStore.getState()
     
     const currentSpreadsheetId = getSpreadsheetId();
 
-    if (activeCombatLog && currentSpreadsheetId) {
+    if (activeCombatLog && currentSpreadsheetId && encounterId) {
       // Log combat-end event
-      addCombatEvent({
+      await logProgressiveEvent({
         round: activeCombatLog.currentRound,
         type: 'combat-end',
         actorId: null,
@@ -97,65 +98,75 @@ export function useCombatLifecycle() {
         isManualAdjustment: false,
       })
 
-      // Determine outcome
-      const finalLog =
-        useDashboardStore.getState().activeCombatLog!
+      try {
+        // Fetch fresh events from EncounterLogEvents tab
+        const freshEvents = await fetchEncounterLogEventsDB(encounterId);
+        
+        const finalLog = {
+          ...activeCombatLog,
+          events: freshEvents
+        };
 
-      const allNpcsDefeated =
-        finalLog.partySnapshot
-          .filter(p => p.type === 'npc')
-          .every(p =>
-            finalLog.events.some(
-              e => e.type === 'combatant-defeated'
-                && e.targetId === p.id
+        const allNpcsDefeated =
+          finalLog.partySnapshot
+            .filter(p => p.type === 'npc')
+            .every(p =>
+              finalLog.events.some(
+                e => e.type === 'combatant-defeated'
+                  && e.targetId === p.id
+              )
             )
-          )
 
-      const allPcsDefeated =
-        finalLog.partySnapshot
-          .filter(p => p.type === 'pc')
-          .every(p =>
-            finalLog.events.some(
-              e => e.type === 'combatant-defeated'
-                && e.targetId === p.id
+        const allPcsDefeated =
+          finalLog.partySnapshot
+            .filter(p => p.type === 'pc')
+            .every(p =>
+              finalLog.events.some(
+                e => e.type === 'combatant-defeated'
+                  && e.targetId === p.id
+              )
             )
-          )
 
-      const outcome =
-        allNpcsDefeated ? 'Victory'
-        : allPcsDefeated ? 'Defeat'
-        : 'Incomplete'
+        const outcome =
+          allNpcsDefeated ? 'Victory'
+          : allPcsDefeated ? 'Defeat'
+          : 'Incomplete'
 
-      const transcript =
-        generateTranscript(finalLog, outcome)
+        const transcript =
+          generateTranscript(finalLog, outcome)
 
-      // Write to sheet (fire and forget —
-      // do not await, do not block combat
-      // cleanup on a sheet write)
-      appendEncounterLog(
-        currentSpreadsheetId,
-        {
-          id: `log_${Date.now()}`,
-          encounterId: finalLog.encounterId,
-          encounterName: finalLog.encounterName,
-          location: finalLog.location,
-          date: finalLog.startedAt,
-          durationRounds: finalLog.currentRound,
-          outcome,
-          partySnapshot: JSON.stringify(
-            finalLog.partySnapshot),
-          events: JSON.stringify(finalLog.events),
-          transcript,
-        }
-      ).catch(err => {
-        console.error(
-          '[CombatLog] Failed to write log:',
-          err
-        );
-        toast.error('Failed to save the encounter log.', {
-          description: err instanceof Error ? err.message : 'Unknown error'
-        });
-      })
+        // Write to sheet (fire and forget — do not await)
+        appendEncounterLog(
+          currentSpreadsheetId,
+          {
+            id: activeCombatLog.encounterId, // Using activeCombatLog.encounterId directly as in original
+            encounterId: activeCombatLog.encounterId,
+            encounterName: activeCombatLog.encounterName,
+            location: activeCombatLog.location,
+            date: activeCombatLog.startedAt,
+            durationRounds: activeCombatLog.currentRound,
+            outcome,
+            partySnapshot: JSON.stringify(finalLog.partySnapshot),
+            events: JSON.stringify(finalLog.events),
+            transcript,
+          }
+        ).catch(err => {
+          console.error(
+            '[CombatLog] Failed to write log:',
+            err
+          );
+          toast.error('Failed to save the encounter log.', {
+            description: err instanceof Error ? err.message : 'Unknown error'
+          });
+        })
+
+        // Turn off logging
+        updateEncounterLoggingRequestedDB(encounterId, false).catch(err => console.error(err));
+        
+      } catch (error) {
+        console.error('Failed to fetch and save encounter log', error);
+        toast.error('Failed to fetch events from EncounterLogEvents.');
+      }
     } else {
       if (!activeCombatLog) {
         toast.warning('No combat log was recorded for this encounter — initiative may not have been called, or the log was cleared unexpectedly.');
@@ -169,6 +180,8 @@ export function useCombatLifecycle() {
 
   const cancelCombat = useCallback(() => {
     const latestSnapshot = getSnapshot();
+    const encounterId = latestSnapshot.combatState.activeEncounterId;
+
     updateState(prev => ({
       ...prev,
       combatState: {
@@ -190,6 +203,10 @@ export function useCombatLifecycle() {
       }
     });
 
+    if (encounterId) {
+      updateEncounterLoggingRequestedDB(encounterId, false).catch(err => console.error(err));
+    }
+
     useDashboardStore.getState().clearCombatLog();
   }, [updateState]);
 
@@ -206,7 +223,7 @@ export function useCombatLifecycle() {
     const encounters = latestState.encounters;
     const startingRound = latestState.combatState.round;
 
-    const { initCombatLog, addCombatEvent }
+    const { initCombatLog, logProgressiveEvent }
       = useDashboardStore.getState()
 
     // Build party snapshot from combatants
@@ -239,7 +256,7 @@ export function useCombatLifecycle() {
       startingRound,
     )
 
-    addCombatEvent({
+    logProgressiveEvent({
       round: startingRound,
       type: 'combat-start',
       actorId: null,
@@ -250,10 +267,66 @@ export function useCombatLifecycle() {
     })
   }, [fireInitiativeEvent]);
 
+
+  const recordEncounter = useCallback(async () => {
+    const latestState = getSnapshot();
+    const encounterId = latestState.combatState.activeEncounterId;
+    if (!encounterId) return;
+
+    const { activeCombatLog, initCombatLog, logProgressiveEvent } = useDashboardStore.getState();
+
+    if (!activeCombatLog || activeCombatLog.encounterId !== encounterId) {
+      const combatants = latestState.combatState.combatants;
+      const encounters = latestState.encounters;
+      const startingRound = latestState.combatState.round;
+
+      const snapshot = combatants.map(c => ({
+        id: c.id,
+        name: c.name,
+        type: (c.type === 'pc' ? 'pc' : 'npc') as 'pc' | 'npc',
+        startingHp: c.currentHp,
+        maxHp: c.maxHp,
+        level: c.level ?? undefined,
+        cr: c.challengeRating ?? undefined,
+      }));
+
+      const activeEncounter = encounters.find(e => e.id === encounterId);
+      const encounterName = activeEncounter?.name ?? 'Unknown';
+      const location = activeEncounter?.location ?? '';
+
+      initCombatLog(
+        encounterId,
+        encounterName,
+        location,
+        snapshot,
+        [],
+        startingRound
+      );
+      
+      logProgressiveEvent({
+        round: startingRound,
+        type: 'combat-start',
+        actorId: null,
+        actorName: null,
+        targetId: null,
+        targetName: null,
+        isManualAdjustment: false,
+      });
+    }
+
+    try {
+      await updateEncounterLoggingRequestedDB(encounterId, true);
+    } catch (err) {
+      console.error('[CombatLog] Failed to enable encounter logging:', err);
+      toast.error('Failed to enable encounter logging.');
+    }
+  }, []);
+
   return {
     rollInitForNPCs,
     resetCombat,
     cancelCombat,
     handleCallInitiative,
+    recordEncounter,
   };
 }

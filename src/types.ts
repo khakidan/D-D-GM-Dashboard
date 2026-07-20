@@ -108,6 +108,7 @@ export interface Encounter {
   sheetRowIndex?: number; // 0-indexed row number in the sheet
   currentRound?: number;
   activeTurnId?: string;
+  loggingRequested?: boolean;
 }
 
 export interface Combatant {

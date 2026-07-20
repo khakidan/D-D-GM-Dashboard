@@ -170,7 +170,7 @@ export function useHealthChange(
         }
       }
 
-      const { addCombatEvent, activeCombatLog, combatState } = useDashboardStore.getState();
+      const { logProgressiveEvent, activeCombatLog, combatState } = useDashboardStore.getState();
 
       if (activeCombatLog) {
         const { actionContext } = combatState;
@@ -182,7 +182,7 @@ export function useHealthChange(
         const hpDelta = newCurrentHp - c.currentHp;
         const isManual = combatState.activeTurnId === null && actionContext.sourceOverride === null;
 
-        addCombatEvent({
+        logProgressiveEvent({
           round: activeCombatLog.currentRound,
           type: isDamage ? 'damage' : 'healing',
           actorId: isManual ? null : sourceId,
@@ -199,7 +199,7 @@ export function useHealthChange(
 
         // If HP reached 0 or below, also log a combatant-defeated event
         if (newCurrentHp <= 0) {
-          addCombatEvent({
+          logProgressiveEvent({
             round: activeCombatLog.currentRound,
             type: 'combatant-defeated',
             actorId: isManual ? null : sourceId,

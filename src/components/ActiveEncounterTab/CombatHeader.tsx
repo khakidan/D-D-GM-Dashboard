@@ -15,6 +15,7 @@ interface CombatHeaderProps {
   onOpenTools: () => void;
   onRollNpcInit: () => void;
   onResetCombat: () => void;
+  onRecordEncounter: () => void;
   onCancelEncounter: () => void;
   onNextTurn: () => void;
   onToggleMultiTargetMode: () => void;
@@ -37,6 +38,7 @@ export function CombatHeader({
   onOpenTools,
   onRollNpcInit,
   onResetCombat,
+  onRecordEncounter,
   onCancelEncounter,
   onNextTurn,
   onToggleMultiTargetMode,
@@ -144,14 +146,23 @@ export function CombatHeader({
             <span className="text-[9px] bg-[#f9f8ff] px-1 py-0.5 rounded border border-[#e2e8f0] font-mono text-[#8d8db9]">R</span>
           </button>
 
-          {/* RESET BUTTON */}
-          <button
-            onClick={onResetCombat}
-            className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-500 rounded hover:text-gray-700 hover:border-gray-400 bg-transparent flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <RefreshCcw className="w-3 h-3" />
-            <span>End Encounter</span>
-          </button>
+          {/* RECORD / END ENCOUNTER BUTTON */}
+          {encounter?.loggingRequested ? (
+            <button
+              onClick={onResetCombat}
+              className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 bg-transparent flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span>End Encounter</span>
+            </button>
+          ) : (
+            <button
+              onClick={onRecordEncounter}
+              className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-500 rounded hover:text-gray-700 hover:border-gray-400 bg-transparent flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>Record Encounter</span>
+            </button>
+          )}
 
           {/* CANCEL ENCOUNTER BUTTON */}
           <button
