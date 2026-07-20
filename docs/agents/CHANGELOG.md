@@ -6,6 +6,30 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Progressive Combat Logging — Record/End Encounter Button, Sheet-Backed Event Log
+
+Fixes the combat-logging robustness bug reported from a real game session: following what felt like the standard flow still resulted in an empty, unrecoverable log at End Encounter. Investigation found 3 distinct real failure modes, not one — "Call for Initiative" being skipped, a silent cross-tab overwrite of `activeCombatLog` (a genuine gap in the earlier cross-tab sync fix, caught during this investigation), and the log never surviving a multi-device or cleared-storage resume since it lived only in `localStorage`. Fixing this properly meant a real architecture change, not a patch — implemented in 4 stages.
+
+**New sheet-backed architecture:**
+- A new `EncounterLogEvents` sheet tab records one row per individual combat event via Google Sheets' real, atomic `values.append` operation — replacing the old single-JSON-blob-per-encounter approach and its read-modify-write race condition.
+- A new `Logging_Requested` column on `Encounters` is the durable, sheet-based gatekeeper for whether an encounter is currently recording — visible and resumable from any device, unlike the old `localStorage`-only signal.
+- A dedicated **Record/End Encounter button**, reusing the existing toolbar slot: labeled "Record Encounter" before pressed, relabeling to "End Encounter" with a gently pulsing red dot once active. This is the *only* thing that starts logging — opening, resuming, or viewing an encounter, and "Call for Initiative," all play no role, deliberately eliminating the exact ambiguity that caused the original bug.
+- "End Encounter" builds its final summary by freshly fetching every event from `EncounterLogEvents`, never from local state — so a fight played across multiple devices or sessions still produces a complete, correct log. The summary is still written to the existing `EncounterLogs` sheet in the same format as before, so `EncounterLogModal.tsx`/`EncounterLogDetails.tsx` and the rest of the viewing workflow needed zero changes.
+- `addCombatEvent` now preserves an already-provided `id`/`timestamp` rather than always generating its own, and a new `logProgressiveEvent` action wraps it — generating the identity once, committing locally, then firing the network write only when `loggingRequested` is true. Every real caller across the hooks was switched to this.
+
+**A real bug was caught and fixed during implementation, not just design.** `recordEncounter` correctly guarded against re-initializing an already-active log, but `handleCallInitiative` didn't have the same guard — meaning clicking "Record Encounter" and then "Call for Initiative" (a completely normal sequence) would have silently wiped the just-started log. Caught by tracing the actual interaction between the two functions rather than trusting the individual pieces in isolation; fixed by extracting the shared guard into one `ensureCombatLogInitialized` helper used by both, with a dedicated regression test for the exact interaction order.
+
+**Process notes worth recording honestly:**
+- The file-list-confirmation step (required before any multi-file stage, given an earlier severe scope-creep incident this session) was skipped once during this work and directly acknowledged when caught.
+- TypeScript/test verification was asserted as prose rather than shown as literal output on 2 separate occasions during this work, and had to be specifically re-requested each time before being accepted.
+- One diff was presented in full git format (`diff --git`, commit-style hashes) despite `git diff` having just confirmed this workspace isn't a git repository — a real inconsistency, though the underlying content was independently verified correct against the full file shown separately.
+
+Verified across all 4 stages: real, complete Batch 1 (472/472), Batch 2 (40/40), Batch 3 (58/58), Batch 4 (9/9), Batch 5A (58/58), Batch 5B (31/31), all matching expected totals for the tests genuinely added at each stage, plus a clean `tsc -p tsconfig.build.json --noEmit` at every stage.
+
+**Still needed from Dan**: manually adding the `EncounterLogEvents` tab and `Logging_Requested` column to the existing production spreadsheet — new campaigns provision both automatically via the updated campaign-creation route.
+
+---
+
 ## Concentration-Ending Now Cascades Correctly Everywhere, Not Just One Path
 
 Follow-up to the Hasted/Concentrating fix: Dan asked for the underlying rule to be general — whenever a combatant stops concentrating for *any* reason, every active `CONCENTRATION_EFFECTS` member should be removed along with "Concentrating" itself, not just for the one trigger already fixed.

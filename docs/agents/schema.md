@@ -125,7 +125,7 @@ NpcLegendaryAction: {
 
 Note: `immunities` (col G) stores BOTH damage immunities and condition immunities as a comma-separated string. There is no separate `conditionImmunities` column.
 
-### Encounters (A2:G — 7 columns)
+### Encounters (A2:H — 8 columns)
 
 | Col | Index | Field | Notes |
 |-----|-------|-------|-------|
@@ -136,6 +136,7 @@ Note: `immunities` (col G) stores BOTH damage immunities and condition immunitie
 | E | 4 | npcDefinitions | Comma-separated |
 | F | 5 | currentRound | Number, default 0 |
 | G | 6 | activeTurnId | Combatant ID string |
+| H | 7 | loggingRequested | `TRUE`/`FALSE` string, default `FALSE`. Durable, sheet-based gatekeeper for progressive combat logging — set to `TRUE` only when the GM explicitly clicks "Record Encounter," never automatically. See the "Progressive Combat Logging" entry in `CHANGELOG.md`. |
 
 ### Encounter_Combatants (A2:N — 14 columns)
 
@@ -200,6 +201,24 @@ Holds per-instance combat state for every combatant in every encounter — this 
 | I | 8 | events | JSON string |
 | J | 9 | transcript | Markdown string |
 
+### EncounterLogEvents (A2:K — 11 columns)
+
+One row per individual combat event (a hit, a heal, a condition change, etc.), written progressively as combat happens via Google Sheets' atomic `values.append` — not a single JSON blob per encounter. This is the durable source of truth `EncounterLogs`'s final summary is compiled from at "End Encounter." See the "Progressive Combat Logging" entry in `CHANGELOG.md` for the full design rationale.
+
+| Col | Index | Field | Notes |
+|-----|-------|-------|-------|
+| A | 0 | id | Unique per-event ID (`evt_...`), not the encounter's ID |
+| B | 1 | encounterId | FK → Encounters |
+| C | 2 | round | Number |
+| D | 3 | timestamp | ISO string |
+| E | 4 | type | Event type string (e.g. `damage`, `healing`, `combat-start`, `combat-end`, `combatant-defeated`, `resource-changed`, `condition-applied`, `condition-removed`) |
+| F | 5 | actorId | Combatant ID, or empty |
+| G | 6 | actorName | Or empty |
+| H | 7 | targetId | Combatant ID, or empty |
+| I | 8 | targetName | Or empty |
+| J | 9 | details | JSON string packing all the optional per-type fields (`actionType`, `value`, `damageType`, `condition`, `hpBefore`, `hpAfter`, `resourceName`, `resourceBefore`, `resourceAfter`, `resourceMax`) |
+| K | 10 | isManualAdjustment | `TRUE`/`FALSE` string |
+
 ### Status (read-only)
 
 IDs: 1=Active, 2=Inactive, 3=Deceased
@@ -212,7 +231,7 @@ IDs: 1=Easy, 2=Medium, 3=Hard, 4=Deadly
 
 ## Campaign Creation
 
-`POST /api/campaigns/create` in `src/server/routes/campaigns.ts` creates all 7 sheets with the correct headers. When adding a column to any sheet, update this endpoint too or existing campaigns will have the wrong schema.
+`POST /api/campaigns/create` in `src/server/routes/campaigns.ts` creates all 8 sheets with the correct headers. When adding a column to any sheet, update this endpoint too or existing campaigns will have the wrong schema.
 
 ---
 

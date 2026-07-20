@@ -218,53 +218,18 @@ export function useCombatLifecycle() {
     });
 
     const latestState = getSnapshot();
-    const combatants = latestState.combatState.combatants;
     const encounterId = latestState.combatState.activeEncounterId || '';
-    const encounters = latestState.encounters;
-    const startingRound = latestState.combatState.round;
+    if (!encounterId) return;
 
-    const { initCombatLog, logProgressiveEvent }
-      = useDashboardStore.getState()
+    const { activeCombatLog, initCombatLog, logProgressiveEvent } = useDashboardStore.getState();
 
-    // Build party snapshot from combatants
-    // already set up by handleCallInitiative
-    const snapshot = combatants.map(c => ({
-      id: c.id,
-      name: c.name,
-      type: (c.type === 'pc' ? 'pc' : 'npc') as 'pc' | 'npc',
-      startingHp: c.currentHp,
-      maxHp: c.maxHp,
-      level: c.level ?? undefined,
-      cr: c.challengeRating ?? undefined,
-    }))
-
-    // Get encounter name and location from
-    // the active encounter in store state
-    const activeEncounter = encounters.find(
-      e => e.id === encounterId)
-    const encounterName =
-      activeEncounter?.name ?? 'Unknown'
-    const location =
-      activeEncounter?.location ?? ''
-
-    initCombatLog(
+    ensureCombatLogInitialized(
       encounterId,
-      encounterName,
-      location,
-      snapshot,
-      [],
-      startingRound,
-    )
-
-    logProgressiveEvent({
-      round: startingRound,
-      type: 'combat-start',
-      actorId: null,
-      actorName: null,
-      targetId: null,
-      targetName: null,
-      isManualAdjustment: false,
-    })
+      latestState,
+      activeCombatLog,
+      initCombatLog,
+      logProgressiveEvent
+    );
   }, [fireInitiativeEvent]);
 
 
@@ -275,44 +240,13 @@ export function useCombatLifecycle() {
 
     const { activeCombatLog, initCombatLog, logProgressiveEvent } = useDashboardStore.getState();
 
-    if (!activeCombatLog || activeCombatLog.encounterId !== encounterId) {
-      const combatants = latestState.combatState.combatants;
-      const encounters = latestState.encounters;
-      const startingRound = latestState.combatState.round;
-
-      const snapshot = combatants.map(c => ({
-        id: c.id,
-        name: c.name,
-        type: (c.type === 'pc' ? 'pc' : 'npc') as 'pc' | 'npc',
-        startingHp: c.currentHp,
-        maxHp: c.maxHp,
-        level: c.level ?? undefined,
-        cr: c.challengeRating ?? undefined,
-      }));
-
-      const activeEncounter = encounters.find(e => e.id === encounterId);
-      const encounterName = activeEncounter?.name ?? 'Unknown';
-      const location = activeEncounter?.location ?? '';
-
-      initCombatLog(
-        encounterId,
-        encounterName,
-        location,
-        snapshot,
-        [],
-        startingRound
-      );
-      
-      logProgressiveEvent({
-        round: startingRound,
-        type: 'combat-start',
-        actorId: null,
-        actorName: null,
-        targetId: null,
-        targetName: null,
-        isManualAdjustment: false,
-      });
-    }
+    ensureCombatLogInitialized(
+      encounterId,
+      latestState,
+      activeCombatLog,
+      initCombatLog,
+      logProgressiveEvent
+    );
 
     try {
       await updateEncounterLoggingRequestedDB(encounterId, true);
@@ -330,3 +264,51 @@ export function useCombatLifecycle() {
     recordEncounter,
   };
 }
+
+function ensureCombatLogInitialized(
+  encounterId: string,
+  latestState: ReturnType<typeof getSnapshot>,
+  activeCombatLog: any,
+  initCombatLog: any,
+  logProgressiveEvent: any
+) {
+  if (!activeCombatLog || activeCombatLog.encounterId !== encounterId) {
+    const combatants = latestState.combatState.combatants;
+    const encounters = latestState.encounters;
+    const startingRound = latestState.combatState.round;
+
+    const snapshot = combatants.map(c => ({
+      id: c.id,
+      name: c.name,
+      type: (c.type === 'pc' ? 'pc' : 'npc') as 'pc' | 'npc',
+      startingHp: c.currentHp,
+      maxHp: c.maxHp,
+      level: c.level ?? undefined,
+      cr: c.challengeRating ?? undefined,
+    }));
+
+    const activeEncounter = encounters.find(e => e.id === encounterId);
+    const encounterName = activeEncounter?.name ?? 'Unknown';
+    const location = activeEncounter?.location ?? '';
+
+    initCombatLog(
+      encounterId,
+      encounterName,
+      location,
+      snapshot,
+      [],
+      startingRound
+    );
+
+    logProgressiveEvent({
+      round: startingRound,
+      type: 'combat-start',
+      actorId: null,
+      actorName: null,
+      targetId: null,
+      targetName: null,
+      isManualAdjustment: false,
+    });
+  }
+}
+

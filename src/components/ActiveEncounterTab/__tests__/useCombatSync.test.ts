@@ -637,6 +637,59 @@ describe('useCombatSync', () => {
     expect(vi.mocked(updateEncounterLoggingRequestedDB)).toHaveBeenCalledWith('test-enc-id', true);
   });
 
+  it('does not reset activeCombatLog or clear events when GM clicks Record Encounter then Call for Initiative', async () => {
+    act(() => {
+      useDashboardStore.setState(prev => ({
+        ...prev,
+        encounters: [{
+          id: 'test-enc-id',
+          name: 'Test Encounter',
+          location: 'Test Location',
+          status: 'active',
+          difficultyId: 1,
+          difficultyName: 'Easy',
+          npcDefinitions: ''
+        }],
+        combatState: {
+          ...prev.combatState,
+          activeEncounterId: 'test-enc-id',
+          round: 1,
+          combatants: [
+            { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10 }
+          ]
+        },
+        activeCombatLog: null // Start uninitialized
+      }));
+    });
+
+    const { result } = renderHook(() => useCombatSync());
+
+    // 1. GM clicks "Record Encounter"
+    await act(async () => {
+      await result.current.recordEncounter();
+    });
+
+    // Check first event is combat-start
+    const log1 = useDashboardStore.getState().activeCombatLog;
+    expect(log1).not.toBeNull();
+    expect(log1?.encounterId).toBe('test-enc-id');
+    expect(log1?.events).toHaveLength(1);
+    expect(log1?.events[0].type).toBe('combat-start');
+    const originalEventId = log1?.events[0].id;
+
+    // 2. GM clicks "Call for Initiative"
+    act(() => {
+      result.current.handleCallInitiative();
+    });
+
+    // Verify it didn't overwrite/re-init activeCombatLog
+    const log2 = useDashboardStore.getState().activeCombatLog;
+    expect(log2).not.toBeNull();
+    expect(log2?.encounterId).toBe('test-enc-id');
+    expect(log2?.events).toHaveLength(1);
+    expect(log2?.events[0].id).toBe(originalEventId); // original combat-start event remains intact
+  });
+
   it('resetCombat fetches fresh events and appends to encounter log', async () => {
     act(() => {
       useDashboardStore.setState(prev => ({
@@ -669,7 +722,7 @@ describe('useCombatSync', () => {
     const { result } = renderHook(() => useCombatSync());
 
     await act(async () => {
-      await await result.current.resetCombat();
+      await result.current.resetCombat();
     });
 
     // Verify fetch was called
