@@ -24,6 +24,10 @@ describe('CombatantCard', () => {
     healInput: '',
     currentRound: 1,
     combatStarted: false,
+    isActiveTurn: false,
+    isSelected: false,
+    isSelectable: false,
+    isSyncing: false,
     onDamageInputChange: vi.fn(),
     onHealInputChange: vi.fn(),
     onHealthSubmit: vi.fn(),
@@ -31,6 +35,10 @@ describe('CombatantCard', () => {
     onUpdateCombatant: vi.fn(),
     onRemoveCombatant: vi.fn(),
     onToggleSelect: vi.fn(),
+    handleResourcePoolUpdate: vi.fn(),
+    handleConditionAdded: vi.fn(),
+    handleConditionWithTimer: vi.fn(),
+    handleExhaustionDeath: vi.fn(),
   };
 
   it('renders without crashing for a PC combatant', () => {
@@ -228,6 +236,10 @@ describe('CombatantCard', () => {
           healInput=""
           currentRound={1}
           combatStarted={false}
+          isActiveTurn={false}
+          isSelected={false}
+          isSelectable={false}
+          isSyncing={false}
           onDamageInputChange={() => {}}
           onHealInputChange={() => {}}
           onHealthSubmit={() => {}}
@@ -236,6 +248,10 @@ describe('CombatantCard', () => {
           onUpdateCombatant={() => {}}
           onRemoveCombatant={() => {}}
           onConcentrationPrompt={() => {}}
+          handleResourcePoolUpdate={() => {}}
+          handleConditionAdded={() => {}}
+          handleConditionWithTimer={() => {}}
+          handleExhaustionDeath={() => {}}
         />
       );
     }
@@ -271,6 +287,10 @@ describe('CombatantCard', () => {
           healInput=""
           currentRound={1}
           combatStarted={false}
+          isActiveTurn={false}
+          isSelected={false}
+          isSelectable={false}
+          isSyncing={false}
           onDamageInputChange={() => {}}
           onHealInputChange={() => {}}
           onHealthSubmit={() => {}}
@@ -279,6 +299,10 @@ describe('CombatantCard', () => {
           onUpdateCombatant={() => {}}
           onRemoveCombatant={() => {}}
           onConcentrationPrompt={() => {}}
+          handleResourcePoolUpdate={() => {}}
+          handleConditionAdded={() => {}}
+          handleConditionWithTimer={() => {}}
+          handleExhaustionDeath={() => {}}
         />
       );
     }
@@ -292,6 +316,70 @@ describe('CombatantCard', () => {
     // A genuinely different combatant object (the one actually being updated) must
     // still cause a real re-render — the comparator must not over-suppress this.
     expect(spy.mock.calls.length).toBeGreaterThan(callsAfterFirstRender);
+
+    spy.mockRestore();
+  });
+
+  it('does re-render when isActiveTurn/isSelected/isSelectable/isSyncing change even though c reference stays the same', async () => {
+    const utils = await import('../../../lib/utils');
+    const spy = vi.spyOn(utils, 'cn');
+    spy.mockClear();
+
+    const combatant = makeCombatant({ id: 'pc1', type: 'pc', name: 'PC' });
+
+    function Wrapper({ isActiveTurn, isSelected, isSelectable, isSyncing }: {
+      isActiveTurn: boolean;
+      isSelected: boolean;
+      isSelectable: boolean;
+      isSyncing: boolean;
+    }) {
+      return (
+        <CombatantCard
+          c={combatant}
+          isExpanded={false}
+          damageInput=""
+          healInput=""
+          currentRound={1}
+          combatStarted={true}
+          isActiveTurn={isActiveTurn}
+          isSelected={isSelected}
+          isSelectable={isSelectable}
+          isSyncing={isSyncing}
+          onDamageInputChange={() => {}}
+          onHealInputChange={() => {}}
+          onHealthSubmit={() => {}}
+          onToggleExpand={() => {}}
+          onToggleSelect={() => {}}
+          onUpdateCombatant={() => {}}
+          onRemoveCombatant={() => {}}
+          onConcentrationPrompt={() => {}}
+          handleResourcePoolUpdate={() => {}}
+          handleConditionAdded={() => {}}
+          handleConditionWithTimer={() => {}}
+          handleExhaustionDeath={() => {}}
+        />
+      );
+    }
+
+    const { rerender } = render(
+      <Wrapper isActiveTurn={false} isSelected={false} isSelectable={false} isSyncing={false} />
+    );
+    const callsAfterFirstRender = spy.mock.calls.length;
+    expect(callsAfterFirstRender).toBeGreaterThan(0);
+    expect(screen.queryByText(/Active/i)).not.toBeInTheDocument();
+
+    // Only isActiveTurn changes — same c reference, same everything else. This is the
+    // exact scenario that would silently break if isActiveTurn were ever missing from,
+    // or wrong in, CombatantCard's custom memo comparator: since these 4 booleans used
+    // to be derived inside the component via a now-removed hook (invisible to any memo
+    // comparator), they must now be explicitly compared as real props, or the card would
+    // never visually update when e.g. a combatant's turn becomes active.
+    rerender(
+      <Wrapper isActiveTurn={true} isSelected={false} isSelectable={false} isSyncing={false} />
+    );
+
+    expect(spy.mock.calls.length).toBeGreaterThan(callsAfterFirstRender);
+    expect(screen.getByText(/Active/i)).toBeInTheDocument();
 
     spy.mockRestore();
   });

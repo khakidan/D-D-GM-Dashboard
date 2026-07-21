@@ -10,7 +10,6 @@ import { Combatant, DamageType, Character } from '../../types';
 import { getHealthStatus, effectiveAc, effectiveMaxHp } from '../../lib/conditions';
 import { CombatantCardBadges } from './CombatantCardBadges';
 import { DeathSaveTrackerDisplay } from './DeathSaveTrackerDisplay';
-import { useCombatantCard } from './hooks/useCombatantCard';
 import { ResourcePool } from '../../lib/resourcePools';
 import { Badge } from '../ui/Badge';
 import { ToggleBadge } from '../ui/ToggleBadge';
@@ -43,6 +42,10 @@ export interface CombatantCardHeaderProps {
   selectionCheckbox?: React.ReactNode;
   onUpdateResourcePools?: (combatant: Combatant, pools: ResourcePool[]) => void;
   pcCharacter?: Character;
+  isActiveTurn: boolean;
+  isSelected: boolean;
+  isSelectable: boolean;
+  isSyncing: boolean;
 }
 
 export function CombatantCardHeader({
@@ -61,8 +64,11 @@ export function CombatantCardHeader({
   selectionCheckbox,
   onUpdateResourcePools,
   pcCharacter,
+  isActiveTurn,
+  isSelected,
+  isSelectable,
+  isSyncing,
 }: CombatantCardHeaderProps) {
-  const { isActiveTurn, isSelected, isSelectable, isSyncing } = useCombatantCard(c.id);
   const { name, ac, tempAcModifier, initiative, type } = c;
 
   const maxHpCeiling = effectiveMaxHp(c.maxHp, c.tempHpMax || 0);

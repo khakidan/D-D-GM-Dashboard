@@ -10,7 +10,6 @@ import { StatBlock } from '../ui/StatBlock';
 import { StatTile } from '../ui/StatTile';
 import { parseAbilityScores, parseProficiencies } from '../../lib/abilityScores';
 import { getEffectiveResistances } from '../../lib/combatLogic';
-import { useCombatantExpanded } from './hooks/useCombatantExpanded';
 import { CombatMechanicsSummary } from './CombatMechanicsSummary';
 import { CombatantIrvDisplay } from './CombatantIrvDisplay';
 import { Button } from '../ui/Button';
@@ -33,6 +32,16 @@ export interface CombatantCardExpandedProps {
   onRestoreResistances: () => void;
   pcCharacter?: Character;
   npcModel?: NPC;
+  handleResourcePoolUpdate: (c: Combatant, updates: Partial<Character>) => void | Promise<void>;
+  handleConditionAdded: (c: Combatant, label: string) => void | Promise<void>;
+  handleConditionWithTimer: (
+    c: Combatant,
+    condName: string,
+    rounds: number,
+    currentRound: number,
+    onUpdateCombatant: (updates: Partial<Combatant>) => void
+  ) => void | Promise<void>;
+  handleExhaustionDeath: (c: Combatant) => void | Promise<void>;
 }
 
 export function CombatantCardExpanded({
@@ -51,17 +60,14 @@ export function CombatantCardExpanded({
   onRestoreResistances,
   pcCharacter,
   npcModel,
+  handleResourcePoolUpdate,
+  handleConditionAdded,
+  handleConditionWithTimer,
+  handleExhaustionDeath,
 }: CombatantCardExpandedProps) {
   const [isConfirmOpen, setIsConfirmOpen] = React.useState(false);
   const conditionList = parseCommaSeparatedList(c.conditions, { toLowerCase: true });
   const mechanicalSummary = buildConditionSummary(conditionList);
-
-  const {
-    handleResourcePoolUpdate,
-    handleConditionAdded,
-    handleConditionWithTimer,
-    handleExhaustionDeath,
-  } = useCombatantExpanded(c);
 
   return (
     <div className="px-6 pb-6 pt-2 bg-white space-y-5">
@@ -162,7 +168,7 @@ export function CombatantCardExpanded({
         <ResourcePoolsSection
           character={pcCharacter}
           isSyncing={isSyncing}
-          onUpdate={handleResourcePoolUpdate}
+          onUpdate={(updates) => handleResourcePoolUpdate(c, updates)}
         />
       )}
 
@@ -173,15 +179,15 @@ export function CombatantCardExpanded({
           onChange={val => onUpdateCombatant({ conditions: val })}
           immunities={c.immunities || ''}
           disabled={isSyncing}
-          onAddWithTimer={(condName, rounds) => handleConditionWithTimer(condName, rounds, currentRound, onUpdateCombatant)}
+          onAddWithTimer={(condName, rounds) => handleConditionWithTimer(c, condName, rounds, currentRound, onUpdateCombatant)}
           currentRound={currentRound}
           onConcentrationEffectAdded={(effectName) => {
             if (onConcentrationPrompt) {
               onConcentrationPrompt(effectName, c.name);
             }
           }}
-          onConditionAdded={handleConditionAdded}
-          onExhaustionDeath={handleExhaustionDeath}
+          onConditionAdded={(label) => handleConditionAdded(c, label)}
+          onExhaustionDeath={() => handleExhaustionDeath(c)}
         />
       </div>
 

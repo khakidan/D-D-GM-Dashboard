@@ -16,18 +16,13 @@ import { useHealthChange } from './hooks/useHealthChange';
 import { useSelectionMode } from './hooks/useSelectionMode';
 import { useEncounterKeyboard } from './hooks/useEncounterKeyboard';
 import { useEncounterPresetLoader } from './hooks/useEncounterPresetLoader';
+import { useCombatantExpanded } from './hooks/useCombatantExpanded';
 import { ShortcutCheatSheet } from './ShortcutCheatSheet';
 import { useBatchActions } from './hooks/useBatchActions';
 import { GlobalActionContextPanel } from './GlobalActionContextPanel';
 
 export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
   const { state, updateState } = useAppState();
-  // Only setActionContext is needed directly from the store — it's a store action not
-  // exposed via useAppState(). Reading combat state uses state.combatState below (from
-  // useAppState(), already shallow-tracked), not a second, separate subscription to the
-  // same underlying data — the type mismatch that previously required a separate
-  // subscription here (AppState's actionType being a looser `string` than the store's
-  // own ActionType) has been fixed at the source in types.ts. See CHANGELOG.md.
   const setActionContext = useDashboardStore(s => s.setActionContext);
   const encounter = state.encounters.find(e => e.id === state.combatState.activeEncounterId);
 
@@ -51,7 +46,6 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
   const [hpMode, setHpMode] = useState<'damage' | 'heal'>('damage');
   const [isCheatSheetOpen, setIsCheatSheetOpen] = useState(false);
 
-  // Modular selection state
   const {
     selectedIds: selectedCombatantIds,
     isSelectionMode: isMultiTargetMode,
@@ -86,7 +80,15 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
     handleHealthChange,
   } = useHealthChange(syncingIds, updateCombatant);
 
-  // Modular preset & NPC db-to-state loader
+  // Resolved once here (leaf-component store-access fix — see patterns.md), passed
+  // down to each CombatantCard, which supplies the specific combatant per call.
+  const {
+    handleResourcePoolUpdate,
+    handleConditionAdded,
+    handleConditionWithTimer,
+    handleExhaustionDeath,
+  } = useCombatantExpanded();
+
   const { handleAddPreset, handleAddNpc } = useEncounterPresetLoader(encounter, updateCombatant);
 
   const toggleExpand = (id: string) => {
@@ -117,7 +119,6 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
     onSuccess: exitSelectionMode
   });
 
-  // Listen for global custom commands from the Command Palette
   useEffect(() => {
     const handleNextTurn = () => nextTurn();
     const handleRollNpcInit = () => rollInitForNPCs();
@@ -137,7 +138,6 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
     };
   }, [nextTurn, rollInitForNPCs, handleCallInitiative]);
 
-  // Integrated Keyboard Shortcuts Hook
   useEncounterKeyboard({
     nextTurn,
     rollInitForNPCs,
@@ -215,6 +215,10 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
                       healInput={healInputs[c.id] || ''}
                       currentRound={state.combatState.round}
                       combatStarted={state.combatState.combatStarted}
+                      isActiveTurn={c.id === state.combatState.activeTurnId}
+                      isSelected={selectedCombatantIds.has(c.id)}
+                      isSelectable={isMultiTargetMode}
+                      isSyncing={syncingIds.has(c.id)}
                       onDamageInputChange={(val) => setDamageInputs(prev => ({ ...prev, [c.id]: val }))}
                       onHealInputChange={(val) => setHealInputs(prev => ({ ...prev, [c.id]: val }))}
                       onHealthSubmit={(isDamage, damageType) => handleHealthChange(c.id, c, isDamage, damageType)}
@@ -226,6 +230,10 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
                       hpMode={hpMode}
                       pcCharacter={pcCharacter}
                       npcModel={npcModel}
+                      handleResourcePoolUpdate={handleResourcePoolUpdate}
+                      handleConditionAdded={handleConditionAdded}
+                      handleConditionWithTimer={handleConditionWithTimer}
+                      handleExhaustionDeath={handleExhaustionDeath}
                     />
                   );
                 })

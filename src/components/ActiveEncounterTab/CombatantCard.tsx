@@ -6,8 +6,6 @@ import { parseDiceNotation, rollDice, performRechargeRoll } from '../../lib/dice
 import { Combatant, DamageType, Character, NPC } from '../../types';
 import { CombatantCardHeader } from './CombatantCardHeader';
 import { CombatantCardExpanded } from './CombatantCardExpanded';
-import { useCombatantCard } from './hooks/useCombatantCard';
-import { useCombatantExpanded } from './hooks/useCombatantExpanded';
 import { ResourcePool, serializeResourcePools } from '../../lib/resourcePools';
 import { CardShell } from '../ui/CardShell';
 import { NpcReferencePanel } from './NpcReferencePanel';
@@ -20,6 +18,10 @@ export interface CombatantCardProps {
   healInput: string;
   currentRound: number;
   combatStarted: boolean;
+  isActiveTurn: boolean;
+  isSelected: boolean;
+  isSelectable: boolean;
+  isSyncing: boolean;
   hpMode?: 'damage' | 'heal';
   onDamageInputChange: (val: string) => void;
   onHealInputChange: (val: string) => void;
@@ -31,13 +33,24 @@ export interface CombatantCardProps {
   onConcentrationPrompt?: (effectName: string, targetName: string) => void;
   pcCharacter?: Character;
   npcModel?: NPC;
+  handleResourcePoolUpdate: (c: Combatant, updates: Partial<Character>) => void | Promise<void>;
+  handleConditionAdded: (c: Combatant, label: string) => void | Promise<void>;
+  handleConditionWithTimer: (
+    c: Combatant,
+    condName: string,
+    rounds: number,
+    currentRound: number,
+    onUpdateCombatant: (updates: Partial<Combatant>) => void
+  ) => void | Promise<void>;
+  handleExhaustionDeath: (c: Combatant) => void | Promise<void>;
 }
 
 export const CombatantCard = React.memo(function CombatantCard({
   c, isExpanded, damageInput, healInput,
   currentRound, combatStarted, onDamageInputChange, onHealInputChange, onHealthSubmit, onToggleExpand,
   onToggleSelect, onUpdateCombatant, onRemoveCombatant, onConcentrationPrompt, hpMode = 'damage',
-  pcCharacter, npcModel,
+  pcCharacter, npcModel, isActiveTurn, isSelected, isSelectable, isSyncing,
+  handleResourcePoolUpdate, handleConditionAdded, handleConditionWithTimer, handleExhaustionDeath,
 }: CombatantCardProps) {
   const [recentRechargeRolls, setRecentRechargeRolls] = useState<Record<string, number>>({});
   const rechargeTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
@@ -48,13 +61,11 @@ export const CombatantCard = React.memo(function CombatantCard({
     };
   }, []);
 
-  const { isActiveTurn: _isActiveTurn, isSelected, isSelectable, isSyncing } = useCombatantCard(c.id);
-  const isActive = _isActiveTurn && !!combatStarted;
-  const { handleResourcePoolUpdate } = useCombatantExpanded(c);
+  const isActive = isActiveTurn && !!combatStarted;
 
   const handleUpdateResourcePools = (combatant: Combatant, updatedPools: ResourcePool[]) => {
     const serialized = serializeResourcePools(updatedPools);
-    handleResourcePoolUpdate({ resourcePools: serialized });
+    handleResourcePoolUpdate(combatant, { resourcePools: serialized });
   };
 
   const handleRechargeRoll = (abilityName: string, rechargeOn: number) => {
@@ -64,16 +75,16 @@ export const CombatantCard = React.memo(function CombatantCard({
     );
 
     setRecentRechargeRolls(prev => ({ ...prev, [abilityName]: rolledNum }));
-    
+
     if (rechargeTimersRef.current[abilityName]) {
       clearTimeout(rechargeTimersRef.current[abilityName]);
     }
-    
+
     rechargeTimersRef.current[abilityName] = setTimeout(() => {
-      setRecentRechargeRolls(prev => { 
-        const cp = { ...prev }; 
-        delete cp[abilityName]; 
-        return cp; 
+      setRecentRechargeRolls(prev => {
+        const cp = { ...prev };
+        delete cp[abilityName];
+        return cp;
       });
       delete rechargeTimersRef.current[abilityName];
     }, 2000);
@@ -109,7 +120,7 @@ export const CombatantCard = React.memo(function CombatantCard({
       className={cn(
         'h-fit',
         (c.type === 'npc' && c.currentHp <= 0)
-          ? 'bg-[#f9f8ff] opacity-60 grayscale-[0.5]' 
+          ? 'bg-[#f9f8ff] opacity-60 grayscale-[0.5]'
           : ((c.currentHp <= 0 || (c.type === 'pc' && c.isStable)) ? 'opacity-60 grayscale-[0.5]' : '')
       )}
     >
@@ -129,6 +140,10 @@ export const CombatantCard = React.memo(function CombatantCard({
         hpMode={hpMode}
         onUpdateResourcePools={handleUpdateResourcePools}
         pcCharacter={pcCharacter}
+        isActiveTurn={isActiveTurn}
+        isSelected={isSelected}
+        isSelectable={isSelectable}
+        isSyncing={isSyncing}
       />
 
       {c.type === 'npc' && (
@@ -145,27 +160,23 @@ export const CombatantCard = React.memo(function CombatantCard({
           onSpendAction={handleSpendAction} onSpendResistance={handleSpendResistance}
           onRestoreActions={handleRestoreActions} onRestoreResistances={handleRestoreResistances}
           pcCharacter={pcCharacter} npcModel={npcModel}
+          handleResourcePoolUpdate={handleResourcePoolUpdate}
+          handleConditionAdded={handleConditionAdded}
+          handleConditionWithTimer={handleConditionWithTimer}
+          handleExhaustionDeath={handleExhaustionDeath}
         />
       </ExpandableContent>
     </CardShell>
   );
 }, (prevProps, nextProps) => {
-  // Same reasoning as CharacterCard.tsx/NpcCard.tsx/EncounterCard.tsx: ActiveEncounterTab's
-  // .map() call site creates fresh callbacks every render, but every mutation path
-  // (useCombatantMutations.ts's updateCombatant, useHealthChange.ts which delegates to
-  // it) uses .map(combatant => matches ? {...combatant, ...updates} : combatant),
-  // preserving the same object reference for every combatant that wasn't actually
-  // changed — even when the array is subsequently re-sorted by initiative, since
-  // sorting reorders the array without cloning its elements. pcCharacter/npcModel are
-  // simple .find() lookups into characters/npcs, which use the same reference-preserving
-  // update pattern, so they're also safe to compare by reference.
-  //
-  // Note: isActiveTurn/isSelected/isSelectable/isSyncing are NOT props here — they come
-  // from useCombatantCard(c.id) inside this component, which was refactored to use a
-  // narrow per-combatant Zustand selector instead of the whole-app-state useAppState()
-  // subscription it used before. That refactor is what makes this memo meaningful at
-  // all: without it, that hook alone would re-render every card on any combatant change,
-  // regardless of this comparator.
+  // Callback props (including the 4 handleX functions) are deliberately excluded from
+  // this comparison, since ActiveEncounterTab's .map() call site creates fresh
+  // references every render but every mutation path preserves object references for
+  // unrelated data. isActiveTurn/isSelected/isSelectable/isSyncing are NEW here — they
+  // used to come from a hook called inside this component, which meant they bypassed
+  // this comparator entirely. Now that they're real props, they MUST be compared here,
+  // or this memo would silently stop responding to e.g. a combatant's turn becoming
+  // active or being selected.
   return (
     prevProps.c === nextProps.c &&
     prevProps.isExpanded === nextProps.isExpanded &&
@@ -175,6 +186,10 @@ export const CombatantCard = React.memo(function CombatantCard({
     prevProps.combatStarted === nextProps.combatStarted &&
     prevProps.hpMode === nextProps.hpMode &&
     prevProps.pcCharacter === nextProps.pcCharacter &&
-    prevProps.npcModel === nextProps.npcModel
+    prevProps.npcModel === nextProps.npcModel &&
+    prevProps.isActiveTurn === nextProps.isActiveTurn &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.isSelectable === nextProps.isSelectable &&
+    prevProps.isSyncing === nextProps.isSyncing
   );
 });

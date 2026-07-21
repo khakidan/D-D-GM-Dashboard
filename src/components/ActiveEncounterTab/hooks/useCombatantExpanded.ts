@@ -8,23 +8,24 @@ import { parseCommaSeparatedList } from '../../../lib/stringUtils';
 
 /**
  * useCombatantExpanded hook
- * 
+ *
  * Encapsulates resource pool updates and condition-triggered resource depletion
  * logic for the expanded combatant card.
+ *
+ * Called ONCE at the top-level coordinator (ActiveEncounterTab/index.tsx), not once
+ * per CombatantCard — each returned function takes the specific Combatant as its
+ * first argument instead of the hook closing over it. This is the store-access
+ * architecture fix described in patterns.md: previously this hook was called from
+ * inside CombatantCard.tsx (a leaf component) once per card.
  */
-export function useCombatantExpanded(c: Combatant) {
-  // This hook never reads the reactive `state` value from useAppState() — only
-  // updateState (a stable store action) and getSnapshot (already subscription-free,
-  // reads directly from the store). Previously calling useAppState() here subscribed
-  // every combatant card to the entire app state for no benefit, since the returned
-  // `state` was discarded. Selecting updateState directly avoids that entirely.
+export function useCombatantExpanded() {
   const updateState = useDashboardStore((s) => s.updateState);
 
   /**
    * handleResourcePoolUpdate
    * Directly updates character resource pools from the ResourcePoolsSection.
    */
-  const handleResourcePoolUpdate = async (updates: Partial<Character>) => {
+  const handleResourcePoolUpdate = async (c: Combatant, updates: Partial<Character>) => {
     if (c.type !== 'pc' || !c.characterId) return;
     const charId = c.characterId;
     const { characters } = getSnapshot();
@@ -88,7 +89,7 @@ export function useCombatantExpanded(c: Combatant) {
    * Callback for ConditionChips that auto-depletes resources when specific conditions
    * (like 'raging' -> 'rage') are added.
    */
-  const handleConditionAdded = async (label: string) => {
+  const handleConditionAdded = async (c: Combatant, label: string) => {
     if (c.type !== 'pc' || !c.characterId) return;
     const charId = c.characterId;
 
@@ -109,7 +110,7 @@ export function useCombatantExpanded(c: Combatant) {
     if (matchedPool.current > 0) {
       const updatedPools = spendResourcePip(pools, resourceName, 1);
       const serialized = serializeResourcePools(updatedPools);
-      await handleResourcePoolUpdate({ resourcePools: serialized });
+      await handleResourcePoolUpdate(c, { resourcePools: serialized });
     } else {
       toast.warning(`${matchedPool.name} is already depleted.`);
     }
@@ -121,6 +122,7 @@ export function useCombatantExpanded(c: Combatant) {
    * specific logic like exhaustion replacement and timer deduplication.
    */
   const handleConditionWithTimer = async (
+    c: Combatant,
     condName: string,
     rounds: number,
     currentRound: number,
@@ -162,7 +164,7 @@ export function useCombatantExpanded(c: Combatant) {
    * handleExhaustionDeath
    * Marks a PC as deceased when they reach exhaustion level 6.
    */
-  const handleExhaustionDeath = async () => {
+  const handleExhaustionDeath = async (c: Combatant) => {
     if (c.type !== 'pc' || !c.characterId) return;
     const charId = c.characterId;
     const { characters } = getSnapshot();

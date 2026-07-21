@@ -69,7 +69,6 @@ describe('useCombatantExpanded', () => {
   });
 
   it('TEST 2.1 — handleResourcePoolUpdate calls logProgressiveEvent with correct details during active combat', async () => {
-    // 1. Set up active combat log in the store
     act(() => {
       useDashboardStore.setState({
         activeCombatLog: {
@@ -85,28 +84,23 @@ describe('useCombatantExpanded', () => {
       });
     });
 
-    // 2. Spy on logProgressiveEvent
     const logProgressiveEventSpy = vi.spyOn(useDashboardStore.getState(), 'logProgressiveEvent');
 
-    // 3. Render hook
-    const { result } = renderHook(() => useCombatantExpanded(mockCombatant));
+    const { result } = renderHook(() => useCombatantExpanded());
 
-    // 4. Update the resource pool
     const updatedPools = JSON.stringify([
       { name: 'Ki Points', current: 2, max: 3, reset: 'short' }
     ]);
 
     await act(async () => {
-      await result.current.handleResourcePoolUpdate({ resourcePools: updatedPools });
+      await result.current.handleResourcePoolUpdate(mockCombatant, { resourcePools: updatedPools });
     });
 
-    // 5. Verify database update was called
     expect(updateCharacterDB).toHaveBeenCalledWith(
       expect.objectContaining({ resourcePools: updatedPools }),
       expect.objectContaining({ id: 'char-1' })
     );
 
-    // 6. Verify logProgressiveEvent was called with correct data
     expect(logProgressiveEventSpy).toHaveBeenCalledWith({
       round: 2,
       type: 'resource-changed',
@@ -123,20 +117,19 @@ describe('useCombatantExpanded', () => {
   });
 
   it('TEST 2.2 — handleResourcePoolUpdate does NOT call logProgressiveEvent when there is no active combat log', async () => {
-    // 1. Ensure activeCombatLog is null
     act(() => {
       useDashboardStore.setState({ activeCombatLog: null });
     });
 
     const logProgressiveEventSpy = vi.spyOn(useDashboardStore.getState(), 'logProgressiveEvent');
-    const { result } = renderHook(() => useCombatantExpanded(mockCombatant));
+    const { result } = renderHook(() => useCombatantExpanded());
 
     const updatedPools = JSON.stringify([
       { name: 'Ki Points', current: 2, max: 3, reset: 'short' }
     ]);
 
     await act(async () => {
-      await result.current.handleResourcePoolUpdate({ resourcePools: updatedPools });
+      await result.current.handleResourcePoolUpdate(mockCombatant, { resourcePools: updatedPools });
     });
 
     expect(updateCharacterDB).toHaveBeenCalled();
@@ -144,7 +137,6 @@ describe('useCombatantExpanded', () => {
   });
 
   it('TEST 2.3 — handleResourcePoolUpdate does NOT call logProgressiveEvent when update does not touch resourcePools', async () => {
-    // 1. Set up active combat log
     act(() => {
       useDashboardStore.setState({
         activeCombatLog: {
@@ -161,10 +153,10 @@ describe('useCombatantExpanded', () => {
     });
 
     const logProgressiveEventSpy = vi.spyOn(useDashboardStore.getState(), 'logProgressiveEvent');
-    const { result } = renderHook(() => useCombatantExpanded(mockCombatant));
+    const { result } = renderHook(() => useCombatantExpanded());
 
     await act(async () => {
-      await result.current.handleResourcePoolUpdate({ maxHp: 35 });
+      await result.current.handleResourcePoolUpdate(mockCombatant, { maxHp: 35 });
     });
 
     expect(updateCharacterDB).toHaveBeenCalled();
