@@ -23,7 +23,7 @@ export interface CharacterCardProps {
   onLevelUpClick?: () => void;
 }
 
-export const CharacterCard: React.FC<CharacterCardProps> = ({ 
+export const CharacterCard: React.FC<CharacterCardProps> = React.memo(function CharacterCard({ 
   character, 
   statuses,
   isSyncing,
@@ -32,7 +32,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
   onUpdate,
   onDelete,
   onLevelUpClick
-}) => {
+}) {
   const maxHpCeiling = effectiveMaxHp(character.maxHp || 1, character.tempHpMax);
   let healthStatus = getHealthStatus(character.currentHp || 0, maxHpCeiling);
 
@@ -143,4 +143,19 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
       </ExpandableContent>
     </CardShell>
   );
-};
+}, (prevProps, nextProps) => {
+  // Deliberately does NOT compare onToggleExpand/onUpdate/onDelete/onLevelUpClick —
+  // PartyTab.tsx creates these fresh on every render, but they always represent the
+  // same underlying operation for this character. Comparing character by reference is
+  // sufficient and correct: every state-update path in usePartyCharacterCrud/
+  // usePartyLevelUp/usePartyRest uses .map(c => matches ? {...c, ...updates} : c),
+  // which preserves the exact same object reference for every character that wasn't
+  // actually changed. So this correctly skips re-rendering unaffected cards while still
+  // re-rendering the one that changed.
+  return (
+    prevProps.character === nextProps.character &&
+    prevProps.statuses === nextProps.statuses &&
+    prevProps.isSyncing === nextProps.isSyncing &&
+    prevProps.isExpanded === nextProps.isExpanded
+  );
+});
