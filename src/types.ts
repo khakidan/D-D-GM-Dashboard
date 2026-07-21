@@ -1,4 +1,5 @@
 import { DAMAGE_TYPE_OPTIONS } from './lib/irvOptions';
+import { ActionType } from './lib/combatLog';
 
 export type CombatantType = 'pc' | 'npc';
 
@@ -194,7 +195,7 @@ export interface CombatState {
   combatStarted: boolean;
   actionContext: {
     sourceOverride: string | null;
-    actionType: string;
+    actionType: ActionType;
   };
 }
 

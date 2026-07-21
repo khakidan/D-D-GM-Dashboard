@@ -10,6 +10,13 @@ import { checkIrvMatch } from '../../lib/combatLogic';
 import { toast } from 'sonner';
 import { isIncapacitating, stripConcentrationEffects } from '../../lib/concentrationCheck';
 
+// Static — never depends on props or state, so this is computed once at module load
+// rather than on every render of every ConditionChips instance.
+const ALL_CONDITION_EFFECT_OPTIONS = [
+  ...CONDITION_OPTIONS.map(o => ({ label: o, group: 'Conditions' as const })),
+  ...EFFECT_OPTIONS.map(o =>    ({ label: o, group: 'Effects' as const })),
+];
+
 interface ConditionChipsProps {
   value: string;                      // comma-separated string
   onChange: (value: string) => void;
@@ -85,10 +92,6 @@ export function ConditionChips({
     }, 300);
   };
 
-  const chips = parseCommaSeparatedList(localValue);
-
-  const chipsLower = chips.map(c => c.toLowerCase());
-
   const updatePosition = () => {
     if (wrapperRef.current && open) {
       const rect = wrapperRef.current.getBoundingClientRect();
@@ -144,19 +147,19 @@ export function ConditionChips({
     return () => document.removeEventListener('mousedown', onOutside);
   }, []);
 
-  const allOptions = [
-    ...CONDITION_OPTIONS.map(o => ({ label: o, group: 'Conditions' as const })),
-    ...EFFECT_OPTIONS.map(o =>    ({ label: o, group: 'Effects' as const })),
-  ];
+  const allOptions = ALL_CONDITION_EFFECT_OPTIONS;
 
-  const filtered = allOptions.filter(
+  const chips = React.useMemo(() => parseCommaSeparatedList(localValue), [localValue]);
+  const chipsLower = React.useMemo(() => chips.map(c => c.toLowerCase()), [chips]);
+
+  const filtered = React.useMemo(() => allOptions.filter(
     o =>
       o.label.toLowerCase().includes(query.toLowerCase()) &&
       !chipsLower.includes(o.label.toLowerCase())
-  );
+  ), [allOptions, query, chipsLower]);
 
-  const conditionResults = filtered.filter(o => o.group === 'Conditions');
-  const effectResults    = filtered.filter(o => o.group === 'Effects');
+  const conditionResults = React.useMemo(() => filtered.filter(o => o.group === 'Conditions'), [filtered]);
+  const effectResults    = React.useMemo(() => filtered.filter(o => o.group === 'Effects'), [filtered]);
 
   function isImmune(conditionName: string): boolean {
     if (!immunities) return false;

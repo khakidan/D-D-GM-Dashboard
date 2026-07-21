@@ -22,7 +22,12 @@ import { GlobalActionContextPanel } from './GlobalActionContextPanel';
 
 export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
   const { state, updateState } = useAppState();
-  const combatState = useDashboardStore(s => s.combatState);
+  // Only setActionContext is needed directly from the store — it's a store action not
+  // exposed via useAppState(). Reading combat state uses state.combatState below (from
+  // useAppState(), already shallow-tracked), not a second, separate subscription to the
+  // same underlying data — the type mismatch that previously required a separate
+  // subscription here (AppState's actionType being a looser `string` than the store's
+  // own ActionType) has been fixed at the source in types.ts. See CHANGELOG.md.
   const setActionContext = useDashboardStore(s => s.setActionContext);
   const encounter = state.encounters.find(e => e.id === state.combatState.activeEncounterId);
 
@@ -182,10 +187,10 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
             onApplyCondition={handleApplyMultiCondition}
           />
           <GlobalActionContextPanel
-            combatStarted={combatState.combatStarted}
-            actionContext={combatState.actionContext}
-            combatants={combatState.combatants}
-            activeTurnId={combatState.activeTurnId}
+            combatStarted={state.combatState.combatStarted}
+            actionContext={state.combatState.actionContext}
+            combatants={state.combatState.combatants}
+            activeTurnId={state.combatState.activeTurnId}
             setActionContext={setActionContext}
           />
 
@@ -209,7 +214,7 @@ export function ActiveEncounterTab({ onBack }: { onBack: () => void }) {
                       damageInput={damageInputs[c.id] || ''}
                       healInput={healInputs[c.id] || ''}
                       currentRound={state.combatState.round}
-                      combatStarted={combatState.combatStarted}
+                      combatStarted={state.combatState.combatStarted}
                       onDamageInputChange={(val) => setDamageInputs(prev => ({ ...prev, [c.id]: val }))}
                       onHealInputChange={(val) => setHealInputs(prev => ({ ...prev, [c.id]: val }))}
                       onHealthSubmit={(isDamage, damageType) => handleHealthChange(c.id, c, isDamage, damageType)}
