@@ -33,11 +33,12 @@ export function SheetConnectionSettings({
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="block text-xs uppercase tracking-widest font-bold text-[#8d8db9] px-1">
+          <label htmlFor="spreadsheet-id-input" className="block text-xs uppercase tracking-widest font-bold text-[#8d8db9] px-1">
             Google Spreadsheet ID
           </label>
           <div className="flex flex-col sm:flex-row gap-3">
             <input
+              id="spreadsheet-id-input"
               type="text"
               value={tempSpreadsheetId}
               onChange={e => setTempSpreadsheetId(e.target.value)}

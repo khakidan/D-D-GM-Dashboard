@@ -46,6 +46,7 @@ export const LevelUpResourcePools: React.FC<LevelUpResourcePoolsProps> = ({
                 min={0}
                 value={entry.max}
                 onFocus={(e) => e.target.select()}
+                aria-label={`${entry.name} max uses`}
                 onChange={(e) => {
                   const val = Math.max(0, parseInt(e.target.value, 10) || 0);
                   setPoolEdits(prev =>

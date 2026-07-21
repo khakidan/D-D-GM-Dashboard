@@ -453,6 +453,7 @@ export function AudioLibrary({
             onChange={(e) => handleFileInputChange(e, activeSubTab)}
             className="hidden"
             multiple
+            aria-label="Add audio files"
           />
           <Upload className="w-5 h-5 text-stone-400 mb-1" />
           <span className="text-[10px] font-sans font-bold text-[#8d8db9] uppercase tracking-wider">

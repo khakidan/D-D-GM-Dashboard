@@ -168,7 +168,7 @@ export const ResourcePoolsSection: React.FC<ResourcePoolsSectionProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
-              <label className="text-[9px] uppercase font-bold text-[#8d8db9]/70">Name</label>
+              <label htmlFor={`new-resource-name-${character.id}`} className="text-[9px] uppercase font-bold text-[#8d8db9]/70">Name</label>
               <input
                 type="text"
                 placeholder="Rage, Ki, Spell Slots..."
@@ -180,8 +180,9 @@ export const ResourcePoolsSection: React.FC<ResourcePoolsSectionProps> = ({
               />
             </div>
             <div>
-              <label className="text-[9px] uppercase font-bold text-[#8d8db9]/70">Max Uses</label>
+              <label htmlFor={`new-resource-max-${character.id}`} className="text-[9px] uppercase font-bold text-[#8d8db9]/70">Max Uses</label>
               <input
+                id={`new-resource-max-${character.id}`}
                 type="number"
                 min={1}
                 value={newPoolMax}
@@ -233,8 +234,9 @@ export const ResourcePoolsSection: React.FC<ResourcePoolsSectionProps> = ({
                   <div className="bg-[#ffffff] border border-dashed border-[#e2e8f0] p-3 rounded-lg space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       <div>
-                        <label className="text-[9px] uppercase font-bold text-[#8d8db9]/70">Name</label>
+                        <label htmlFor={`edit-pool-name-${pool.name}`} className="text-[9px] uppercase font-bold text-[#8d8db9]/70">Name</label>
                         <input
+                          id={`edit-pool-name-${pool.name}`}
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
@@ -242,8 +244,9 @@ export const ResourcePoolsSection: React.FC<ResourcePoolsSectionProps> = ({
                         />
                       </div>
                       <div>
-                        <label className="text-[9px] uppercase font-bold text-[#8d8db9]/70">Max Uses</label>
+                        <label htmlFor={`edit-pool-max-${pool.name}`} className="text-[9px] uppercase font-bold text-[#8d8db9]/70">Max Uses</label>
                         <input
+                          id={`edit-pool-max-${pool.name}`}
                           type="number"
                           min={1}
                           value={editMax}

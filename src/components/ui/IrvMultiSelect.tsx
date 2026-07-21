@@ -138,6 +138,7 @@ export function IrvMultiSelect({
             onChange={(e) => setSearchTerm(e.target.value)}
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
+            aria-label={label}
           />
           
           <AnimatePresence>

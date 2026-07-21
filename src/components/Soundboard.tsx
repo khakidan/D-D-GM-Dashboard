@@ -302,7 +302,7 @@ export function Soundboard({ storedFiles, playEffect, onSwitchTab, campaignId }:
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-1.5">
+                  <label htmlFor="soundboard-label-input" className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-1.5">
                     Button Label (Max 16 chars)
                   </label>
                   <input

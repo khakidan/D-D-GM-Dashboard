@@ -57,6 +57,7 @@ export function CardNumberInput({
       className={className}
       disabled={disabled}
       title={title}
+      aria-label={title}
       placeholder={placeholder}
       min={min}
       max={max}

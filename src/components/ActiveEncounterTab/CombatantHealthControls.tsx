@@ -44,6 +44,7 @@ export const CombatantHealthControls = ({
             value={damageInput}
             onChange={e => onDamageInputChange(e.target.value)}
             placeholder="0"
+            aria-label="Damage amount"
             disabled={isSyncing}
             onKeyDown={e => {
               if (e.key === 'Enter') {
@@ -108,6 +109,7 @@ export const CombatantHealthControls = ({
             value={healInput}
             onChange={e => onHealInputChange(e.target.value)}
             placeholder="0"
+            aria-label="Heal amount"
             disabled={isSyncing}
             onKeyDown={e => {
               if (e.key === 'Enter') {

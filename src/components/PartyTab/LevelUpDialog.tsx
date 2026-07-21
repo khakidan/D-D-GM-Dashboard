@@ -365,12 +365,13 @@ export const LevelUpDialog: React.FC<LevelUpDialogProps> = ({
           </div>
 
           <div>
-            <label className="block text-[9px]
+            <label htmlFor="level-up-hp-roll" className="block text-[9px]
               font-bold uppercase tracking-wider
               text-[#8d8db9] mb-1">
               HP Roll
             </label>
             <input
+              id="level-up-hp-roll"
               type="number"
               min="1"
               value={hpRoll}

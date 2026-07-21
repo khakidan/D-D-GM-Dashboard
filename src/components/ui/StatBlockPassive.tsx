@@ -52,7 +52,7 @@ export const StatBlockPassive: React.FC<StatBlockPassiveProps> = ({
           {passiveBonusExpanded && (
             <div className="grid grid-cols-3 gap-2 mt-1.5 p-2 bg-stone-800/40 border border-stone-700/50 rounded" id="passive-bonuses-inputs">
               <div>
-                <label className="text-[10px] text-white font-bold block mb-0.5">Perception</label>
+                <label htmlFor="passive-bonus-perception-input" className="text-[10px] text-white font-bold block mb-0.5">Perception</label>
                 <input
                   type="number"
                   min="-10"
@@ -65,7 +65,7 @@ export const StatBlockPassive: React.FC<StatBlockPassiveProps> = ({
                 />
               </div>
               <div>
-                <label className="text-[10px] text-white font-bold block mb-0.5">Insight</label>
+                <label htmlFor="passive-bonus-insight-input" className="text-[10px] text-white font-bold block mb-0.5">Insight</label>
                 <input
                   type="number"
                   min="-10"
@@ -78,7 +78,7 @@ export const StatBlockPassive: React.FC<StatBlockPassiveProps> = ({
                 />
               </div>
               <div>
-                <label className="text-[10px] text-white font-bold block mb-0.5">Investigation</label>
+                <label htmlFor="passive-bonus-investigation-input" className="text-[10px] text-white font-bold block mb-0.5">Investigation</label>
                 <input
                   type="number"
                   min="-10"

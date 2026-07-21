@@ -255,6 +255,7 @@ export function AmbientPlayer({
                 type="range"
                 min="0"
                 max="100"
+                aria-label="Ambient volume"
                 value={Math.round(ambientVolume * 100)}
                 onChange={handleVolumeChange}
                 className="w-full accent-[#2563eb] cursor-pointer"

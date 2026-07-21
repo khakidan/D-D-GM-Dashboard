@@ -96,6 +96,7 @@ export const MultiTargetActionPanel: React.FC<MultiTargetActionPanelProps> = ({
                 disabled={isGlobalDisabled}
                 onChange={(e) => setDamageAmount(e.target.value)}
                 placeholder="Amt"
+                aria-label="Damage amount"
                 className="w-16 h-8 bg-white border border-[#e2e8f0] rounded-lg px-2 text-center text-xs font-bold outline-none focus:border-red-500 disabled:opacity-50"
               />
               <select
@@ -135,6 +136,7 @@ export const MultiTargetActionPanel: React.FC<MultiTargetActionPanelProps> = ({
               disabled={isGlobalDisabled}
               onChange={(e) => setHealAmount(e.target.value)}
               placeholder="Amount"
+              aria-label="Heal amount"
               className="w-full h-8 bg-white border border-[#e2e8f0] rounded-lg px-2 text-xs font-bold outline-none focus:border-green-500 disabled:opacity-50"
             />
           </div>
@@ -160,6 +162,7 @@ export const MultiTargetActionPanel: React.FC<MultiTargetActionPanelProps> = ({
               disabled={isGlobalDisabled}
               onChange={(e) => setConditionName(e.target.value)}
               placeholder="e.g. Paralyzed"
+              aria-label="Condition name"
               className="w-full h-8 bg-white border border-[#e2e8f0] rounded-lg px-2 text-xs outline-none focus:border-[#2563eb] disabled:opacity-50 italic"
             />
           </div>

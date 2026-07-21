@@ -2,6 +2,7 @@ import React from 'react';
 import { DebouncedTextarea } from './DebouncedTextarea';
 
 export interface NpcCombatActionFieldsProps {
+  idPrefix: string;
   name: string;
   onNameChange: (name: string) => void;
   namePlaceholder: string;
@@ -30,6 +31,7 @@ export interface NpcCombatActionFieldsProps {
 }
 
 export function NpcCombatActionFields({
+  idPrefix,
   name,
   onNameChange,
   namePlaceholder,
@@ -67,6 +69,7 @@ export function NpcCombatActionFields({
             onChange={e => onNameChange(e.target.value)}
             className={inputClass}
             placeholder={namePlaceholder}
+            aria-label={namePlaceholder}
           />
         </div>
         <div>
@@ -77,11 +80,13 @@ export function NpcCombatActionFields({
               onChange={e => onRechargeChange(e.target.value || undefined)}
               className={inputClass}
               placeholder="e.g. Recharge 5–6"
+              aria-label="Recharge condition"
             />
           ) : onCostChange !== undefined ? (
             <div>
-              <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Cost</label>
+              <label htmlFor={`${idPrefix}-cost`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Cost</label>
               <input
+                id={`${idPrefix}-cost`}
                 type="number"
                 min="1"
                 max="3"
@@ -99,8 +104,9 @@ export function NpcCombatActionFields({
 
       <div className="grid grid-cols-4 gap-2">
         <div>
-          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Atk</label>
+          <label htmlFor={`${idPrefix}-atk`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Atk</label>
           <input
+            id={`${idPrefix}-atk`}
             type="number"
             value={attackBonus !== undefined ? attackBonus : ''}
             onChange={e => {
@@ -112,8 +118,9 @@ export function NpcCombatActionFields({
           />
         </div>
         <div>
-          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Dmg</label>
+          <label htmlFor={`${idPrefix}-dmg`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Dmg</label>
           <input
+            id={`${idPrefix}-dmg`}
             type="text"
             value={damage || ''}
             onChange={e => onDamageChange(e.target.value || undefined)}
@@ -122,8 +129,9 @@ export function NpcCombatActionFields({
           />
         </div>
         <div>
-          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC</label>
+          <label htmlFor={`${idPrefix}-dc`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC</label>
           <input
+            id={`${idPrefix}-dc`}
             type="number"
             value={saveDC !== undefined ? saveDC : ''}
             onChange={e => {
@@ -135,8 +143,9 @@ export function NpcCombatActionFields({
           />
         </div>
         <div>
-          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Save</label>
+          <label htmlFor={`${idPrefix}-save`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Save</label>
           <input
+            id={`${idPrefix}-save`}
             type="text"
             value={saveType || ''}
             onChange={e => onSaveTypeChange(e.target.value || undefined)}
@@ -148,8 +157,9 @@ export function NpcCombatActionFields({
 
       {onRangeValueChange !== undefined ? (
         <div>
-          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Range</label>
+          <label htmlFor={`${idPrefix}-range`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Range</label>
           <input
+            id={`${idPrefix}-range`}
             type="text"
             value={rangeValue || ''}
             onChange={e => onRangeValueChange(e.target.value || undefined)}

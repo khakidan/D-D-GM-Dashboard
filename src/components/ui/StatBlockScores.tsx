@@ -9,10 +9,12 @@ function AbilityScoreInput({
   value,
   onChange,
   id,
+  ariaLabel,
 }: {
   value: number;
   onChange: (val: number) => void;
   id?: string;
+  ariaLabel?: string;
 }) {
   const [local, setLocal] = React.useState(String(value));
 
@@ -46,6 +48,7 @@ function AbilityScoreInput({
       onFocus={e => e.target.select()}
       className="bg-transparent border border-transparent rounded text-[#0f172a] text-2xl font-bold text-center w-full focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/30 focus:outline-none"
       id={id}
+      aria-label={ariaLabel}
     />
   );
 }
@@ -96,6 +99,7 @@ function ProficiencyOverrideInput({
       onFocus={e => e.target.select()}
       className={className || "w-12 text-[10px] bg-white border border-[#e2e8f0] rounded text-[#0f172a] text-center py-0.5 mt-0.5 outline-none focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]/30"}
       id={id}
+      aria-label="Proficiency bonus override"
     />
   );
 }
@@ -146,6 +150,7 @@ export const StatBlockScores: React.FC<StatBlockScoresProps> = ({
                     value={score}
                     onChange={(val) => onAbilityChange(ability, String(val))}
                     id={`ability-score-${ability.toLowerCase()}`}
+                    ariaLabel={`${ability} score`}
                   />
                 )}
               </div>

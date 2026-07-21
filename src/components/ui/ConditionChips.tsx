@@ -365,6 +365,7 @@ export function ConditionChips({
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={chips.length === 0 ? 'Add condition or effect...' : ''}
+            aria-label="Add condition or effect"
             className="flex-1 min-w-[140px] bg-transparent outline-none text-xs font-sans
                        text-[#0f172a] placeholder:text-[#8d8db9]/40"
           />
@@ -453,6 +454,7 @@ export function ConditionChips({
             autoFocus
             min="1"
             placeholder="rounds"
+            aria-label={`Duration in rounds for ${pendingCondition}`}
             value={timerRounds}
             onChange={e => setTimerRounds(e.target.value)}
             onKeyDown={e => {

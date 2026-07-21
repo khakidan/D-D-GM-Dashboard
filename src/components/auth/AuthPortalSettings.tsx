@@ -80,6 +80,7 @@ export function AuthPortalSettings({
                 type="password"
                 value={manualToken}
                 onChange={e => setManualTokenState(e.target.value)}
+                aria-label="Manual refresh token"
                 placeholder="Paste google refresh token..."
                 className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3 py-2.5 text-xs font-mono outline-none focus:border-[#2563eb]"
               />

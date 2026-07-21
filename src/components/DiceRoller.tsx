@@ -149,6 +149,7 @@ export function DiceRoller() {
                 ref={inputRef}
                 type="text"
                 value={notationInput}
+                aria-label="Dice notation"
                 onChange={e => {
                   setNotationInput(e.target.value);
                   if (errorMsg) setErrorMsg(null);

@@ -6,6 +6,25 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Unlabeled Form Inputs Fixed — Closes the Final Accessibility Finding (3 of 3 Now Complete)
+
+Closes the last of the 3 accessibility findings from the original audit (the other 2 — focus indicators and icon-only controls — were fixed in the entry below this one). This was the largest-scale finding: an initial automated scan found ~56 candidate inputs across ~28 files with no `aria-label`, `aria-labelledby`, or `htmlFor`-linked `<label>`, deliberately scoped out of the earlier round given its size and the explicit note that many would need individual visual/functional context checked, not a bulk pass.
+
+**The real number needing fixes was smaller than the initial scan suggested — about 30 genuine gaps, not 56 — because a meaningful fraction were false positives caught by checking real context before touching anything:**
+- Checkboxes/radios already wrapped directly inside a `<label>` element (e.g. several in `LevelUpDialog.tsx`, `LevelUpResourcePools.tsx`) — a valid, standard HTML pattern (the wrapping alone provides the association) that the original detection missed since it only checked for explicit `aria-label`/`htmlFor`, not implicit wrapping.
+- Labels placed *after* their input in the JSX rather than before (`StatBlockSkills.tsx`'s Jack of All Trades checkbox) — equally valid, but missed by a backwards-only search.
+- `IrvMultiSelect.tsx`'s search input, already covered by its parent's `focus-within` treatment for a related but separate reason (see the focus-indicator entry below).
+
+**Fixes fell into two real categories, verified individually rather than assumed:**
+- **Already had visible label text, just missing the `id`/`htmlFor` connection** — the majority of the real fixes. `NpcCombatActionFields.tsx` alone accounted for 8: it renders per-action in a list (NPC actions, reactions, legendary actions), so a new `idPrefix` prop was added and threaded through all 4 call sites (`NpcStatBlockTab.tsx` ×2, `NpcCard.tsx` ×2, using each list item's render index) to keep generated ids unique per rendered instance. Similar `id`/`htmlFor` wiring closed out `StatBlockPassive.tsx` (3), `ResourcePoolManager.tsx` (4), `ResourcePoolsSection.tsx` (4), plus single fixes in `LevelUpDialog.tsx`, `SheetConnectionSettings.tsx`, and `Soundboard.tsx`.
+- **No visible label existed at all** — given a real `aria-label`, usually built from context already available at each call site (a character's name, an NPC action's placeholder text, a nearby heading) rather than a generic placeholder string. Examples: the per-combatant selection checkbox and Temp AC/Temp HP inputs in `CombatantCardHeader.tsx`, the damage/heal/condition inputs in `MultiTargetActionPanel.tsx` and `CombatantHealthControls.tsx`, the long/short rest per-character checkboxes (labeled with the actual character name), and the hidden file input in `AudioLibrary.tsx`.
+
+**2 components left deliberately unchanged**, not overlooked: `DebouncedInput.tsx` already spreads `{...props}` onto its internal input, so `aria-label` already passes through correctly whenever a caller supplies one — any real gap there would be at individual call sites across the app, a separate and much larger investigation outside this specific scan's scope. `StatBlockSkills.tsx`'s checkbox needed no change per the false-positive note above.
+
+**Verified directly**: full `npx tsc -p tsconfig.build.json --noEmit` clean throughout, checked after every file. Final comprehensive sweep: 286 tests across all 61 test files under `src/components/`, all passing — the full component suite, not just the touched files, given the number of shared components involved.
+
+---
+
 ## Accessibility Fixes — Focus Indicators and Icon-Only Controls (10 Files) — 2 of 3 Audit Findings Closed
 
 Closes out 2 of the 3 accessibility findings recorded in `ROADMAP.md` (see the audit write-up there for how these were found). Every fix here was applied directly by inspecting real file context first — several earlier automated matches turned out to be false positives once checked (e.g. `IrvMultiSelect.tsx`'s missing focus ring was a false positive: its parent container already provides a valid `focus-within:ring-2` treatment my original grep didn't check for) — those were correctly left untouched rather than "fixed" unnecessarily.

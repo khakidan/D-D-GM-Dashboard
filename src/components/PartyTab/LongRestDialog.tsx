@@ -97,6 +97,7 @@ export function LongRestDialog({ isOpen, characters, onConfirm, onClose }: LongR
                       onChange={() => {}} // toggled via row click
                       className="w-4 h-4 rounded text-[#2563eb] border-[#e2e8f0] focus:ring-[#2563eb] cursor-pointer accent-[#2563eb] disabled:opacity-50 disabled:cursor-not-allowed"
                       id={`checkbox-${char.id}`}
+                      aria-label={`Include ${char.characterName} in long rest`}
                     />
                     <div>
                       <span className="font-serif font-bold text-[#0f172a] text-sm block">

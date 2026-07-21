@@ -223,6 +223,7 @@ export function AddCombatantDialog({
                           checked={selectedCharacterIds.has(char.id)}
                           onChange={() => toggleCharacterSelection(char.id)}
                           disabled={alreadyIn}
+                          aria-label={`Add ${char.characterName} to encounter`}
                         />
                         <div className="flex-1">
                           <div className="font-bold">{char.characterName}</div>

@@ -145,6 +145,7 @@ export function CombatantCardHeader({
                   checked={isSelected}
                   onChange={() => onToggleSelect?.(c.id)}
                   className="w-5 h-5 rounded border-[#2563eb] text-[#2563eb] focus:ring-[#2563eb] cursor-pointer"
+                  aria-label={`Select ${c.name}`}
                 />
               </div>
             ))}
@@ -239,6 +240,7 @@ export function CombatantCardHeader({
                         disabled={isSyncing}
                         className="w-8 h-5 text-center font-bold text-[#2563eb] border border-slate-200 rounded outline-none text-xs bg-slate-50 focus:bg-white focus:border-blue-500 disabled:opacity-50"
                         data-testid="tempac-input"
+                        aria-label="Temp AC"
                       />
                       <button
                         type="button"
@@ -340,6 +342,7 @@ export function CombatantCardHeader({
                     disabled={isSyncing}
                     className="w-9 h-6 text-center font-bold text-[#2563eb] border border-slate-200 rounded outline-none text-xs bg-slate-50 focus:bg-white focus:border-blue-500 disabled:opacity-50"
                     data-testid="temphp-input"
+                    aria-label="Temp HP"
                   />
                   <button
                     type="button"

@@ -88,6 +88,7 @@ export const NpcCard: React.FC<NpcCardProps> = ({
 
   const renderActionFields = (item: NpcAction, index: number, onItemChange: (updated: NpcAction) => void) => (
     <NpcCombatActionFields
+       idPrefix={`npc-card-action-${index}`}
        name={item.name}
        onNameChange={name => onItemChange({ ...item, name })}
        namePlaceholder="Action name (e.g. Bite)"
@@ -126,6 +127,7 @@ export const NpcCard: React.FC<NpcCardProps> = ({
     onItemChange: (updated: NpcLegendaryAction) => void
   ) => (
     <NpcCombatActionFields
+      idPrefix={`npc-card-legendary-${index}`}
       name={item.name}
       onNameChange={name => onItemChange({ ...item, name })}
       namePlaceholder="Action name"

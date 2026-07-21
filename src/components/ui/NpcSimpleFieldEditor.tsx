@@ -24,6 +24,7 @@ export function NpcSimpleFieldEditor({
         onChange={e => onNameChange(e.target.value)}
         className="w-full bg-white border border-[#e2e8f0] rounded-xl outline-none transition-all font-serif italic text-sm py-1 px-2 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]"
         placeholder={namePlaceholder}
+        aria-label={namePlaceholder}
       />
       <DebouncedTextarea
         value={description}

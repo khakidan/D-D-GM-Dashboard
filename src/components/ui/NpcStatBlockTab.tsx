@@ -66,6 +66,7 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
         }}
         renderFields={(item, index, onChange) => (
           <NpcCombatActionFields
+            idPrefix={`npc-action-${index}`}
             name={item.name}
             onNameChange={name => onChange({ ...item, name })}
             namePlaceholder="Action name (e.g. Bite)"
@@ -120,6 +121,7 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
         }}
         renderFields={(item, index, onChange) => (
           <NpcCombatActionFields
+            idPrefix={`npc-legendary-${index}`}
             name={item.name}
             onNameChange={name => onChange({ ...item, name })}
             namePlaceholder="Action name"

@@ -115,8 +115,9 @@ export function ResourcePoolManager({
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div>
-                      <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Name</label>
+                      <label htmlFor={`edit-resource-name-${pool.name}`} className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Name</label>
                       <input
+                        id={`edit-resource-name-${pool.name}`}
                         type="text"
                         value={editResourceName}
                         onChange={e => setEditResourceName(e.target.value)}
@@ -124,8 +125,9 @@ export function ResourcePoolManager({
                       />
                     </div>
                     <div>
-                      <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Max Uses</label>
+                      <label htmlFor={`edit-resource-max-${pool.name}`} className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Max Uses</label>
                       <input
+                        id={`edit-resource-max-${pool.name}`}
                         type="number"
                         min={1}
                         max={20}
@@ -213,8 +215,9 @@ export function ResourcePoolManager({
         <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-600 mb-1 block">Name</label>
+              <label htmlFor="new-resource-name" className="text-[10px] uppercase font-bold text-slate-600 mb-1 block">Name</label>
               <input
+                id="new-resource-name"
                 type="text"
                 value={newResourceName}
                 onChange={e => setNewResourceName(e.target.value)}
@@ -223,8 +226,9 @@ export function ResourcePoolManager({
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase font-bold text-slate-600 mb-1 block">Max Uses</label>
+              <label htmlFor="new-resource-max" className="text-[10px] uppercase font-bold text-slate-600 mb-1 block">Max Uses</label>
               <input
+                id="new-resource-max"
                 type="number"
                 min={1}
                 max={20}

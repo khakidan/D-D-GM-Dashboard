@@ -67,6 +67,7 @@ export const CharacterStatGrid: React.FC<CharacterStatGridProps> = ({
             step="1"
             onChange={onTempAcChange}
             disabled={isSyncing}
+            aria-label="Temporary AC modifier"
             className="w-10 text-center bg-transparent border-0 outline-none p-0 focus:ring-0 text-inherit font-bold"
           />
         </div>
