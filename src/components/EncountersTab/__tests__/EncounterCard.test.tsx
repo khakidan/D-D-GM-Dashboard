@@ -70,4 +70,78 @@ describe('EncounterCard', () => {
     // 3. Assert value is preserved (not reset to 'Goblin Ambush')
     expect(nameInput.value).toBe('New Typed Name');
   });
+
+  it('does not re-render when only callback props change reference (same enc/isCompleted/isDeleting/encounterCombatants/difficulties)', async () => {
+    const utils = await import('../../../lib/utils');
+    const spy = vi.spyOn(utils, 'cn');
+    spy.mockClear();
+
+    function Wrapper() {
+      // Fresh callback references every render, exactly like EncountersTab.tsx's real
+      // .map() call site does — this is the scenario the custom comparator is
+      // specifically meant to ignore.
+      return (
+        <EncounterCard
+          enc={mockEnc}
+          isCompleted={false}
+          isDeleting={false}
+          encounterCombatants={defaultProps.encounterCombatants}
+          difficulties={defaultProps.difficulties}
+          onDelete={() => {}}
+          onStart={() => {}}
+          onSyncRequested={async () => {}}
+          onUpdate={async () => {}}
+        />
+      );
+    }
+
+    const { rerender } = render(<Wrapper />);
+    const callsAfterFirstRender = spy.mock.calls.length;
+    expect(callsAfterFirstRender).toBeGreaterThan(0);
+
+    rerender(<Wrapper />);
+
+    // cn() is called directly in EncounterCard's own render body (and by its
+    // children, which also wouldn't render if the memo bailed out) — if the
+    // comparator correctly bailed out, this count must not have increased at all.
+    expect(spy.mock.calls.length).toBe(callsAfterFirstRender);
+
+    spy.mockRestore();
+  });
+
+  it('does re-render when enc reference actually changes', async () => {
+    const utils = await import('../../../lib/utils');
+    const spy = vi.spyOn(utils, 'cn');
+    spy.mockClear();
+
+    const updatedEnc = { ...mockEnc, name: 'Ambush Reinforced' };
+
+    function Wrapper({ enc }: { enc: typeof mockEnc }) {
+      return (
+        <EncounterCard
+          enc={enc}
+          isCompleted={false}
+          isDeleting={false}
+          encounterCombatants={defaultProps.encounterCombatants}
+          difficulties={defaultProps.difficulties}
+          onDelete={() => {}}
+          onStart={() => {}}
+          onSyncRequested={async () => {}}
+          onUpdate={async () => {}}
+        />
+      );
+    }
+
+    const { rerender } = render(<Wrapper enc={mockEnc} />);
+    const callsAfterFirstRender = spy.mock.calls.length;
+    expect(callsAfterFirstRender).toBeGreaterThan(0);
+
+    rerender(<Wrapper enc={updatedEnc} />);
+
+    // A genuinely different enc object (the one actually being updated) must still
+    // cause a real re-render — the comparator must not over-suppress this.
+    expect(spy.mock.calls.length).toBeGreaterThan(callsAfterFirstRender);
+
+    spy.mockRestore();
+  });
 });

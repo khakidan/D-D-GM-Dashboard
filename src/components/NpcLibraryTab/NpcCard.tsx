@@ -33,9 +33,9 @@ export interface NpcCardProps {
   onDelete: () => void;
 }
 
-export const NpcCard: React.FC<NpcCardProps> = ({
+export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
   npc, isSyncing, isExpanded, onToggleExpand, onUpdate, onDelete
-}) => {
+}) {
   const [isConfirmOpen, setIsConfirmOpen] = React.useState(false);
   const parsedProfs = parseProficiencies(npc.proficiencies || '');
   const parsedScores = parseAbilityScores(npc.abilityScores || '');
@@ -362,4 +362,14 @@ export const NpcCard: React.FC<NpcCardProps> = ({
       />
     </CardShell>
   );
-};
+}, (prevProps, nextProps) => {
+  // Same reasoning as CharacterCard.tsx: NpcLibraryTab.tsx creates fresh callbacks
+  // every render, but every state-update path in useNpcLibrary.ts uses
+  // .map(n => matches ? {...n, ...updates} : n), preserving the same object
+  // reference for every NPC that wasn't actually changed.
+  return (
+    prevProps.npc === nextProps.npc &&
+    prevProps.isSyncing === nextProps.isSyncing &&
+    prevProps.isExpanded === nextProps.isExpanded
+  );
+});

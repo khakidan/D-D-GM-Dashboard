@@ -28,7 +28,7 @@ export interface EncounterCardProps {
   ) => Promise<void>;
 }
 
-export const EncounterCard: React.FC<EncounterCardProps> = ({ 
+export const EncounterCard: React.FC<EncounterCardProps> = React.memo(function EncounterCard({ 
   enc, 
   isCompleted,
   isDeleting,
@@ -38,7 +38,7 @@ export const EncounterCard: React.FC<EncounterCardProps> = ({
   onStart, 
   onSyncRequested,
   onUpdate
-}) => {
+}) {
   const [name, setName] = useState(enc.name || '');
   const [location, setLocation] = useState(enc.location || '');
   const [difficultyId, setDifficultyId] = useState(enc.difficultyId);
@@ -246,4 +246,18 @@ export const EncounterCard: React.FC<EncounterCardProps> = ({
       />
     </CardShell>
   );
-};
+}, (prevProps, nextProps) => {
+  // Same reasoning as CharacterCard.tsx/NpcCard.tsx: EncountersTab.tsx creates fresh
+  // callbacks every render, but every state-update path in useEncounters.ts uses
+  // .map(e => matches ? {...e, ...updates} : e), preserving the same object reference
+  // for every encounter that wasn't actually changed. encounterCombatants and
+  // difficulties are separate top-level state slices that also stay referentially
+  // stable across unrelated updates (e.g. a character HP change).
+  return (
+    prevProps.enc === nextProps.enc &&
+    prevProps.isCompleted === nextProps.isCompleted &&
+    prevProps.isDeleting === nextProps.isDeleting &&
+    prevProps.encounterCombatants === nextProps.encounterCombatants &&
+    prevProps.difficulties === nextProps.difficulties
+  );
+});

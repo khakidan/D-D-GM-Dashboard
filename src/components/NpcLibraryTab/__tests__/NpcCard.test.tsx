@@ -207,4 +207,90 @@ describe('NpcCard', () => {
     const parsedLegendaryAfterRemove = JSON.parse(updatedNpcUpdates.legendaryActionsList || '[]');
     expect(parsedLegendaryAfterRemove.length).toBe(0);
   });
+
+  const mockNpcForMemoTests: NPC = {
+    id: 'npc-memo-1',
+    name: 'Kobold',
+    ac: 12,
+    maxHp: 5,
+    notes: '',
+    abilityScores: JSON.stringify({ STR: 7, DEX: 15, CON: 9, INT: 8, WIS: 7, CHA: 8 }),
+    proficiencies: JSON.stringify({}),
+    speed: '30ft.',
+    senses: '',
+    languages: '',
+    challengeRating: '0.125',
+    traits: '[]',
+    actions: '[]',
+    reactions: '[]',
+    legendaryActionsList: '[]',
+  };
+
+  it('does not re-render when only callback props change reference (same npc/isSyncing/isExpanded)', async () => {
+    const abilityScores = await import('../../../lib/abilityScores');
+    const spy = vi.spyOn(abilityScores, 'parseAbilityScores');
+    spy.mockClear();
+
+    function Wrapper() {
+      // Fresh callback references every render, exactly like NpcLibraryTab.tsx's real
+      // .map() call site does — this is the scenario the custom comparator is
+      // specifically meant to ignore.
+      return (
+        <NpcCard
+          npc={mockNpcForMemoTests}
+          isSyncing={false}
+          isExpanded={false}
+          onToggleExpand={() => {}}
+          onUpdate={() => {}}
+          onDelete={() => {}}
+        />
+      );
+    }
+
+    const { rerender } = render(<Wrapper />);
+    const callsAfterFirstRender = spy.mock.calls.length;
+    expect(callsAfterFirstRender).toBeGreaterThan(0);
+
+    rerender(<Wrapper />);
+
+    // parseAbilityScores is called at the top of NpcCard's own function body on
+    // every actual execution — if the memo comparator correctly bailed out, this
+    // spy's call count must not have increased at all.
+    expect(spy.mock.calls.length).toBe(callsAfterFirstRender);
+
+    spy.mockRestore();
+  });
+
+  it('does re-render when npc reference actually changes', async () => {
+    const abilityScores = await import('../../../lib/abilityScores');
+    const spy = vi.spyOn(abilityScores, 'parseAbilityScores');
+    spy.mockClear();
+
+    const updatedNpc = { ...mockNpcForMemoTests, maxHp: 8 };
+
+    function Wrapper({ npc }: { npc: NPC }) {
+      return (
+        <NpcCard
+          npc={npc}
+          isSyncing={false}
+          isExpanded={false}
+          onToggleExpand={() => {}}
+          onUpdate={() => {}}
+          onDelete={() => {}}
+        />
+      );
+    }
+
+    const { rerender } = render(<Wrapper npc={mockNpcForMemoTests} />);
+    const callsAfterFirstRender = spy.mock.calls.length;
+    expect(callsAfterFirstRender).toBeGreaterThan(0);
+
+    rerender(<Wrapper npc={updatedNpc} />);
+
+    // A genuinely different npc object (the one actually being updated) must still
+    // cause a real re-render — the comparator must not over-suppress this.
+    expect(spy.mock.calls.length).toBeGreaterThan(callsAfterFirstRender);
+
+    spy.mockRestore();
+  });
 });
