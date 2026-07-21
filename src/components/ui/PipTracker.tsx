@@ -59,7 +59,7 @@ export function PipTracker({
 }: PipTrackerProps) {
   const baseStyle = cn(
     'rounded-full border transition-all shrink-0',
-    !readOnly && 'focus:outline-none cursor-pointer'
+    !readOnly && 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1'
   );
 
   return (

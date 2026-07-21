@@ -102,7 +102,7 @@ export function CombatantCardExpanded({
               onChange={e => onUpdateCombatant({ tempHp: e.target.value ? parseInt(e.target.value) : 0 })}
               placeholder="0"
               disabled={isSyncing}
-              className="w-full bg-transparent text-center font-bold text-blue-600 outline-none text-base disabled:opacity-50"
+              className="w-full bg-transparent text-center font-bold text-blue-600 text-base disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 rounded"
             />
           </StatTile>
           <StatTile label="Max HP">

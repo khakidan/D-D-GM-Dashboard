@@ -187,7 +187,15 @@ export function AmbientPlayer({
                 <div
                   key={track.id}
                   id={`ambient-track-${track.id}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleTrackClick(track.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleTrackClick(track.id);
+                    }
+                  }}
                   className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
                     isCurrent
                       ? 'bg-[#2563eb]/5 border-[#2563eb]/40 shadow-sm'
@@ -197,7 +205,14 @@ export function AmbientPlayer({
                   <div className="flex items-center gap-3 min-w-0">
                     <button
                       id={`play-btn-${track.id}`}
-                      className={`w-8 h-8 flex items-center justify-center rounded-full border transition-colors shrink-0 ${
+                      aria-label={isPlaying ? `Pause ${track.name}` : `Play ${track.name}`}
+                      onClick={(e) => {
+                        // Row above has its own onClick calling the same handler —
+                        // stop propagation so clicking the button doesn't trigger both.
+                        e.stopPropagation();
+                        handleTrackClick(track.id);
+                      }}
+                      className={`w-8 h-8 flex items-center justify-center rounded-full border transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 ${
                         isPlaying
                           ? 'bg-[#10b981]/10 border-[#10b981]/30 text-[#10b981]'
                           : 'bg-white border-stone-200 text-stone-500 hover:text-stone-700 hover:border-stone-400'

@@ -64,7 +64,7 @@ export const NpcReferencePanel: React.FC<NpcReferencePanelProps> = ({ combatant 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="text-xs text-[#8d8db9] hover:text-[#0f172a] font-medium bg-[#f9f8ff] rounded px-2 py-1 border border-[#e2e8f0] w-full text-left cursor-pointer transition-colors outline-none focus:outline-none"
+        className="text-xs text-[#8d8db9] hover:text-[#0f172a] font-medium bg-[#f9f8ff] rounded px-2 py-1 border border-[#e2e8f0] w-full text-left cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1"
       >
         {isOpen ? '▼ Stat Block' : '▶ Stat Block'}
       </button>

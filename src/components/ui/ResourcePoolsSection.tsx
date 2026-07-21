@@ -159,6 +159,8 @@ export const ResourcePoolsSection: React.FC<ResourcePoolsSectionProps> = ({
               type="button"
               onClick={() => setIsAdding(false)}
               className="text-[#8d8db9]/60 hover:text-red-500"
+              aria-label="Cancel new resource tracker"
+              title="Cancel"
             >
               <X className="w-4 h-4" />
             </button>

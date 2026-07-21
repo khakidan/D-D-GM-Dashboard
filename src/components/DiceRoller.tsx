@@ -288,11 +288,20 @@ export function DiceRoller() {
                 {history.map((histItem, idx) => (
                   <div
                     key={histItem.timestamp + idx}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Roll ${histItem.notation} again`}
                     onClick={() => {
                       // Clicking a history item re-rolls it! Incredible addition for usability!
                       handleRoll(histItem.notation);
                     }}
-                    className="flex items-center justify-between p-2 py-1.5 bg-[#f9f8ff]/40 hover:bg-[#2563eb]/5 border border-[#e2e8f0]/40 rounded-lg cursor-pointer transition-colors"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRoll(histItem.notation);
+                      }
+                    }}
+                    className="flex items-center justify-between p-2 py-1.5 bg-[#f9f8ff]/40 hover:bg-[#2563eb]/5 border border-[#e2e8f0]/40 rounded-lg cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1"
                     title="Click to roll again"
                   >
                     <div className="flex items-center gap-2 overflow-hidden mr-2">

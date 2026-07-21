@@ -54,7 +54,7 @@ export function CombatantLegendaryTracker({
                     onClick={() => isFilled && onSpendResistance()}
                     disabled={isSyncing || !isFilled}
                     className={cn(
-                      "transition-transform duration-100 focus:outline-none",
+                      "transition-transform duration-100 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 rounded-full",
                       isFilled ? "cursor-pointer hover:scale-110" : "cursor-default"
                     )}
                   >

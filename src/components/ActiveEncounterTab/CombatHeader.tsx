@@ -77,7 +77,7 @@ export function CombatHeader({
           <div className="flex-shrink-0 self-start h-8 flex items-center">
             <button 
               onClick={onBack} 
-              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 select-none outline-none focus:outline-none"
+              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 select-none focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 rounded"
             >
               &larr; Back to Encounters
             </button>

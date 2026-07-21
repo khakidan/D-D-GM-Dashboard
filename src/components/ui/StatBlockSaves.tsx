@@ -80,7 +80,7 @@ export const StatBlockSaves: React.FC<StatBlockSavesProps> = ({
               type="button"
               key={ability}
               onClick={() => onToggle(ability)}
-              className="flex items-center text-left py-0.5 hover:bg-stone-700/30 rounded px-1 -mx-1 w-full transition-colors outline-none cursor-pointer"
+              className="flex items-center text-left py-0.5 hover:bg-stone-700/30 rounded px-1 -mx-1 w-full transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1"
               id={`saving-throw-btn-${ability.toLowerCase()}`}
             >
               {rowContent}

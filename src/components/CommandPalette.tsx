@@ -130,7 +130,7 @@ export function CommandPalette({
                   value={search}
                   onValueChange={setSearch}
                   placeholder="Type a command or search..."
-                  className="w-full bg-transparent outline-none border-none placeholder-[#8d8db9] text-sm font-sans text-[#0f172a]"
+                  className="w-full bg-transparent border-none placeholder-[#8d8db9] text-sm font-sans text-[#0f172a] focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 rounded"
                 />
               </div>
 
