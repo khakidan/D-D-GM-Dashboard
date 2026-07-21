@@ -1,5 +1,5 @@
 import { Combatant, Character } from '../../../types';
-import { useAppState } from '../../../hooks/useAppState';
+import { getSnapshot } from '../../../hooks/useAppState';
 import { updateCharacterDB } from '../../../services/dbOperations';
 import { getResourceForEffect, parseResourcePools, spendResourcePip, serializeResourcePools } from '../../../lib/resourcePools';
 import { toast } from 'sonner';
@@ -13,7 +13,12 @@ import { parseCommaSeparatedList } from '../../../lib/stringUtils';
  * logic for the expanded combatant card.
  */
 export function useCombatantExpanded(c: Combatant) {
-  const { updateState, getSnapshot } = useAppState();
+  // This hook never reads the reactive `state` value from useAppState() — only
+  // updateState (a stable store action) and getSnapshot (already subscription-free,
+  // reads directly from the store). Previously calling useAppState() here subscribed
+  // every combatant card to the entire app state for no benefit, since the returned
+  // `state` was discarded. Selecting updateState directly avoids that entirely.
+  const updateState = useDashboardStore((s) => s.updateState);
 
   /**
    * handleResourcePoolUpdate

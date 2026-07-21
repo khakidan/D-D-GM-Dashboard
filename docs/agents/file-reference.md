@@ -156,6 +156,7 @@ Shared test data factories used across many test files. These are not tests them
 
 ### src/components/PartyTab/
 
+- `CharacterCard.tsx` — Character roster card, one per party member. Wrapped in `React.memo` with a custom comparator — see `patterns.md`'s "Card memoization pattern" and `CHANGELOG.md`.
 - `CharacterResourceSection.tsx` — Condition chips with `onConditionAdded` that automatically decrement matching resource pools.
 - `hooks/useParty.ts` — Thin facade (~80 lines). Composes 3 sub-hooks and returns their combined state/actions under the same public API as before its decomposition — no consumer changes required. See `CHANGELOG.md` for the extraction.
 - `hooks/usePartyRest.ts` — Extracted from `useParty.ts`. Contains `handleShortRest`/`handleLongRest` and the module-level pure helpers `calculateShortRestUpdates`/`calculateLongRestUpdates`.
@@ -169,7 +170,7 @@ Shared test data factories used across many test files. These are not tests them
 
 - `index.tsx` — Top-level coordinator. Owns `characters`/`npcs` derivation for combatants (resolves `pcCharacter`/`npcModel` once per combatant in its `.map()`, passing resolved data down — see CHANGELOG.md).
 - `CombatHeader.tsx` — Encounter controls. Includes **End Encounter** (writes log) and **Cancel Encounter** (discards log, destructive style).
-- `CombatantCard.tsx` — Pure prop-driven card; receives `combatStarted`, `pcCharacter`, `npcModel` as props (no direct store access).
+- `CombatantCard.tsx` — Pure prop-driven card; receives `combatStarted`, `pcCharacter`, `npcModel` as props (no direct store access). Wrapped in `React.memo` with a custom comparator — see `patterns.md`'s "Card memoization pattern." Its own `isActiveTurn`/`isSelected`/`isSyncing`/`isExpanded` come from `useCombatantCard(c.id)`, not props — see that hook's entry below for why this matters for the memo to actually work.
 - `CombatantCardHeader.tsx` — Compact `[-] N/M [+]` resource counter row for every PC resource pool in collapsed view. Passes through a resolved `pcCharacter` prop to `CombatantCompactResourceRow`.
 - `CombatantCardExpanded.tsx` — Full `ResourcePoolsSection` for player combatants. Pure prop-driven (no store access).
 - `CombatantCompactResourceRow.tsx` — Pure prop-driven (receives `character` prop, no store access).
@@ -181,7 +182,8 @@ Shared test data factories used across many test files. These are not tests them
 - `CombatantLegendaryTracker.tsx` — Full-width legendary action/resistance tracker for the expanded combatant card view. Distinct from the compact dot-pip version in `CombatantCompactIndicators.tsx` used in the collapsed row.
 - `CombatantRechargeTracker.tsx` — Full-width recharge ability tracker for the expanded combatant card view. Distinct from the compact pill version in `CombatantCompactIndicators.tsx` used in the collapsed row.
 - `hooks/useDeathSaves.ts` — Death saving throw state and stabilization logic.
-- `hooks/useCombatantExpanded.ts` — Encapsulates resource pool updates and condition-triggered resource depletion via `onConditionAdded`. Used by `CombatantCardExpanded`.
+- `hooks/useCombatantCard.ts` — Derives `isActiveTurn`/`isSelected`/`isSelectable`/`isSyncing`/`isExpanded`/`concentrationLinks` for one specific combatant, plus `toggleExpand`/`toggleSelection`. Uses a narrow, per-combatant Zustand selector (`useDashboardStore(useShallow(...))`), not `useAppState()` — this is a documented, deliberate exception to the store-access architecture rule (see `patterns.md`), fixed specifically because the broader subscription re-rendered every `CombatantCard` on any combatant's update, regardless of props. Uses a stable, module-level empty-array constant for the concentration-links fallback to avoid defeating `useShallow`'s comparison. See `CHANGELOG.md`.
+- `hooks/useCombatantExpanded.ts` — Encapsulates resource pool updates and condition-triggered resource depletion via `onConditionAdded`. Used by `CombatantCardExpanded`. Gets `updateState` via a narrow store selector and `getSnapshot` via the subscription-free standalone export from `useAppState.ts`, rather than `useAppState()` itself — same broad-subscription fix as `useCombatantCard.ts` above, simpler here since this hook never actually used the reactive `state` value it was discarding. See `CHANGELOG.md`.
 - `hooks/useHealthChange.ts` — Damage/healing with IRV math. Fires `fireConcentrationAlert()` whenever a concentrating combatant takes damage.
 - `hooks/useCombatSync.ts` (66 lines) — Turn, round, and combatant synchronization facade. Calls `initCombatLog`, `addCombatEvent`, `advanceCombatLogRound`, and `clearCombatLog`. Implements initiative sorting on first turn, dead-NPC skipping, and NPC initiative as `1d20 + DEX modifier`. Delegates core behaviors to `useCombatantMutations`, `useCombatLifecycle`, `useCombatTurn`, and `useCombatConcentration` internally and re-exposes their APIs.
 - `hooks/useCombatantMutations.ts` — Extracted from `useCombatSync`. Contains `updateCombatant`, `removeCombatant`, and `syncingIds`. Handles PC/NPC HP, conditions, and AC-modifier updates with DB writes (using `updateCharacterDB`, `updateNpcInstanceHpDB`, etc.), includes rollback on failure, and emits combat log events for condition changes.
@@ -193,10 +195,10 @@ Shared test data factories used across many test files. These are not tests them
 
 ### src/components/EncountersTab/
 
-- `EncounterCard.tsx` — Pure prop-driven card; receives `encounterCombatants` and `difficulties` as props (no direct store access).
+- `EncounterCard.tsx` — Pure prop-driven card; receives `encounterCombatants` and `difficulties` as props (no direct store access). Wrapped in `React.memo` with a custom comparator — see `patterns.md`'s "Card memoization pattern" and `CHANGELOG.md`.
 - `hooks/useEncounterLogs.ts` — On-demand hook for `EncounterLogs` sheet data. Not part of global Zustand sync. Exposes `fetchLogsForEncounter()` (returns logs filtered by encounter, newest first) and `deleteLog()`.
 
 ### src/components/NpcLibraryTab/
 
-- `NpcCard.tsx` — NPC library card. Expanded view displays `StatBlock`, `SpellcastingStatsRow`, editable combat stats (AC, HP, IRV, etc.), and read-only stat block sections (CR, speed, senses, languages, traits, actions, reactions, legendary actions) via `NpcStatBlockSection`. Its trait/action/reaction/legendary-action editors were decomposed into `NpcSimpleFieldEditor.tsx`/`NpcCombatActionFields.tsx` (513 → 388 lines) — see `CHANGELOG.md`.
+- `NpcCard.tsx` — NPC library card. Expanded view displays `StatBlock`, `SpellcastingStatsRow`, editable combat stats (AC, HP, IRV, etc.), and read-only stat block sections (CR, speed, senses, languages, traits, actions, reactions, legendary actions) via `NpcStatBlockSection`. Its trait/action/reaction/legendary-action editors were decomposed into `NpcSimpleFieldEditor.tsx`/`NpcCombatActionFields.tsx` (513 → 388 lines) — see `CHANGELOG.md`. Wrapped in `React.memo` with a custom comparator — see `patterns.md`'s "Card memoization pattern" and `CHANGELOG.md`.
 - `NewNpcDialog.tsx` — NPC creation dialog using the shared `NpcFormFields` component.

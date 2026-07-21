@@ -208,4 +208,91 @@ describe('CombatantCard', () => {
     fireEvent.click(screen.getByTestId('tempac-done'));
     expect(screen.queryByTestId('tempac-stepper-container')).not.toBeInTheDocument();
   });
+
+  it('does not re-render when only callback props change reference (same c/isExpanded/damageInput/healInput/currentRound/combatStarted/hpMode/pcCharacter/npcModel)', async () => {
+    const utils = await import('../../../lib/utils');
+    const spy = vi.spyOn(utils, 'cn');
+    spy.mockClear();
+
+    const combatant = makeCombatant({ id: 'pc1', type: 'pc', name: 'PC' });
+
+    function Wrapper() {
+      // Fresh callback references every render, exactly like ActiveEncounterTab's
+      // real .map() call site does — this is the scenario the custom comparator is
+      // specifically meant to ignore.
+      return (
+        <CombatantCard
+          c={combatant}
+          isExpanded={false}
+          damageInput=""
+          healInput=""
+          currentRound={1}
+          combatStarted={false}
+          onDamageInputChange={() => {}}
+          onHealInputChange={() => {}}
+          onHealthSubmit={() => {}}
+          onToggleExpand={() => {}}
+          onToggleSelect={() => {}}
+          onUpdateCombatant={() => {}}
+          onRemoveCombatant={() => {}}
+          onConcentrationPrompt={() => {}}
+        />
+      );
+    }
+
+    const { rerender } = render(<Wrapper />);
+    const callsAfterFirstRender = spy.mock.calls.length;
+    expect(callsAfterFirstRender).toBeGreaterThan(0);
+
+    rerender(<Wrapper />);
+
+    // cn() is called directly in CombatantCard's own render body (and by its
+    // children, which also wouldn't render if the memo bailed out) — if the
+    // comparator correctly bailed out, this count must not have increased at all.
+    expect(spy.mock.calls.length).toBe(callsAfterFirstRender);
+
+    spy.mockRestore();
+  });
+
+  it('does re-render when c reference actually changes', async () => {
+    const utils = await import('../../../lib/utils');
+    const spy = vi.spyOn(utils, 'cn');
+    spy.mockClear();
+
+    const combatant = makeCombatant({ id: 'pc1', type: 'pc', name: 'PC', currentHp: 10 });
+    const updatedCombatant = { ...combatant, currentHp: 5 };
+
+    function Wrapper({ c }: { c: Combatant }) {
+      return (
+        <CombatantCard
+          c={c}
+          isExpanded={false}
+          damageInput=""
+          healInput=""
+          currentRound={1}
+          combatStarted={false}
+          onDamageInputChange={() => {}}
+          onHealInputChange={() => {}}
+          onHealthSubmit={() => {}}
+          onToggleExpand={() => {}}
+          onToggleSelect={() => {}}
+          onUpdateCombatant={() => {}}
+          onRemoveCombatant={() => {}}
+          onConcentrationPrompt={() => {}}
+        />
+      );
+    }
+
+    const { rerender } = render(<Wrapper c={combatant} />);
+    const callsAfterFirstRender = spy.mock.calls.length;
+    expect(callsAfterFirstRender).toBeGreaterThan(0);
+
+    rerender(<Wrapper c={updatedCombatant} />);
+
+    // A genuinely different combatant object (the one actually being updated) must
+    // still cause a real re-render — the comparator must not over-suppress this.
+    expect(spy.mock.calls.length).toBeGreaterThan(callsAfterFirstRender);
+
+    spy.mockRestore();
+  });
 });

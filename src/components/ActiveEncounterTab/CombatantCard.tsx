@@ -33,7 +33,7 @@ export interface CombatantCardProps {
   npcModel?: NPC;
 }
 
-export function CombatantCard({
+export const CombatantCard = React.memo(function CombatantCard({
   c, isExpanded, damageInput, healInput,
   currentRound, combatStarted, onDamageInputChange, onHealInputChange, onHealthSubmit, onToggleExpand,
   onToggleSelect, onUpdateCombatant, onRemoveCombatant, onConcentrationPrompt, hpMode = 'damage',
@@ -149,4 +149,32 @@ export function CombatantCard({
       </ExpandableContent>
     </CardShell>
   );
-}
+}, (prevProps, nextProps) => {
+  // Same reasoning as CharacterCard.tsx/NpcCard.tsx/EncounterCard.tsx: ActiveEncounterTab's
+  // .map() call site creates fresh callbacks every render, but every mutation path
+  // (useCombatantMutations.ts's updateCombatant, useHealthChange.ts which delegates to
+  // it) uses .map(combatant => matches ? {...combatant, ...updates} : combatant),
+  // preserving the same object reference for every combatant that wasn't actually
+  // changed — even when the array is subsequently re-sorted by initiative, since
+  // sorting reorders the array without cloning its elements. pcCharacter/npcModel are
+  // simple .find() lookups into characters/npcs, which use the same reference-preserving
+  // update pattern, so they're also safe to compare by reference.
+  //
+  // Note: isActiveTurn/isSelected/isSelectable/isSyncing are NOT props here — they come
+  // from useCombatantCard(c.id) inside this component, which was refactored to use a
+  // narrow per-combatant Zustand selector instead of the whole-app-state useAppState()
+  // subscription it used before. That refactor is what makes this memo meaningful at
+  // all: without it, that hook alone would re-render every card on any combatant change,
+  // regardless of this comparator.
+  return (
+    prevProps.c === nextProps.c &&
+    prevProps.isExpanded === nextProps.isExpanded &&
+    prevProps.damageInput === nextProps.damageInput &&
+    prevProps.healInput === nextProps.healInput &&
+    prevProps.currentRound === nextProps.currentRound &&
+    prevProps.combatStarted === nextProps.combatStarted &&
+    prevProps.hpMode === nextProps.hpMode &&
+    prevProps.pcCharacter === nextProps.pcCharacter &&
+    prevProps.npcModel === nextProps.npcModel
+  );
+});

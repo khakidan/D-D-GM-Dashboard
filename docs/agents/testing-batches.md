@@ -4,7 +4,15 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 12 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 866 tests.** (Reconciled after a long stretch of this file being allowed to drift while real batch counts moved across a large, multi-part session of work — the combat-logging progressive-logging feature, the Hasted/concentration fix, the temp HP/AC feature plus its collision fix, the NPC recharge-ability reminder, a real production bug (the Record Encounter button not visually updating after a successful sheet write) found and fixed in 2 passes after the feature shipped, and the security audit's refresh-token-masking fix. Each batch below reflects the last real, literal terminal output actually shown during that work, not a recomputed guess: Batch 1 469→472 (Hasted/Concentrating fix, 3 new unit tests)→474 (recharge feature, `performRechargeRoll` tests, +2). Batch 2 37→40 (combat-logging DB operations layer, Stage 2, +3). Batch 3 53→58 (combat-logging store/hook layer, Stage 3, `combatLogSlice.test.ts`, +3, net of an already-corrected +2 along the way). Batch 5A 54→68 across several stages: the Record/End Encounter button work, its `handleCallInitiative`/`recordEncounter` collision fix, the temp-AC delta-preservation fix, the recharge trigger tests, and the `loggingRequested` local-state-sync bug fix (+6 across its 2 passes). Batch 5B 29→41 across the same button work plus the temp HP and temp AC quick-entry UI. Batch 7B-2 20→23 (PlayerView temp HP pill, +1, net of a prior correction along the way). Batch 9 15→16 (AuthRelay refresh-token masking test, +1, from the security audit fixes). All other batches unchanged.)
+**Current baseline: 874 tests.** Updated after the performance-fix effort across all 4 main list tabs (`React.memo` added to `CharacterCard`/`NpcCard`/`EncounterCard`/`CombatantCard` with custom comparators, plus a narrow-Zustand-selector refactor of `useCombatantCard.ts`/`useCombatantExpanded.ts` — see `CHANGELOG.md`). Real, verified totals for each affected batch, run individually per this file's own rule:
+
+- **Batch 5A: 68 → 69.** `useCombatantCard.test.ts` gained 1 new test directly proving the narrow-selector fix (an unrelated combatant's update doesn't cause this hook to recompute for a different combatant).
+- **Batch 5B: 41 → 41 (no net change, despite 2 tests being added).** `CombatantCard.test.tsx` gained 2 new memoization-proof tests (12 → 14, confirmed directly). The batch total nonetheless came back at the same 41 previously documented here. This could not be fully reconciled — no git history is available in this working copy (the same limitation behind several earlier corrections in this file), so whether the prior 41 already had a small undocumented drift, or something else in this batch's other 11 files changed test count in the other direction, isn't traceable. What's certain: `CombatantCard.test.tsx` itself is verified at 14, and the batch's full real run reports 41 passing with zero failures.
+- **Batch 6A: 55 → 57.** `CharacterCard.test.tsx` gained exactly 2 new memoization-proof tests, matching the batch total change exactly.
+- **Batch 6B: 23 → 26.** `EncounterCard.test.tsx` gained 2 new memoization-proof tests, but the batch total moved by 3, not 2. Same caveat as Batch 5B — the extra +1 could not be traced without git history.
+- **Batch 6C: 19 → 21.** `NpcCard.test.tsx` gained exactly 2 new memoization-proof tests, matching the batch total change exactly.
+
+Prior baseline reconciliation history:
 
 Run each batch individually. Never chain with `&&`. Never use glob patterns. Never run all tests at once with `npx vitest run`.
 
@@ -14,11 +22,11 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 2 | `src/services/__tests__` | 40 |
 | 3 | `src/hooks/__tests__` | 58 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 9 |
-| 5A | ActiveEncounterTab hooks (`.test.ts`) | 68 |
+| 5A | ActiveEncounterTab hooks (`.test.ts`) | 69 |
 | 5B | ActiveEncounterTab components (`.test.tsx`) | 41 |
-| 6A | `src/components/PartyTab/__tests__` | 55 |
-| 6B | `src/components/EncountersTab/__tests__` | 23 |
-| 6C | `src/components/NpcLibraryTab/__tests__` | 19 |
+| 6A | `src/components/PartyTab/__tests__` | 57 |
+| 6B | `src/components/EncountersTab/__tests__` | 26 |
+| 6C | `src/components/NpcLibraryTab/__tests__` | 21 |
 | 7B-1 | Audio + main dashboard top-level components | 13 |
 | 7B-2 | Other top-level components | 23 |
 | 8 | `src/components/ui/__tests__` | 27 |
@@ -37,19 +45,19 @@ npx vitest run src/hooks/__tests__
 # BATCH 4 — 9 tests
 npx vitest run src/server/__tests__ src/__tests__
 
-# BATCH 5A — 68 tests
+# BATCH 5A — 69 tests
 npx vitest run src/components/ActiveEncounterTab/__tests__/useBatchActions.test.ts src/components/ActiveEncounterTab/__tests__/useCombatSync.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantCard.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantExpanded.test.ts src/components/ActiveEncounterTab/__tests__/useEncounterPresetLoader.test.ts src/components/ActiveEncounterTab/__tests__/useHealthChange.test.ts src/components/ActiveEncounterTab/__tests__/useSelectionMode.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantMutations.test.ts
 
 # BATCH 5B — 41 tests
 npx vitest run src/components/ActiveEncounterTab/__tests__/AddNpcCollision.test.tsx src/components/ActiveEncounterTab/__tests__/CasterAttributionDialog.test.tsx src/components/ActiveEncounterTab/__tests__/CombatHeader.test.tsx src/components/ActiveEncounterTab/__tests__/AddCombatantDialog.test.tsx src/components/ActiveEncounterTab/__tests__/CombatantCard.test.tsx src/components/ActiveEncounterTab/__tests__/KeyboardShortcuts.test.tsx src/components/ActiveEncounterTab/__tests__/MultiTargetActionPanel.test.tsx src/components/ActiveEncounterTab/__tests__/NpcReferencePanel.test.tsx src/components/ActiveEncounterTab/__tests__/ShortcutCheatSheet.test.tsx src/components/ActiveEncounterTab/__tests__/combatStarted.test.tsx src/components/ActiveEncounterTab/__tests__/index.test.tsx src/components/ActiveEncounterTab/__tests__/useCinematicVideo.test.tsx
 
-# BATCH 6A — 55 tests
+# BATCH 6A — 57 tests
 npx vitest run src/components/PartyTab/__tests__
 
-# BATCH 6B — 23 tests
+# BATCH 6B — 26 tests
 npx vitest run src/components/EncountersTab/__tests__
 
-# BATCH 6C — 19 tests
+# BATCH 6C — 21 tests
 npx vitest run src/components/NpcLibraryTab/__tests__
 
 # BATCH 7B-1 — 13 tests
