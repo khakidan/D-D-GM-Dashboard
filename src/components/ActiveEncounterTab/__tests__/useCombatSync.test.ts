@@ -654,6 +654,13 @@ describe('useCombatSync', () => {
 
 
   it('recordEncounter initializes combat log and updates DB if not already initialized', async () => {
+    // recordEncounter only calls updateEncounterLoggingRequestedDB when a spreadsheet is
+    // configured (getSpreadsheetId() truthy) — without this, the test would silently take
+    // the "no spreadsheet" branch and never exercise the DB call this test is checking for.
+    const originalSheetId = getSpreadsheetId();
+    setSpreadsheetId('mock-sheet-id');
+
+    try {
     act(() => {
       useDashboardStore.setState(prev => ({
         ...prev,
@@ -691,6 +698,9 @@ describe('useCombatSync', () => {
 
     // Verify DB update
     expect(vi.mocked(updateEncounterLoggingRequestedDB)).toHaveBeenCalledWith('test-enc-id', true);
+    } finally {
+      setSpreadsheetId(originalSheetId);
+    }
   });
 
   it('does not reset activeCombatLog or clear events when GM clicks Record Encounter then Call for Initiative', async () => {
@@ -747,6 +757,9 @@ describe('useCombatSync', () => {
   });
 
   it('resetCombat fetches fresh events and appends to encounter log', async () => {
+    const originalSheetId = getSpreadsheetId();
+    setSpreadsheetId('mock-sheet-id');
+    try {
     act(() => {
       useDashboardStore.setState(prev => ({
         ...prev,
@@ -792,6 +805,9 @@ describe('useCombatSync', () => {
 
     // Verify logging turned off
     expect(vi.mocked(updateEncounterLoggingRequestedDB)).toHaveBeenCalledWith('test-enc-id', false);
+    } finally {
+      setSpreadsheetId(originalSheetId);
+    }
   });
 
   it('resetCombat calls updateInitiativeDB with 0 for each combatant', async () => {
@@ -973,6 +989,10 @@ describe('useCombatSync', () => {
 
   describe('loggingRequested optimistic updates and rollback', () => {
     it('recordEncounter optimistically sets loggingRequested to true and rolls back on failure', async () => {
+      const originalSheetId = getSpreadsheetId();
+      setSpreadsheetId('mock-sheet-id');
+
+      try {
       act(() => {
         useDashboardStore.setState(prev => ({
           ...prev,
@@ -984,17 +1004,25 @@ describe('useCombatSync', () => {
             difficultyId: 1,
             difficultyName: 'Easy',
             npcDefinitions: '',
-            loggingRequested: false,
+            loggingRequested: true,
           }],
           combatState: {
             ...prev.combatState,
             activeEncounterId: 'test-enc-id',
-            round: 2,
             combatants: [
-              { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10 }
+              { id: 'c1', name: 'Char 1', type: 'pc', currentHp: 10, maxHp: 10, encounterCombatantId: 'ec-1' }
             ]
           },
-          activeCombatLog: null
+          activeCombatLog: {
+            encounterId: 'test-enc-id',
+            encounterName: 'Test Encounter',
+            location: 'Test Loc',
+            startedAt: '2025-01-01',
+            currentRound: 3,
+            partySnapshot: [{ id: 'c1', type: 'pc', name: 'Char 1', startingHp: 10, maxHp: 10 }],
+            initiativeOrder: [],
+            events: []
+          }
         }));
       });
 
@@ -1028,9 +1056,15 @@ describe('useCombatSync', () => {
       // Verification that loggingRequested is false due to rollback
       const encounterAfterFailure = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
       expect(encounterAfterFailure?.loggingRequested).toBe(false);
+      } finally {
+        setSpreadsheetId(originalSheetId);
+      }
     });
 
     it('resetCombat optimistically sets loggingRequested to false and rolls back on failure', async () => {
+      const originalSheetId = getSpreadsheetId();
+      setSpreadsheetId('mock-sheet-id');
+      try {
       act(() => {
         useDashboardStore.setState(prev => ({
           ...prev,
@@ -1121,9 +1155,16 @@ describe('useCombatSync', () => {
 
       const encounterAfterFailure = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
       expect(encounterAfterFailure?.loggingRequested).toBe(true);
+      } finally {
+        setSpreadsheetId(originalSheetId);
+      }
     });
 
     it('cancelCombat optimistically sets loggingRequested to false and rolls back on failure', async () => {
+      const originalSheetId = getSpreadsheetId();
+      setSpreadsheetId('mock-sheet-id');
+
+      try {
       act(() => {
         useDashboardStore.setState(prev => ({
           ...prev,
@@ -1192,6 +1233,9 @@ describe('useCombatSync', () => {
 
       const encounterAfterFailure = useDashboardStore.getState().encounters.find(e => e.id === 'test-enc-id');
       expect(encounterAfterFailure?.loggingRequested).toBe(true);
+      } finally {
+        setSpreadsheetId(originalSheetId);
+      }
     });
 
     it('resetCombat with no activeCombatLog but spreadsheet configured should still set loggingRequested to false, write to DB, and roll back on failure', async () => {

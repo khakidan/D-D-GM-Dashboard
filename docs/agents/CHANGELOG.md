@@ -6,6 +6,35 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Accessibility Fixes — Focus Indicators and Icon-Only Controls (10 Files) — 2 of 3 Audit Findings Closed
+
+Closes out 2 of the 3 accessibility findings recorded in `ROADMAP.md` (see the audit write-up there for how these were found). Every fix here was applied directly by inspecting real file context first — several earlier automated matches turned out to be false positives once checked (e.g. `IrvMultiSelect.tsx`'s missing focus ring was a false positive: its parent container already provides a valid `focus-within:ring-2` treatment my original grep didn't check for) — those were correctly left untouched rather than "fixed" unnecessarily.
+
+**8 focus-indicator fixes**: `outline-none`/`focus:outline-none` replaced with a real, visible `focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1` treatment on genuinely interactive elements that had no keyboard-focus feedback at all — `StatBlockSaves.tsx`, `PipTracker.tsx`, `CommandPalette.tsx`, `CombatantLegendaryTracker.tsx` (2 buttons), `NpcReferencePanel.tsx`, `CombatantCardExpanded.tsx`, `CombatHeader.tsx`.
+
+**4 icon-only/keyboard-reachability fixes**, one of which was a genuine functional bug rather than just a labeling gap:
+- `ResourcePoolsSection.tsx` — added `aria-label`/`title` to a close button that had neither, inconsistent with 3 sibling icon buttons in the same file that already did this correctly.
+- **`AmbientPlayer.tsx`** — the real bug. The per-track play/pause button had no `onClick` of its own at all — the actual play/pause behavior lived entirely on the parent row's `onClick`, meaning a keyboard user tabbing to the button and pressing Enter/Space did nothing. Gave the button its own working click handler (with `stopPropagation()` to avoid double-firing through the row's handler), an `aria-label` reflecting current state, and made the row itself keyboard-reachable (`role="button"`, `tabIndex`, `onKeyDown`) for track selection.
+- `DiceRoller.tsx` — the roll-history re-roll items were `<div onClick>` with no `role`, `tabIndex`, or keyboard handler at all, making them entirely unreachable by keyboard. Added the same treatment as above.
+
+**Verified directly**: full `npx tsc -p tsconfig.build.json --noEmit` clean, and 54 tests across every component actually touched, all passing.
+
+**Still open** (not addressed in this round, remains in `ROADMAP.md`): the ~56 unlabeled form inputs finding — deliberately scoped out given its size and the need to check each one's real visual/functional context individually rather than bulk-adding generic labels.
+
+---
+
+## `useCombatSync.test.ts` — 5 Pre-Existing Failing Tests Fixed (Test Bug, Not an Implementation Bug)
+
+Found while running the relevant test suite as part of verifying a separate round of accessibility fixes (see the entry above) — 5 tests in the `loggingRequested optimistic updates and rollback` describe block (plus 2 standalone tests earlier in the same file) were failing, testing `recordEncounter`, `resetCombat`, and `cancelCombat`'s DB-write and rollback-on-failure behavior.
+
+**Root cause, confirmed directly**: all 3 of these functions in `useCombatLifecycle.ts` correctly gate their `updateEncounterLoggingRequestedDB` (and, for `resetCombat`, `fetchEncounterLogEventsDB`/`appendEncounterLog`) calls behind `if (currentSpreadsheetId)` — the real DB write and its rollback-on-failure logic only run when a spreadsheet is configured. The 5 failing tests never called `setSpreadsheetId(...)` before exercising this, so `getSpreadsheetId()` returned empty in the test environment, and the code silently took the "no spreadsheet configured" branch instead — which only does the local, optimistic state update with no DB call and nothing to roll back. This meant the mocked DB rejections these tests set up to test rollback behavior were never actually exercised at all; the assertions were checking state that had never gone through the failure path they were meant to test.
+
+This is a **test bug, not an implementation bug** — a different test later in the same file (`resetCombat with no activeCombatLog but spreadsheet configured...`) already used the correct pattern (`const originalSheetId = getSpreadsheetId(); setSpreadsheetId('mock-sheet-id'); try { ... } finally { setSpreadsheetId(originalSheetId); }`), confirming the codebase's own convention agreed this setup is required — the 5 failing tests were just missing it.
+
+**Fixed** by adding that same setup/teardown to all 5 tests, without touching any of their actual assertions or the underlying implementation. Verified directly: all 30 tests in the file now pass (up from 25/30), and the full `ActiveEncounterTab/__tests__` suite (109 tests, 21 files) still passes with no other regressions. Full `npx tsc -p tsconfig.build.json --noEmit` remains clean.
+
+---
+
 ## TypeScript `strict` Mode Enabled — 22 Real Errors Fixed, After a First Attempt That Went Badly Wrong
 
 `strict` mode had been entirely absent from `tsconfig.json` this whole time — `noImplicitAny`, `strictNullChecks`, and `noUncheckedIndexedAccess` were all off, meaning every "clean TypeScript build" checked throughout this project's history was checking against a looser bar than true strict mode. A dry-run measurement (a scratch config extending `tsconfig.build.json` with `"strict": true` added) found 22 real errors across 11 files — small enough for a codebase this size retrofitting strict mode for the first time to be a manageable cleanup, not a rewrite.
