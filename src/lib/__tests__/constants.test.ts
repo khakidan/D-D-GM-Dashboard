@@ -64,8 +64,8 @@ describe('constants', () => {
     expect(STORAGE_KEYS.instructionsDismissed).toBe('gm_instructions_dismissed');
   });
 
-  it('SHEET_RANGES.characters ends in Z', () => {
-    expect(SHEET_RANGES.characters).toMatch(/:Z$/);
+  it('SHEET_RANGES.characters ends in AD', () => {
+    expect(SHEET_RANGES.characters).toMatch(/:AD$/);
   });
 
   it('SHEET_RANGES.npcs ends in V', () => {

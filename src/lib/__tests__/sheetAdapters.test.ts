@@ -56,7 +56,15 @@ describe('sheetAdapters', () => {
         0,                        // [18] deathSavesSuccesses
         '',                       // [19] unused
         '4d12+3d10',              // [20] hitDiceConfig
-        '{"d12":1}',             // [21] hitDiceUsed
+        '{"d12":1}',              // [21] hitDiceUsed
+        '[]',                     // [22] resourcePools
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}', // [23] abilityScores
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}', // [24] proficiencies
+        '',                       // [25] spellcastingAbility
+        false,                    // [26] gmControlled
+        '[]',                     // [27] traits
+        '[]',                     // [28] actions
+        '[]',                     // [29] reactions
       ];
 
       const character = mapCharacterRowToCharacter(data, 2, mockStatuses);
@@ -91,6 +99,10 @@ describe('sheetAdapters', () => {
         abilityScores: '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
         proficiencies: '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
         spellcastingAbility: '',
+        gmControlled: false,
+        traits: '[]',
+        actions: '[]',
+        reactions: '[]',
       });
     });
 
@@ -118,6 +130,14 @@ describe('sheetAdapters', () => {
         '',
         '',
         '',
+        '[]',
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
+        '',
+        false,
+        '[]',
+        '[]',
+        '[]',
       ];
 
       const character = mapCharacterRowToCharacter(data, 3, mockStatuses);
@@ -148,6 +168,14 @@ describe('sheetAdapters', () => {
         '',
         '',
         '',
+        '[]',
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
+        '',
+        false,
+        '[]',
+        '[]',
+        '[]',
       ];
 
       const characterUnknown = mapCharacterRowToCharacter(dataUnknown, 4, mockStatuses);
@@ -167,7 +195,14 @@ describe('sheetAdapters', () => {
 
     it('mapCharacterRowToCharacter maps index 19 to the class field', () => {
       const data: CharacterRowData = [
-        'char-class', 'Alice', 'Thor', 15, 20, 5, 25, '', 14, 3, 1, '', '', '', '', 0, 0, 0, 0, 'Barbarian', '4d12', '{}', '[]'
+        'char-class', 'Alice', 'Thor', 15, 20, 5, 25, '', 14, 3, 1, '', '', '', '', 0, 0, 0, 0, 'Barbarian', '4d12', '{}', '[]',
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
+        '',
+        false,
+        '[]',
+        '[]',
+        '[]',
       ];
       const character = mapCharacterRowToCharacter(data, 6, mockStatuses);
       expect(character.class).toBe('Barbarian');
@@ -183,7 +218,14 @@ describe('sheetAdapters', () => {
 
     it('mapCharacterRowToCharacter with a full 23-element row maps class, hitDiceConfig, hitDiceUsed, and resourcePools to their correct values', () => {
       const data: CharacterRowData = [
-        'char-1', 'Alice', 'Thor', 15, 20, 0, 20, '', 14, 1, 1, 'Notes', '', '', '', 0, 0, 0, 0, 'Wizard', '6d6', '{"d6":1}', '[{"id":"res-1","name":"Ki Points","max":5,"current":5,"resetOn":"short"}]'
+        'char-1', 'Alice', 'Thor', 15, 20, 0, 20, '', 14, 1, 1, 'Notes', '', '', '', 0, 0, 0, 0, 'Wizard', '6d6', '{"d6":1}', '[{"id":"res-1","name":"Ki Points","max":5,"current":5,"resetOn":"short"}]',
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
+        '',
+        false,
+        '[]',
+        '[]',
+        '[]',
       ];
       const character = mapCharacterRowToCharacter(data, 7, mockStatuses);
       expect(character.class).toBe('Wizard');
@@ -201,6 +243,39 @@ describe('sheetAdapters', () => {
       expect(character.hitDiceConfig).toBe('');
       expect(character.hitDiceUsed).toBe('{}');
       expect(character.resourcePools).toBe('[]');
+    });
+
+    it('mapCharacterRowToCharacter maps gmControlled, traits, actions, and reactions correctly and defaults them when missing', () => {
+      const data: CharacterRowData = [
+        'char-custom-1', 'Alice', 'Hero', 15, 20, 5, 25, '', 14, 3, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]',
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
+        '',
+        true, // gmControlled
+        '[{"name":"Tough","description":"+2 HP per level"}]', // traits
+        '[{"name":"Slash","description":"1d8 damage"}]', // actions
+        '[{"name":"Parry","description":"+2 AC"}]', // reactions
+      ];
+
+      const character = mapCharacterRowToCharacter(data, 2, mockStatuses);
+      expect(character.gmControlled).toBe(true);
+      expect(character.traits).toBe('[{"name":"Tough","description":"+2 HP per level"}]');
+      expect(character.actions).toBe('[{"name":"Slash","description":"1d8 damage"}]');
+      expect(character.reactions).toBe('[{"name":"Parry","description":"+2 AC"}]');
+
+      // Now with undefined/missing fields (using as any shortRow or undefined elements)
+      const dataMissing = [
+        'char-custom-2', 'Alice', 'Hero', 15, 20, 5, 25, '', 14, 3, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]',
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
+        ''
+      ] as any;
+
+      const characterMissing = mapCharacterRowToCharacter(dataMissing, 3, mockStatuses);
+      expect(characterMissing.gmControlled).toBe(false);
+      expect(characterMissing.traits).toBe('[]');
+      expect(characterMissing.actions).toBe('[]');
+      expect(characterMissing.reactions).toBe('[]');
     });
   });
 

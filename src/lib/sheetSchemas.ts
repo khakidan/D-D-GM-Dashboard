@@ -10,7 +10,8 @@ export const CHARACTER_HEADERS = [
   'Temp_HP_Max', 'Temp_AC', 'Death_Saves_Fails',
   'Death_Saves_Successes', 'Class',
   'Hit_Dice_Config', 'Hit_Dice_Used', 'Resource_Pools',
-  'Ability_Scores', 'Proficiencies', 'Spellcasting_Ability'
+  'Ability_Scores', 'Proficiencies', 'Spellcasting_Ability',
+  'GM_Controlled', 'Traits', 'Actions', 'Reactions'
 ] as const;
 
 export const NPC_HEADERS = [
@@ -111,6 +112,10 @@ export const CharacterRowSchema = z.preprocess(padRow(CHARACTER_HEADERS.length),
   stringDefault(JSON.stringify(DEFAULT_ABILITY_SCORES)), // [23] abilityScores
   stringDefault(JSON.stringify(DEFAULT_PROFICIENCIES)),  // [24] proficiencies
   stringDefault(''),                   // [25] spellcastingAbility
+  z.any().transform(val => val === 'TRUE' || val === true || val === 'true'), // [26] gmControlled
+  stringDefault('[]'),                 // [27] traits
+  stringDefault('[]'),                 // [28] actions
+  stringDefault('[]'),                 // [29] reactions
 ]));
 
 export const NpcRowSchema = z.preprocess(padRow(NPC_HEADERS.length), z.tuple([

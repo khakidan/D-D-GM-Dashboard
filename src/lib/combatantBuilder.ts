@@ -188,6 +188,10 @@ export function buildCombatantsFromState(
             class: c.class,
             abilityScores: c.abilityScores,
             proficiencies: c.proficiencies,
+            gmControlled: c.gmControlled,
+            traits: c.traits,
+            actions: c.actions,
+            reactions: c.reactions,
           });
         }
       } else if (ec.npcId) {
@@ -263,6 +267,10 @@ export function buildCombatantsFromState(
         class: c.class,
         abilityScores: c.abilityScores,
         proficiencies: c.proficiencies,
+        gmControlled: c.gmControlled,
+        traits: c.traits,
+        actions: c.actions,
+        reactions: c.reactions,
       });
     });
   }

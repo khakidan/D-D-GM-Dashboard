@@ -7,7 +7,6 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 ## Storage Rules
 
 **What is allowed in localStorage:**
-
 - UI preferences (active tab, theme)
 - Audio configuration (volume, soundboard layout) — scoped per campaign
 - Mood presets — scoped per campaign
@@ -16,11 +15,9 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 - `hasInitialSynced` — always stored as false
 
 **What is allowed in IndexedDB:**
-
 - Audio file blobs — scoped per campaign using `gm_audio_files_{campaignId}` as the database name
 
 **What is NOT allowed outside Sheets:**
-
 - Character HP, conditions, stats
 - NPC data
 - Encounter data
@@ -31,7 +28,7 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 
 ## Google Sheets Schema
 
-### Characters (A2:Z — 26 columns)
+### Characters (A2:AD — 30 columns)
 
 | Col | Index | Field | Notes |
 |-----|-------|-------|-------|
@@ -61,6 +58,12 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 | X | 23 | abilityScores | JSON string |
 | Y | 24 | proficiencies | JSON string |
 | Z | 25 | spellcastingAbility | Text, e.g. 'INT', 'WIS', 'CHA', '' |
+| AA | 26 | gmControlled | `TRUE`/`FALSE` string, default `FALSE`. Marks a PC as GM-controlled — only these PCs show the collapsible Traits/Actions/Reactions "Stat Block" panel on their `CombatantCard` during active encounters. Same serialization convention as `Encounters.loggingRequested` (col H). Most PCs never set this. |
+| AB | 27 | traits | JSON: `NpcTrait[]`, default `[]`. Same shape/precedent as NPCs' own `traits` column — only meaningful when `gmControlled` is `TRUE`. |
+| AC | 28 | actions | JSON: `NpcAction[]`, default `[]`. Same shape/precedent as NPCs' own `actions` column. Deliberately excludes any Legendary Action concept — that's NPC/monster-only. |
+| AD | 29 | reactions | JSON: `NpcReaction[]`, default `[]`. Same shape/precedent as NPCs' own `reactions` column. |
+
+Note: `gmControlled`/`traits`/`actions`/`reactions` reuse the exact same `NpcTrait`/`NpcAction`/`NpcReaction` TypeScript interfaces already defined for NPCs (see the NPCs section below) — no separate PC-specific types exist. Unlike NPCs, PCs never have a Legendary Actions equivalent; that data doesn't apply to player characters and is intentionally absent from this schema.
 
 ### NPCs (A2:V — 22 columns)
 
@@ -95,7 +98,6 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 
 ```ts
 NpcTrait: { name, description }
-
 NpcAction: {
   name,
   description,
@@ -106,12 +108,10 @@ NpcAction: {
   range?,
   recharge?
 }
-
 NpcReaction: {
   name,
   description
 }
-
 NpcLegendaryAction: {
   name,
   description,
@@ -124,6 +124,8 @@ NpcLegendaryAction: {
 ```
 
 Note: `immunities` (col G) stores BOTH damage immunities and condition immunities as a comma-separated string. There is no separate `conditionImmunities` column.
+
+Note: `traits`/`actions`/`reactions` are also reused, unmodified, on the Characters sheet (columns AB–AD) for GM-controlled PCs — see the Characters section above.
 
 ### Encounters (A2:H — 8 columns)
 
@@ -144,7 +146,7 @@ Holds per-instance combat state for every combatant in every encounter — this 
 
 | Col | Index | Field | Notes |
 |-----|-------|-------|-------|
-| A | 0 | id | Primary key |
+| A | 0 | id | Primary key. Generated via `generateUuid()`, not sequential — see the "Duplicate `Encounter_Combatants_ID` Race Condition Fixed" entry in `CHANGELOG.md`. Treated as a fully opaque string everywhere; no code sorts, parses, or assumes a specific format for this ID. |
 | B | 1 | encounterId | FK → Encounters |
 | C | 2 | playerId | FK → Characters (null if NPC) |
 | D | 3 | npcId | FK → NPCs (null if PC) |
@@ -231,7 +233,11 @@ IDs: 1=Easy, 2=Medium, 3=Hard, 4=Deadly
 
 ## Campaign Creation
 
-`POST /api/campaigns/create` in `src/server/routes/campaigns.ts` creates all 8 sheets with the correct headers. When adding a column to any sheet, update this endpoint too or existing campaigns will have the wrong schema.
+`POST /api/campaigns/create` in `src/server/routes/campaigns.ts` creates all 8 sheets with the correct headers. Header content is always driven directly from `sheetSchemas.ts`'s `*_HEADERS` constants — when adding a column to any sheet, update the relevant schema in `sheetSchemas.ts` and this endpoint will seed the new column automatically for brand-new campaigns.
+
+**Column range is now computed dynamically, not hardcoded.** A prior version of this endpoint hardcoded every sheet's value-write range to end at column `Z`, which happened to be correct for Characters by coincidence (26 headers = column Z) but would have silently truncated any sheet with more than 26 columns. This was found and fixed as part of adding the Characters sheet's 4 new columns (pushing it to 30, ending at `AD`) — the endpoint now computes each sheet's actual end column via a shared `getColumnLetter()` helper (in `src/lib/stringUtils.ts`) based on that sheet's real header count, so this class of bug can't recur for any sheet. See the "Encounter Logging..." and "GM-Controlled PC Stat Block" entries in `CHANGELOG.md` for the full history.
+
+**Existing campaigns are not retroactively updated** — adding a column here only affects newly-created campaigns' initial seeding. Existing campaigns' sheets must be manually updated (or a migration path built) to add new columns; this endpoint has no mechanism for that today.
 
 ---
 
@@ -241,6 +247,8 @@ IDs: 1=Easy, 2=Medium, 3=Hard, 4=Deadly
 
 The following fields are accepted by `handleUpdate` and write to the sheet:
 
-`playerName`, `characterName`, `class`, `ac`, `maxHp`, `tempHp`, `currentHp`, `conditions`, `passivePerception`, `level`, `statusId`, `notes`, `resistances`, `immunities`, `vulnerabilities`, `tempAc`, `deathSavesFails`, `deathSavesSuccesses`, `hitDiceConfig`, `hitDiceUsed`, `resourcePools`, `abilityScores`, `proficiencies`, `spellcastingAbility`
+`playerName`, `characterName`, `class`, `ac`, `maxHp`, `tempHp`, `currentHp`, `conditions`, `passivePerception`, `level`, `statusId`, `notes`, `resistances`, `immunities`, `vulnerabilities`, `tempAc`, `deathSavesFails`, `deathSavesSuccesses`, `hitDiceConfig`, `hitDiceUsed`, `resourcePools`, `abilityScores`, `proficiencies`, `spellcastingAbility`, `gmControlled`, `traits`, `actions`, `reactions`
+
+**Any field not in this list is silently dropped from sheet sync** — the in-memory Zustand store still updates, but the change never reaches the sheet, with no error shown to the GM. This is the exact failure mode `usePartyCharacterCrud.test.ts`'s "GM Controlled Fields" test exists to guard against for the 4 newest fields.
 
 When adding a new character field, add it to this whitelist and to `dbOperations.ts`.

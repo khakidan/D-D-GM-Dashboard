@@ -47,7 +47,7 @@ describe('useParty - Character CRUD', () => {
       getSnapshot: vi.fn(),
     } as any);
     vi.mocked(getSnapshot).mockReturnValue(mockState as any);
-    vi.mocked(updateCharacterDB).mockRejectedValue(new Error('Fail'));
+    vi.mocked(updateCharacterDB).mockRejectedValueOnce(new Error('Fail'));
 
     const { result } = renderHook(() => useParty());
     
@@ -120,6 +120,39 @@ describe('useParty - Character CRUD', () => {
           proficiencies: expect.stringContaining('"proficiencyBonus":3')
         }),
         expect.objectContaining({ id: 'pc-1' })
+      );
+    });
+  });
+
+  describe('GM Controlled Fields', () => {
+    it('handleUpdate persists gmControlled and stat block fields to DB', async () => {
+      const mockChar = { id: 'char-1', characterName: 'Testo' };
+      vi.mocked(useAppState).mockReturnValue({
+        state: { characters: [mockChar] } as any,
+        updateState: vi.fn(),
+        getSnapshot: vi.fn(),
+      } as any);
+      vi.mocked(getSnapshot).mockReturnValue({ characters: [mockChar] } as any);
+
+      const { result } = renderHook(() => useParty());
+      
+      await act(async () => {
+        await result.current.handleUpdate('char-1', { 
+          gmControlled: true,
+          traits: '[{"name":"Tough"}]',
+          actions: '[{"name":"Strike"}]',
+          reactions: '[{"name":"Parry"}]'
+        });
+      });
+
+      expect(updateCharacterDB).toHaveBeenCalledWith(
+        expect.objectContaining({ 
+          gmControlled: true,
+          traits: '[{"name":"Tough"}]',
+          actions: '[{"name":"Strike"}]',
+          reactions: '[{"name":"Parry"}]'
+        }), 
+        expect.objectContaining({ id: 'char-1' })
       );
     });
   });

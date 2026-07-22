@@ -33,6 +33,10 @@ export interface Character {
   abilityScores: string;  // JSON
   proficiencies: string;  // JSON
   spellcastingAbility?: string;
+  gmControlled?: boolean;
+  traits?: string;
+  actions?: string;
+  reactions?: string;
 }
 
 export interface NpcTrait {
@@ -163,6 +167,7 @@ export interface Combatant {
   actions?: string;
   reactions?: string;
   legendaryActionsList?: string;
+  gmControlled?: boolean;
 }
 
 export interface CombatState {

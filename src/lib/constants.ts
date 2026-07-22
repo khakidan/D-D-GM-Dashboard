@@ -38,7 +38,7 @@ export const RECHARGE_THRESHOLDS = {
 export const RECHARGE_DIE_SIDES = 6;
 
 export const SHEET_RANGES = {
-  characters: 'Characters!A2:Z',
+  characters: 'Characters!A2:AD',
   npcs: 'NPCs!A2:V',
   encounters: 'Encounters!A2:H',
   encounterCombatants: 'Encounter_Combatants!A2:N',

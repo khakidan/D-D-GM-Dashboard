@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { UserPlus } from 'lucide-react';
-import { Character } from '../../types';
+import { Character, NpcTrait, NpcAction, NpcReaction } from '../../types';
 import { cn } from '../../lib/utils';
 import { useFormState } from '../../hooks/useFormState';
 import { useAppState } from '../../hooks/useAppState';
@@ -26,6 +26,9 @@ import { usePlayerFormAutomation } from '../../hooks/usePlayerFormAutomation';
 import { DialogShell } from '../ui/DialogShell';
 import { Button } from '../ui/Button';
 import { Tabs } from '../ui/Tabs';
+import { NpcListEditor } from '../ui/NpcListEditor';
+import { NpcSimpleFieldEditor } from '../ui/NpcSimpleFieldEditor';
+import { NpcCombatActionFields } from '../ui/NpcCombatActionFields';
 
 interface NewPlayerDialogProps {
   isOpen: boolean;
@@ -33,13 +36,14 @@ interface NewPlayerDialogProps {
   onConfirm: (character: Omit<Character, 'id' | 'sheetRowIndex'>) => void;
 }
 
-type TabId = 'identity' | 'combat' | 'abilities' | 'resources';
+type TabId = 'identity' | 'combat' | 'abilities' | 'resources' | 'statBlock';
 
 const TABS: { id: TabId; label: string; optional?: boolean }[] = [
   { id: 'identity', label: 'Identity' },
   { id: 'combat', label: 'Combat Stats', optional: true },
   { id: 'abilities', label: 'Abilities', optional: true },
   { id: 'resources', label: 'Resources', optional: true },
+  { id: 'statBlock', label: 'Stat Block', optional: true },
 ];
 
 export function NewPlayerDialog({ isOpen, onClose, onConfirm }: NewPlayerDialogProps) {
@@ -64,7 +68,83 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm }: NewPlayerDialogP
     abilityScores: DEFAULT_ABILITY_SCORES,
     proficiencies: DEFAULT_PROFICIENCIES,
     resourcePools: [] as ResourcePool[],
+    gmControlled: false,
+    traits: '[]',
+    actions: '[]',
+    reactions: '[]',
   });
+
+  const traits = React.useMemo(() => {
+    try {
+      const parsed = JSON.parse(formData.traits || '[]');
+      return Array.isArray(parsed) ? (parsed as NpcTrait[]) : [];
+    } catch {
+      return [] as NpcTrait[];
+    }
+  }, [formData.traits]);
+
+  const actions = React.useMemo(() => {
+    try {
+      const parsed = JSON.parse(formData.actions || '[]');
+      return Array.isArray(parsed) ? (parsed as NpcAction[]) : [];
+    } catch {
+      return [] as NpcAction[];
+    }
+  }, [formData.actions]);
+
+  const reactions = React.useMemo(() => {
+    try {
+      const parsed = JSON.parse(formData.reactions || '[]');
+      return Array.isArray(parsed) ? (parsed as NpcReaction[]) : [];
+    } catch {
+      return [] as NpcReaction[];
+    }
+  }, [formData.reactions]);
+
+  const renderTraitFields = (item: NpcTrait, index: number, onItemChange: (updated: NpcTrait) => void) => (
+    <NpcSimpleFieldEditor
+      name={item.name}
+      onNameChange={(name: string) => onItemChange({ ...item, name })}
+      namePlaceholder="Trait name"
+      description={item.description}
+      onDescriptionChange={(description: string) => onItemChange({ ...item, description })}
+    />
+  );
+
+  const renderActionFields = (item: NpcAction, index: number, onItemChange: (updated: NpcAction) => void) => (
+    <NpcCombatActionFields
+       idPrefix={`new-player-action-${index}`}
+       name={item.name}
+       onNameChange={(name: string) => onItemChange({ ...item, name })}
+       namePlaceholder="Action name (e.g. Bite)"
+       recharge={item.recharge}
+       onRechargeChange={(val: string | undefined) => onItemChange({ ...item, recharge: val })}
+       attackBonus={item.attackBonus}
+       onAttackBonusChange={(val: number | undefined) => onItemChange({ ...item, attackBonus: val })}
+       damage={item.damage}
+       onDamageChange={(val: string | undefined) => onItemChange({ ...item, damage: val })}
+       damagePlaceholder="2d8+5 fire"
+       saveDC={item.saveDC}
+       onSaveDCChange={(val: number | undefined) => onItemChange({ ...item, saveDC: val })}
+       saveType={item.saveType}
+       onSaveTypeChange={(val: string | undefined) => onItemChange({ ...item, saveType: val })}
+       rangeValue={item.range}
+       onRangeValueChange={(val: string | undefined) => onItemChange({ ...item, range: val })}
+       description={item.description}
+       onDescriptionChange={(description: string) => onItemChange({ ...item, description })}
+       descriptionRows={3}
+    />
+  );
+
+  const renderReactionFields = (item: NpcReaction, index: number, onItemChange: (updated: NpcReaction) => void) => (
+    <NpcSimpleFieldEditor
+      name={item.name}
+      onNameChange={(name: string) => onItemChange({ ...item, name })}
+      namePlaceholder="Reaction name"
+      description={item.description}
+      onDescriptionChange={(description: string) => onItemChange({ ...item, description })}
+    />
+  );
 
   const poolsCustomized = useRef(false);
 
@@ -128,6 +208,10 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm }: NewPlayerDialogP
         return serializeProficiencies(parsed);
       })(),
       resourcePools: serializeResourcePools(formData.resourcePools),
+      gmControlled: formData.gmControlled,
+      traits: formData.traits,
+      actions: formData.actions,
+      reactions: formData.reactions,
     });
   };
 
@@ -180,7 +264,7 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm }: NewPlayerDialogP
                 ← Previous
               </Button>
             )}
-            {activeTab !== 'resources' && (
+            {activeTab !== 'statBlock' && (
               <Button
                 type="button"
                 intent="tertiary"
@@ -271,6 +355,70 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm }: NewPlayerDialogP
                 poolsCustomized.current = true;
               }}
             />
+          )}
+          {activeTab === 'statBlock' && (
+            <div className="space-y-4">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={formData.gmControlled || false}
+                  onChange={(e) => handleChange('gmControlled', e.target.checked)}
+                  className="rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb] w-4 h-4"
+                />
+                <span className="text-sm font-medium text-[#0f172a]">
+                  GM-Controlled Character
+                </span>
+              </label>
+
+              {formData.gmControlled && (
+                <div className="space-y-4 pl-4 border-l border-stone-100">
+                  <div className="space-y-4 pt-4 border-t border-[#e2e8f0]/40">
+                    <NpcListEditor<NpcTrait>
+                      title="Traits"
+                      items={traits}
+                      emptyItem={{ name: '', description: '' }}
+                      renderFields={renderTraitFields}
+                      onChange={(updated: NpcTrait[]) =>
+                        handleChange('traits', JSON.stringify(updated))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-[#e2e8f0]/40">
+                    <NpcListEditor<NpcAction>
+                      title="Actions"
+                      items={actions}
+                      emptyItem={{
+                        name: '',
+                        description: '',
+                        attackBonus: undefined,
+                        damage: undefined,
+                        saveDC: undefined,
+                        saveType: undefined,
+                        range: undefined,
+                        recharge: undefined,
+                      }}
+                      renderFields={renderActionFields}
+                      onChange={(updated: NpcAction[]) =>
+                        handleChange('actions', JSON.stringify(updated))
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-4 pt-4 border-t border-[#e2e8f0]/40">
+                    <NpcListEditor<NpcReaction>
+                      title="Reactions"
+                      items={reactions}
+                      emptyItem={{ name: '', description: '' }}
+                      renderFields={renderReactionFields}
+                      onChange={(updated: NpcReaction[]) =>
+                        handleChange('reactions', JSON.stringify(updated))
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </form>

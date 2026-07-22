@@ -5,6 +5,7 @@ import { sheets_v4 } from 'googleapis';
 import { createRateLimiter } from '../rateLimiter';
 import { requireBody } from '../bodyValidation';
 import { sendError } from '../utils/errors';
+import { getColumnLetter } from '../../lib/stringUtils';
 import {
   CHARACTER_HEADERS,
   NPC_HEADERS,
@@ -154,8 +155,9 @@ router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
 
     const valueData = requiredSheets.map(sheet => {
       const rowsToWrite = [sheet.headers, ...sheet.rows];
+      const endCol = getColumnLetter(sheet.headers.length);
       return {
-        range: `${sheet.title}!A1:Z${rowsToWrite.length}`,
+        range: `${sheet.title}!A1:${endCol}${rowsToWrite.length}`,
         values: rowsToWrite
       };
     });

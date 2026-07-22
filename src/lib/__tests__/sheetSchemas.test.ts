@@ -22,11 +22,23 @@ import { SheetRow, BatchRequest } from '../../services/sheetsService';
 describe('sheetSchemas', () => {
   describe('CharacterRowSchema', () => {
     it('parses a fully valid row correctly', () => {
-      const row = ['char-1', 'Alice', 'Thor', 15, 20, 5, 25, 'Blinded', 14, 3, 1, 'Notes'];
+      const row = [
+        'char-1', 'Alice', 'Thor', 15, 20, 5, 25, 'Blinded', 14, 3, 1, 'Notes',
+        'Fire', 'Cold', 'Acid', 5, 2, 1, 1, 'Paladin', '3d10', '{"d10":1}', '[]',
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
+        'Charisma', 'TRUE', '[{"name":"Brave","description":"Advantage on saves vs frightened"}]', '[]', '[]'
+      ];
       const result = CharacterRowSchema.safeParse(row);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual(['char-1', 'Alice', 'Thor', 15, 20, 5, 25, 'Blinded', 14, 3, 1, 'Notes', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]', '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}', '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}', '']);
+        expect(result.data).toEqual([
+          'char-1', 'Alice', 'Thor', 15, 20, 5, 25, 'Blinded', 14, 3, 1, 'Notes',
+          'Fire', 'Cold', 'Acid', 5, 2, 1, 1, 'Paladin', '3d10', '{"d10":1}', '[]',
+          '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
+          '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
+          'Charisma', true, '[{"name":"Brave","description":"Advantage on saves vs frightened"}]', '[]', '[]'
+        ]);
       }
     });
 
@@ -62,6 +74,10 @@ describe('sheetSchemas', () => {
          '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}', // abilityScores
           '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}', // proficiencies
          '', // spellcastingAbility
+         false, // gmControlled
+         '[]', // traits
+         '[]', // actions
+         '[]', // reactions
         ]);
       }
     });
@@ -230,6 +246,72 @@ describe('sheetSchemas', () => {
         expect(result.data[19]).toBe('');
         expect(result.data[20]).toBe('');
         expect(result.data[21]).toBe('{}'); // default from schema is '{}' for hitDiceUsed, others empty string
+      }
+    });
+
+    it('parses GM_Controlled correctly as boolean from various inputs and defaults to false', () => {
+      // TRUE string
+      const rowTrueString = ['char-gm-1', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]', '', '', '', 'TRUE'];
+      const resTrueString = CharacterRowSchema.safeParse(rowTrueString);
+      expect(resTrueString.success).toBe(true);
+      if (resTrueString.success) {
+        expect(resTrueString.data[26]).toBe(true);
+      }
+
+      // true boolean
+      const rowTrueBool = ['char-gm-2', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]', '', '', '', true];
+      const resTrueBool = CharacterRowSchema.safeParse(rowTrueBool);
+      expect(resTrueBool.success).toBe(true);
+      if (resTrueBool.success) {
+        expect(resTrueBool.data[26]).toBe(true);
+      }
+
+      // 'true' string lowercase
+      const rowTrueLower = ['char-gm-3', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]', '', '', '', 'true'];
+      const resTrueLower = CharacterRowSchema.safeParse(rowTrueLower);
+      expect(resTrueLower.success).toBe(true);
+      if (resTrueLower.success) {
+        expect(resTrueLower.data[26]).toBe(true);
+      }
+
+      // FALSE string
+      const rowFalseString = ['char-gm-4', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]', '', '', '', 'FALSE'];
+      const resFalseString = CharacterRowSchema.safeParse(rowFalseString);
+      expect(resFalseString.success).toBe(true);
+      if (resFalseString.success) {
+        expect(resFalseString.data[26]).toBe(false);
+      }
+
+      // empty/missing value
+      const rowMissing = ['char-gm-5', 'Player', 'Hero'];
+      const resMissing = CharacterRowSchema.safeParse(rowMissing);
+      expect(resMissing.success).toBe(true);
+      if (resMissing.success) {
+        expect(resMissing.data[26]).toBe(false);
+      }
+    });
+
+    it('defaults traits, actions, and reactions to string "[]" when they are absent or empty string', () => {
+      // Empty strings in these cells
+      const rowEmptyString = [
+        'char-opt-1', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]', '', '', '', 'FALSE', '', '', ''
+      ];
+      const resEmptyString = CharacterRowSchema.safeParse(rowEmptyString);
+      expect(resEmptyString.success).toBe(true);
+      if (resEmptyString.success) {
+        expect(resEmptyString.data[27]).toBe('[]'); // traits
+        expect(resEmptyString.data[28]).toBe('[]'); // actions
+        expect(resEmptyString.data[29]).toBe('[]'); // reactions
+      }
+
+      // Completely absent from raw row (padded to end)
+      const rowAbsent = ['char-opt-2', 'Player', 'Hero'];
+      const resAbsent = CharacterRowSchema.safeParse(rowAbsent);
+      expect(resAbsent.success).toBe(true);
+      if (resAbsent.success) {
+        expect(resAbsent.data[27]).toBe('[]'); // traits
+        expect(resAbsent.data[28]).toBe('[]'); // actions
+        expect(resAbsent.data[29]).toBe('[]'); // reactions
       }
     });
   });

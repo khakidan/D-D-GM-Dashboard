@@ -99,7 +99,8 @@ describe('Campaigns Router', () => {
       'Temp_HP_Max', 'Temp_AC', 'Death_Saves_Fails',
       'Death_Saves_Successes', 'Class',
       'Hit_Dice_Config', 'Hit_Dice_Used', 'Resource_Pools',
-      'Ability_Scores', 'Proficiencies', 'Spellcasting_Ability'
+      'Ability_Scores', 'Proficiencies', 'Spellcasting_Ability',
+      'GM_Controlled', 'Traits', 'Actions', 'Reactions'
     ]);
 
     // EncounterLogs sheet header assertion
@@ -204,5 +205,50 @@ describe('Campaigns Router', () => {
       spreadsheetId: 'spread-123',
       spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/spread-123/edit'
     });
+  });
+
+  it('POST /api/campaigns/create computes correct sheet range endings based on header count', async () => {
+    const mockSpreadsheetResponse = {
+      spreadsheetId: 'spread-123',
+      spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/spread-123/edit',
+      sheets: [{ properties: { sheetId: 0, title: 'Sheet1' } }]
+    };
+
+    // Mock first fetch: Create spreadsheet
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => mockSpreadsheetResponse,
+    } as Response);
+    // Mock second fetch: BatchUpdate sheets creation/deletion
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => 'Success',
+    } as Response);
+    // Mock third fetch: Value write batchUpdate
+    vi.mocked(fetch).mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({}),
+    } as Response);
+
+    await request(app)
+      .post('/api/campaigns/create')
+      .set('Authorization', 'Bearer mock-token')
+      .send({ title: 'Tomb of Horrors' });
+
+    const valuesCall = vi.mocked(fetch).mock.calls[2];
+    expect(valuesCall).toBeDefined();
+    
+    const valuesBody = JSON.parse(valuesCall[1]!.body as string);
+    
+    const charsData = valuesBody.data.find((d: any) => d.range.startsWith('Characters!'));
+    expect(charsData).toBeDefined();
+    expect(charsData.range).toBe('Characters!A1:AD1');
+
+    const npcsData = valuesBody.data.find((d: any) => d.range.startsWith('NPCs!'));
+    expect(npcsData).toBeDefined();
+    expect(npcsData.range).toBe('NPCs!A1:V1');
   });
 });

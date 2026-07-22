@@ -384,3 +384,100 @@ describe('CombatantCard', () => {
     spy.mockRestore();
   });
 });
+describe('CombatantCard - PcReferencePanel conditional render', () => {
+  afterEach(() => cleanup());
+  const onUpdateCombatant = vi.fn();
+  const defaultProps = {
+    isExpanded: false,
+    damageInput: '',
+    healInput: '',
+    currentRound: 1,
+    combatStarted: false,
+    isActiveTurn: false,
+    isSelected: false,
+    isSelectable: false,
+    isSyncing: false,
+    onDamageInputChange: vi.fn(),
+    onHealInputChange: vi.fn(),
+    onHealthSubmit: vi.fn(),
+    onToggleExpand: vi.fn(),
+    onToggleSelect: vi.fn(),
+    onUpdateCombatant,
+    onRemoveCombatant: vi.fn(),
+    onConcentrationPrompt: vi.fn(),
+    handleResourcePoolUpdate: vi.fn(),
+    handleConditionAdded: vi.fn(),
+    handleConditionWithTimer: vi.fn(),
+    handleExhaustionDeath: vi.fn()
+  };
+
+  it('renders PcReferencePanel for a PC combatant when gmControlled is true and content exists', () => {
+    const c = makeCombatant({
+      id: 'pc1',
+      type: 'pc',
+      name: 'GM PC',
+      traits: JSON.stringify([{ name: 'Test Trait', description: 'Test Description' }]),
+      actions: '',
+      reactions: ''
+    });
+    
+    const props = {
+      ...defaultProps,
+      c,
+      pcCharacter: { id: 'char1', characterName: 'GM PC', gmControlled: true } as any
+    };
+    
+    render(<CombatantCard {...props} />);
+    
+    // Check that PcReferencePanel toggle is rendered
+    const toggleButton = screen.getByRole('button', { name: /▶ Stat Block/i });
+    expect(toggleButton).toBeInTheDocument();
+    
+    // Interact to reveal content
+    fireEvent.click(toggleButton);
+    expect(screen.getByText('Test Trait')).toBeInTheDocument();
+    expect(screen.getByText('Test Description')).toBeInTheDocument();
+  });
+
+  it('does not render PcReferencePanel for a PC combatant when gmControlled is false', () => {
+    const c = makeCombatant({
+      id: 'pc1',
+      type: 'pc',
+      name: 'Normal PC',
+      traits: JSON.stringify([{ name: 'Test Trait', description: 'Test Description' }])
+    });
+    
+    const props = {
+      ...defaultProps,
+      c,
+      pcCharacter: { id: 'char1', characterName: 'Normal PC', gmControlled: false } as any
+    };
+    
+    render(<CombatantCard {...props} />);
+    
+    expect(screen.queryByRole('button', { name: /▶ Stat Block/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('pc-reference-panel')).not.toBeInTheDocument();
+  });
+
+  it('never renders PcReferencePanel for an NPC combatant', () => {
+    // Note: NPCs don't have gmControlled or pcCharacter anyway, but we should make sure it doesn't show up.
+    // They do have NpcReferencePanel if they have traits though, so let's differentiate by text or testid if NpcReferencePanel also has the same toggle text.
+    // NpcReferencePanel's toggle is also "▶ Stat Block" / "▼ Stat Block".
+    // We will check for data-testid="pc-reference-panel" which only exists on PcReferencePanel.
+    const c = makeCombatant({
+      id: 'npc1',
+      type: 'npc',
+      name: 'Goblin',
+      traits: JSON.stringify([{ name: 'Nimble Escape', description: 'Can disengage' }])
+    });
+    
+    const props = {
+      ...defaultProps,
+      c
+    };
+    
+    render(<CombatantCard {...props} />);
+    
+    expect(screen.queryByTestId('pc-reference-panel')).not.toBeInTheDocument();
+  });
+});

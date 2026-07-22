@@ -16,6 +16,4 @@ None currently open.
 
 ### 🟡 Features to Add
 
-**Other future audit categories:**
-
-None currently open. Security, type safety, accessibility, and performance have all been directly investigated and fixed (see `CHANGELOG.md`) — the last open performance item (the `useCombatantCard`/`useCombatantExpanded` leaf-component store-access exception) was resolved by fully threading `isActiveTurn`/`isSelected`/`isSelectable`/`isSyncing` and the combatant-mutation functions down as props from `ActiveEncounterTab/index.tsx`, closing the gap `patterns.md` previously documented as a deliberate, temporary exception.
+None currently.

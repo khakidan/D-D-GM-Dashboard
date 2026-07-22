@@ -127,4 +127,64 @@ describe('NewPlayerDialog', () => {
       .toContain('CON');
     expect(payload.statusName).toBe('Active');
   });
+
+  it('allows reaching the Stat Block tab, enabling GM-Controlled, adding traits/actions/reactions, and submitting the complete payload', () => {
+    const onConfirmMock = vi.fn();
+
+    const { getByPlaceholderText, getByRole } = render(
+      <NewPlayerDialog
+        isOpen={true}
+        onClose={vi.fn()}
+        onConfirm={onConfirmMock}
+      />
+    );
+
+    // 1. Fill in minimum required fields on Identity tab
+    fireEvent.change(
+      getByPlaceholderText('e.g. Sarah'),
+      { target: { value: 'GM User' } }
+    );
+    fireEvent.change(
+      getByPlaceholderText('e.g. Drogar'),
+      { target: { value: 'Boss NPC' } }
+    );
+
+    // 2. Navigate to Stat Block tab
+    fireEvent.click(getByRole('tab', { name: /stat block/i }));
+
+    // 3. Click "GM-Controlled Character" checkbox
+    const gmCheckbox = screen.getByLabelText('GM-Controlled Character');
+    fireEvent.click(gmCheckbox);
+    expect(gmCheckbox).toBeChecked();
+
+    // Add entry to each of Traits, Actions, Reactions
+    fireEvent.click(screen.getByRole('button', { name: /add trait/i }));
+    fireEvent.click(screen.getByRole('button', { name: /add action/i }));
+    fireEvent.click(screen.getByRole('button', { name: /add reaction/i }));
+
+    // Fill in content
+    fireEvent.change(getByPlaceholderText('Trait name'), { target: { value: 'Innate Spellcasting' } });
+    fireEvent.change(getByPlaceholderText('Action name (e.g. Bite)'), { target: { value: 'Multiattack' } });
+    fireEvent.change(getByPlaceholderText('Reaction name'), { target: { value: 'Parry' } });
+
+    // 4. Submit form
+    fireEvent.click(getByRole('button', { name: /add character/i }));
+
+    expect(onConfirmMock).toHaveBeenCalledOnce();
+    const payload = onConfirmMock.mock.calls[0][0];
+
+    expect(payload.gmControlled).toBe(true);
+
+    const traits = JSON.parse(payload.traits);
+    expect(traits).toHaveLength(1);
+    expect(traits[0]).toEqual(expect.objectContaining({ name: 'Innate Spellcasting' }));
+
+    const actions = JSON.parse(payload.actions);
+    expect(actions).toHaveLength(1);
+    expect(actions[0]).toEqual(expect.objectContaining({ name: 'Multiattack' }));
+
+    const reactions = JSON.parse(payload.reactions);
+    expect(reactions).toHaveLength(1);
+    expect(reactions[0]).toEqual(expect.objectContaining({ name: 'Parry' }));
+  });
 });

@@ -101,9 +101,13 @@ export async function addCharacterDB(
       sanitizeString(character.abilityScores || '{}'),
       finalProficiencies,
       finalSpellcastingAbility,
+      character.gmControlled ? 'TRUE' : 'FALSE',
+      sanitizeString(character.traits || '[]'),
+      sanitizeString(character.actions || '[]'),
+      sanitizeString(character.reactions || '[]'),
     ];
 
-    await appendSheetData(resolvedId, 'Characters!A:Z', [rowData]);
+    await appendSheetData(resolvedId, 'Characters!A:AD', [rowData]);
     return {
       ...character,
       id: finalId,
@@ -118,6 +122,10 @@ export async function addCharacterDB(
       abilityScores: character.abilityScores ?? '{}',
       proficiencies: finalProficiencies,
       spellcastingAbility: character.spellcastingAbility ?? finalSpellcastingAbility,
+      gmControlled: character.gmControlled ?? false,
+      traits: character.traits ?? '[]',
+      actions: character.actions ?? '[]',
+      reactions: character.reactions ?? '[]',
     };
   } catch (err) {
     console.error('[DB] addCharacterDB failed:', err);
@@ -182,10 +190,14 @@ export async function updateCharacterDB(
         getSpellcastingAbilityToSave(character, fullState)
       ),
       getSpellcastingAbilityToSave(character, fullState),
+      (character.gmControlled ?? fullState.gmControlled) ? 'TRUE' : 'FALSE',
+      sanitizeString(character.traits ?? fullState.traits ?? '[]'),
+      sanitizeString(character.actions ?? fullState.actions ?? '[]'),
+      sanitizeString(character.reactions ?? fullState.reactions ?? '[]'),
     ];
 
     const a1Row = charRowIdx + 1;
-    queueWriteResolved(resolvedId, `Characters!A${a1Row}:Z${a1Row}`, [rowData]);
+    queueWriteResolved(resolvedId, `Characters!A${a1Row}:AD${a1Row}`, [rowData]);
   } catch (err) {
     console.error('[DB] updateCharacterDB failed:', err);
     throw err;

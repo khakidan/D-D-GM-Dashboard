@@ -76,15 +76,46 @@ describe('updateCharacterDB — row array integrity', () => {
     expect(row[24]).toContain('spellcastingAbility');
   });
 
-  it('writes to Characters!A{row}:Z{row}', async () => {
+  it('writes to Characters!A{row}:AD{row}', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({
       values: [['other'], ['char-1']],
     });
     await updateCharacterDB({}, fullState as any);
     expect(writeQueue.queueWrite).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'Characters!A3:Z3',
-      expect.any(Array)
+      'Characters!A3:AD3',
+      [[
+        'char-1',
+        'Player 1',
+        'Hero',
+        15,
+        50,
+        0,
+        50,
+        '',
+        12,
+        3,
+        1,
+        '',
+        '',
+        '',
+        '',
+        0,
+        0,
+        0,
+        0,
+        'Paladin',
+        '',
+        '{}',
+        '[]',
+        '{}',
+        '{}',
+        '',
+        'FALSE',
+        '[]',
+        '[]',
+        '[]',
+      ]]
     );
   });
 
@@ -95,7 +126,7 @@ describe('updateCharacterDB — row array integrity', () => {
 });
 
 describe('addCharacterDB — row structure', () => {
-  it('writes 26 values with spellcastingAbility at index 25', async () => {
+  it('writes 30 values with spellcastingAbility at index 25', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
     await addCharacterDB({
       characterName: 'Mage',
@@ -103,13 +134,17 @@ describe('addCharacterDB — row structure', () => {
     });
     expect(sheetsService.appendSheetData).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'Characters!A:Z',
+      'Characters!A:AD',
       expect.any(Array)
     );
     const appendCall = vi.mocked(sheetsService.appendSheetData).mock.calls[0];
     const row = appendCall[2][0];
-    expect(row).toHaveLength(26);
+    expect(row).toHaveLength(30);
     expect(row[25]).toBe('CHA');
+    expect(row[26]).toBe('FALSE');
+    expect(row[27]).toBe('[]');
+    expect(row[28]).toBe('[]');
+    expect(row[29]).toBe('[]');
   });
 });
 
@@ -146,14 +181,14 @@ describe('addCharacterDB — row array integrity', () => {
     vi.clearAllMocks();
   });
 
-  it('writes all 26 fields at correct column indices (0–25)', async () => {
+  it('writes all 30 fields at correct column indices (0–29)', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
     await addCharacterDB(charData as any);
     
     expect(sheetsService.appendSheetData).toHaveBeenCalled();
     const row = vi.mocked(sheetsService.appendSheetData).mock.calls[0][2][0];
     
-    expect(row).toHaveLength(26);
+    expect(row).toHaveLength(30);
     expect(row[1]).toBe('Player One'); // playerName
     expect(row[2]).toBe('Paladin Hero'); // characterName
     expect(row[3]).toBe(18); // ac
@@ -179,5 +214,28 @@ describe('addCharacterDB — row array integrity', () => {
     expect(row[23]).toBe('{"STR":18,"CHA":16}'); // abilityScores
     expect(row[24]).toBe('{"athletics":true,"spellcastingAbility":"CHA"}'); // proficiencies
     expect(row[25]).toBe('CHA'); // spellcastingAbility
+    expect(row[26]).toBe('FALSE'); // gmControlled
+    expect(row[27]).toBe('[]'); // traits
+    expect(row[28]).toBe('[]'); // actions
+    expect(row[29]).toBe('[]'); // reactions
+  });
+
+  it('writes gmControlled and stat block JSON fields correctly to indices 26-29', async () => {
+    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
+    await addCharacterDB({
+      ...charData as any,
+      gmControlled: true,
+      traits: '[{"name":"Tough"}]',
+      actions: '[{"name":"Strike"}]',
+      reactions: '[{"name":"Parry"}]',
+    });
+    
+    expect(sheetsService.appendSheetData).toHaveBeenCalled();
+    const row = vi.mocked(sheetsService.appendSheetData).mock.calls[0][2][0];
+    
+    expect(row[26]).toBe('TRUE');
+    expect(row[27]).toBe('[{"name":"Tough"}]');
+    expect(row[28]).toBe('[{"name":"Strike"}]');
+    expect(row[29]).toBe('[{"name":"Parry"}]');
   });
 });

@@ -156,7 +156,7 @@ export function usePartyCharacterCrud(
     });
 
     const isSheetData = Object.keys(sanitizedUpdates).some(k => 
-      ['playerName', 'characterName', 'class', 'ac', 'maxHp', 'tempHp', 'currentHp', 'conditions', 'passivePerception', 'level', 'statusId', 'notes', 'resistances', 'immunities', 'vulnerabilities', 'tempAc', 'deathSavesFails', 'deathSavesSuccesses', 'hitDiceConfig', 'hitDiceUsed', 'resourcePools', 'abilityScores', 'proficiencies', 'spellcastingAbility'].includes(k)
+      ['playerName', 'characterName', 'class', 'ac', 'maxHp', 'tempHp', 'currentHp', 'conditions', 'passivePerception', 'level', 'statusId', 'notes', 'resistances', 'immunities', 'vulnerabilities', 'tempAc', 'deathSavesFails', 'deathSavesSuccesses', 'hitDiceConfig', 'hitDiceUsed', 'resourcePools', 'abilityScores', 'proficiencies', 'spellcastingAbility', 'gmControlled', 'traits', 'actions', 'reactions'].includes(k)
     );
 
     if (!isSheetData) return;

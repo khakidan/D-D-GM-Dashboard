@@ -30,3 +30,17 @@ export function parseCommaSeparatedList(
   }
   return parts.filter(Boolean);
 }
+
+/**
+ * Converts a 1-based column number to a spreadsheet column letter (e.g. 1 -> A, 26 -> Z, 27 -> AA)
+ */
+export function getColumnLetter(colNum: number): string {
+  let letter = '';
+  let temp = colNum;
+  while (temp > 0) {
+    const modulo = (temp - 1) % 26;
+    letter = String.fromCharCode(65 + modulo) + letter;
+    temp = Math.floor((temp - modulo) / 26);
+  }
+  return letter;
+}
