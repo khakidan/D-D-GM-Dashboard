@@ -20,7 +20,8 @@ describe('useEncounterResume State Transition Tests', () =>
     vi.clearAllMocks();
   });
 
-  it('restores in-progress encounter state from the sheet snapshot when hasInitialSynced is false', () => {
+  it('restores in-progress encounter state and falls back to the first combatant when activeTurnId doesn\'t match any rebuilt combatant', () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const updateState = vi.fn();
     const mockEnc = { id: 'enc-1', currentRound: 2, activeTurnId: 'pc-1' };
     const mockEC = { id: 'ec-1', encounterId: 'enc-1', playerId: 'char-1', initiative: 10 };
@@ -40,6 +41,69 @@ describe('useEncounterResume State Transition Tests', () =>
 
     renderHook(() => useEncounterResume());
     expect(updateState).toHaveBeenCalled();
+
+    const updater = updateState.mock.calls[0][0];
+    const prevState = {
+      combatState: {
+        activeEncounterId: null,
+        round: 0,
+        activeTurnId: null,
+        combatants: []
+      }
+    };
+    const nextState = updater(prevState);
+
+    expect(nextState.combatState.activeEncounterId).toBe('enc-1');
+    expect(nextState.combatState.round).toBe(2);
+    expect(nextState.combatState.activeTurnId).toBe('combat-pc-char-1');
+    expect(nextState.combatState.combatants.length).toBe(1);
+    expect(nextState.combatState.combatants[0].id).toBe('combat-pc-char-1');
+    
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Active turn ID from sheet not found in combatants. Defaulting to first.");
+    consoleWarnSpy.mockRestore();
+  });
+
+  it('restores in-progress encounter state and correctly carries through a matching activeTurnId', () => {
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const updateState = vi.fn();
+    const mockEnc = { id: 'enc-1', currentRound: 2, activeTurnId: 'combat-pc-char-1' };
+    const mockEC = { id: 'ec-1', encounterId: 'enc-1', playerId: 'char-1', initiative: 10 };
+    const mockChar = { id: 'char-1', characterName: 'Thorin', maxHp: 50, currentHp: 50, ac: 15 };
+
+    vi.mocked(useAppState).mockReturnValue({
+      state: { 
+        hasInitialSynced: true, // Transitions to true to trigger restore
+        encounters: [mockEnc], 
+        characters: [mockChar], 
+        encounterCombatants: [mockEC], 
+        npcs: [],
+        combatState: { activeEncounterId: null }
+      },
+      updateState,
+    } as any);
+
+    renderHook(() => useEncounterResume());
+    expect(updateState).toHaveBeenCalled();
+
+    const updater = updateState.mock.calls[0][0];
+    const prevState = {
+      combatState: {
+        activeEncounterId: null,
+        round: 0,
+        activeTurnId: null,
+        combatants: []
+      }
+    };
+    const nextState = updater(prevState);
+
+    expect(nextState.combatState.activeEncounterId).toBe('enc-1');
+    expect(nextState.combatState.round).toBe(2);
+    expect(nextState.combatState.activeTurnId).toBe('combat-pc-char-1');
+    expect(nextState.combatState.combatants.length).toBe(1);
+    expect(nextState.combatState.combatants[0].id).toBe('combat-pc-char-1');
+
+    expect(consoleWarnSpy).not.toHaveBeenCalledWith("Active turn ID from sheet not found in combatants. Defaulting to first.");
+    consoleWarnSpy.mockRestore();
   });
 
   it('does not restore anything if hasInitialSynced is true or activeEncounterId is already set', () => {

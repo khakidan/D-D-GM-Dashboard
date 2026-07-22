@@ -28,7 +28,7 @@ Found via direct user report and sheet inspection: encounter #9 had `Logging_Req
 
 **Test coverage added for the specific new logic, not just the surrounding regression suite.** `useEncounterResume.test.ts`'s existing 2 tests only covered `combatState` restoration — nothing exercised the new log-reconstruction block. Three new tests were added, verifying the exact seam per this project's testing standard (asserting on `initCombatLog`'s real arguments, not just that it was called): the log is reconstructed with the real, freshly-resumed combatant data (not stale or empty) when `loggingRequested: true`; it is not reconstructed at all when `loggingRequested: false`; it is not reconstructed if a valid `activeCombatLog` already exists for the encounter (confirming the re-initialization guard); and no `combat-start` event is re-fired during resume.
 
-Verified: `tsc -p tsconfig.build.json --noEmit` clean (0 errors). Real, complete batch runs: Batch 1 (20 files/474 tests), Batch 3 (12 files/61 tests, up from 58 — the 3 new `useEncounterResume.test.ts` tests), Batch 5A (7 files/65 tests), Batch 5B (12 files/42 tests) — all passing, all matching expected counts.
+Verified: `tsc -p tsconfig.build.json --noEmit` clean (0 errors). Real, complete batch runs: Batch 1 (20 files/474 tests), Batch 3 (12 files/62 tests, up from 58 — the net +4 from `useEncounterResume.test.ts`'s new log-reconstruction tests plus a corrected activeTurnId test split, see `testing-batches.md`), Batch 5A (7 files/65 tests), Batch 5B (12 files/42 tests) — all passing, all matching expected counts.
 
 ---
 
