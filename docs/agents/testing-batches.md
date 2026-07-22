@@ -4,13 +4,14 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 12 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 874 tests.** Updated after the performance-fix effort across all 4 main list tabs (`React.memo` added to `CharacterCard`/`NpcCard`/`EncounterCard`/`CombatantCard` with custom comparators, plus a narrow-Zustand-selector refactor of `useCombatantCard.ts`/`useCombatantExpanded.ts` — see `CHANGELOG.md`). Real, verified totals for each affected batch, run individually per this file's own rule:
+**Current baseline: 875 tests.** Updated after the performance-fix effort across all 4 main list tabs (`React.memo` added to `CharacterCard`/`NpcCard`/`EncounterCard`/`CombatantCard` with custom comparators, plus a narrow-Zustand-selector refactor of `useCombatantCard.ts`/`useCombatantExpanded.ts` — see `CHANGELOG.md`). Real, verified totals for each affected batch, run individually per this file's own rule:
 
 - **Batch 5A: 68 → 69.** `useCombatantCard.test.ts` gained 1 new test directly proving the narrow-selector fix (an unrelated combatant's update doesn't cause this hook to recompute for a different combatant).
 - **Batch 5B: 41 → 41 (no net change, despite 2 tests being added).** `CombatantCard.test.tsx` gained 2 new memoization-proof tests (12 → 14, confirmed directly). The batch total nonetheless came back at the same 41 previously documented here. This could not be fully reconciled — no git history is available in this working copy (the same limitation behind several earlier corrections in this file), so whether the prior 41 already had a small undocumented drift, or something else in this batch's other 11 files changed test count in the other direction, isn't traceable. What's certain: `CombatantCard.test.tsx` itself is verified at 14, and the batch's full real run reports 41 passing with zero failures.
 - **Batch 6A: 55 → 57.** `CharacterCard.test.tsx` gained exactly 2 new memoization-proof tests, matching the batch total change exactly.
 - **Batch 6B: 23 → 26.** `EncounterCard.test.tsx` gained 2 new memoization-proof tests, but the batch total moved by 3, not 2. Same caveat as Batch 5B — the extra +1 could not be traced without git history.
 - **Batch 6C: 19 → 21.** `NpcCard.test.tsx` gained exactly 2 new memoization-proof tests, matching the batch total change exactly.
+- **Batch 2: 40 → 41.** A new `src/services/__tests__/encounterCombatants.test.ts` (1 test) was added as part of the `Encounter_Combatants_ID` race-condition fix — a dedicated regression test proving `addEncounterCombatantDB` generates collision-free IDs under real concurrent calls (see `CHANGELOG.md`). Confirmed genuine via a direct before/after revert: the test fails against the old `getNextId`-based implementation and passes against the fix.
 
 Prior baseline reconciliation history:
 
@@ -19,7 +20,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | Batch | Description | Test Count |
 |-------|-------------|------------|
 | 1 | `src/lib/__tests__` | 474 |
-| 2 | `src/services/__tests__` | 40 |
+| 2 | `src/services/__tests__` | 41 |
 | 3 | `src/hooks/__tests__` | 58 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 9 |
 | 5A | ActiveEncounterTab hooks (`.test.ts`) | 69 |
@@ -36,7 +37,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 # BATCH 1 — 474 tests
 npx vitest run src/lib/__tests__
 
-# BATCH 2 — 40 tests
+# BATCH 2 — 41 tests
 npx vitest run src/services/__tests__
 
 # BATCH 3 — 58 tests
@@ -82,6 +83,8 @@ npx vitest run src/components/auth/__tests__
 *Note: Batch 2 corrected from 34 → 33 tests (discovered during the Badge System Audit's Phase 1-4 verification). `npcs.test.ts` was independently confirmed (direct file inspection) to hold exactly 10 tests. A prior AI Studio claim that it "was documented as 11" is not supported by anything in this file — no per-file counts have ever been recorded here, only batch totals — and was not accepted as fact. The real cause of the batch-total drop from 34 to 33 could not be traced (no git history available); nothing in the Badge Audit's actual file changes (`irvOptions.ts`, `conditionDefinitions.ts`, `resourcePools.ts`, `CombatantCardBadges.tsx`, `CombatantCardHeader.tsx`) touches `src/services/`.*
 
 *Note: Batch 6A corrected from 46 → 51 tests in one update, covering two separate missed updates from the bug-fix queue. The Jack of All Trades multiclass fix added 2 tests to `LevelUpDialog.test.tsx` (17→19) that were verified at the time but never reflected here (46→48 was missed). The short-rest HP cap fix immediately after added 3 more to `usePartyRest.test.ts` (15→18, 48→51), and that's when the earlier miss was caught and both corrected together. This was Claude's own tracking gap, not a data-integrity issue with the tests themselves — both sets of new tests were independently verified against the actual production math before being accepted.*
+
+*Note: Batch 2's count of 41 (previously 40) reflects the addition of `encounterCombatants.test.ts` — see the baseline note above for the full explanation.*
 
 ## Where new test files go
 

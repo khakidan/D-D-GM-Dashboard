@@ -1,9 +1,9 @@
 // src/services/dbOperations/encounterCombatants.ts
 
 import { EncounterCombatant } from '../../types';
+import { generateUuid } from '../../lib/uuid';
 import {
   resolveSpreadsheetId,
-  getNextId,
   appendSheetData,
   findRowIndexById,
   updateSheetData,
@@ -65,13 +65,12 @@ export async function addEncounterCombatantDB(
 
   try {
     const resolvedId = resolveSpreadsheetId(spreadsheetId);
-    const startIdVal = await getNextId(resolvedId, 'Encounter_Combatants');
     const created: EncounterCombatant[] = [];
     
     const count = quantity <= 0 ? 1 : quantity;
 
     for (let i = 0; i < count; i++) {
-      const finalId = (startIdVal + i).toString();
+      const finalId = generateUuid();
       const rowData = [
         finalId,
         encounterId,
