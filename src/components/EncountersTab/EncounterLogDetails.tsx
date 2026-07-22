@@ -74,7 +74,7 @@ export function EncounterLogDetails({ log }: EncounterLogDetailsProps) {
       {/* Summary Block */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="bg-[#f9f8ff]/70 p-3 rounded-lg border border-[#e2e8f0]">
-          <p className="text-[10px] uppercase font-bold text-[#8d8db9] tracking-widest">Party Size</p>
+          <p className="text-[10px] uppercase font-bold text-[#8d8db9] tracking-widest">Encounter Size</p>
           <p className="text-sm font-semibold text-[#0f172a]">{log.partySnapshot?.length || 0} Members</p>
         </div>
         <div className="bg-[#f9f8ff]/70 p-3 rounded-lg border border-[#e2e8f0]">
