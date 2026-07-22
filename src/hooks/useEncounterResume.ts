@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { useAppState } from './useAppState';
 import { buildCombatantsFromState } from '../lib/combatantBuilder';
+import { buildPartySnapshot } from '../lib/combatLog';
+import { useDashboardStore } from './dashboardStore';
 
 export function useEncounterResume(onActiveTabChange?: (tab: 'party' | 'encounters' | 'npc-library' | 'combat') => void) {
   const { state, updateState } = useAppState();
@@ -53,6 +55,21 @@ export function useEncounterResume(onActiveTabChange?: (tab: 'party' | 'encounte
           combatants: rebuiltCombatants,
         }
       }));
+
+      if (inProgressEncounter.loggingRequested) {
+        const { activeCombatLog, initCombatLog } = useDashboardStore.getState();
+        if (!activeCombatLog || activeCombatLog.encounterId !== inProgressEncounter.id) {
+          const snapshot = buildPartySnapshot(rebuiltCombatants);
+          initCombatLog(
+            inProgressEncounter.id,
+            inProgressEncounter.name,
+            inProgressEncounter.location ?? '',
+            snapshot,
+            [],
+            inProgressEncounter.currentRound ?? 1
+          );
+        }
+      }
 
       // Switch to combat tab
       onActiveTabChange?.('combat');

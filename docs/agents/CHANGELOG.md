@@ -6,6 +6,32 @@ Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed fr
 
 ---
 
+## Encounter Logging State Now Correctly Resumes After Leaving and Re-Entering an In-Progress Encounter
+
+Found via direct user report and sheet inspection: encounter #9 had `Logging_Requested: TRUE` on the sheet, but leaving and re-entering the encounter showed "Record Encounter" instead of "End Encounter," and further combat events during the resumed session would have failed to log.
+
+**Root cause, confirmed via direct investigation, two distinct parts.**
+
+**Part A**: `useSheetSync.ts` fetched the Encounters sheet with a hardcoded, truncated range (`'Encounters!A2:G'`), omitting column H (`Logging_Requested`) entirely — `constants.ts`'s `SHEET_RANGES.encounters` already correctly defined `'Encounters!A2:H'`, but `useSheetSync.ts` never used it. Confirmed via full-codebase grep this was the only place fetching the full Encounters sheet with a truncated range. Fixed by switching to `SHEET_RANGES.encounters`.
+
+**Part B**: even with Part A fixed, `useEncounterResume.ts`'s auto-resume effect restored `combatState.combatants`/`activeTurnId`/`round` from the freshly-synced sheet data, but never reconstructed the in-memory `activeCombatLog` store state — a transient value that only ever lives in Zustand memory, never persisted to the sheet. A resumed session with `loggingRequested: true` therefore had no active log object to write further events to.
+
+**Design decisions, verified before implementing:**
+- The snapshot-building logic already existed inline inside `ensureCombatLogInitialized` (`useCombatLifecycle.ts`) — rather than duplicating it, it was extracted into a new shared, pure `buildPartySnapshot()` in `lib/combatLog.ts`, used by both `useCombatLifecycle.ts` and the new resume logic.
+- `buildPartySnapshot()` takes a small, self-contained structural type (`SnapshotCombatantInput`), not the real `Combatant` type from `types.ts` — confirmed via direct verbatim source check that `types.ts` already imports `ActionType` from `lib/combatLog.ts`, so importing `Combatant` back would create a real circular dependency. The structural-typing approach avoids this while still accepting real `Combatant[]` arrays at both call sites with no manual remapping, since `Combatant` structurally satisfies the smaller type. Confirmed via TypeScript's ternary literal-narrowing behavior that the `type` field type-checks cleanly despite the input's looser `string` type.
+- An earlier draft of `buildPartySnapshot()`'s `cr` field incorrectly converted `challengeRating` to a number via `parseFloat`, which would have silently corrupted fractional CRs like `"1/4"` (`parseFloat("1/4")` evaluates to `1`, not `0.25`) — caught and corrected before implementation to pass the string through unchanged, matching the original, already-correct logic.
+- The resume logic builds its snapshot from the locally-rebuilt `rebuiltCombatants` array, **not** via `getSnapshot()`/the store — `combatState.combatants` hasn't committed to the Zustand store yet at the point in the resume effect where this logic runs, so reading the store there would produce a stale, empty combatants array.
+- The resume logic deliberately does **not** re-fire the `combat-start` progressive event, since that was already logged once when the encounter was originally started.
+- **Known, accepted limitation**: resuming initializes the log with `events: []` — the live in-session Combat Log panel won't show events logged before the reload/re-entry. Acceptable because the durable `EncounterLogEvents` sheet record is unaffected, and "End Encounter" already re-fetches the complete event history fresh from that sheet regardless of what the transient in-memory log contains.
+
+**Fix**: `useSheetSync.ts` (range correction), `lib/combatLog.ts` (new `buildPartySnapshot()` export), `useCombatLifecycle.ts` (`ensureCombatLogInitialized` now calls the shared function instead of its own inline duplicate), `useEncounterResume.ts` (new resume-time reconstruction logic, gated on `loggingRequested` and guarded against re-initializing an already-valid log for the same encounter).
+
+**Test coverage added for the specific new logic, not just the surrounding regression suite.** `useEncounterResume.test.ts`'s existing 2 tests only covered `combatState` restoration — nothing exercised the new log-reconstruction block. Three new tests were added, verifying the exact seam per this project's testing standard (asserting on `initCombatLog`'s real arguments, not just that it was called): the log is reconstructed with the real, freshly-resumed combatant data (not stale or empty) when `loggingRequested: true`; it is not reconstructed at all when `loggingRequested: false`; it is not reconstructed if a valid `activeCombatLog` already exists for the encounter (confirming the re-initialization guard); and no `combat-start` event is re-fired during resume.
+
+Verified: `tsc -p tsconfig.build.json --noEmit` clean (0 errors). Real, complete batch runs: Batch 1 (20 files/474 tests), Batch 3 (12 files/61 tests, up from 58 — the 3 new `useEncounterResume.test.ts` tests), Batch 5A (7 files/65 tests), Batch 5B (12 files/42 tests) — all passing, all matching expected counts.
+
+---
+
 ## Store-Access Architecture Fix — `useCombatantCard`/`useCombatantExpanded` Fully Resolved to Props
 
 Closes the last remaining open item from the earlier performance-fix effort's documented exception (see `patterns.md`'s "Store-access architecture" section and the "Performance Fixes — Card Memoization" entry below). `isActiveTurn`/`isSelected`/`isSelectable`/`isSyncing` (previously derived independently inside `CombatantCard.tsx` via `useCombatantCard(c.id)`, and separately *again* inside `CombatantCardHeader.tsx` via its own call to the same hook) are now resolved once in `ActiveEncounterTab/index.tsx` and threaded down as real props, matching how `pcCharacter`/`npcModel` already worked. `useCombatantExpanded()`'s four mutation functions (`handleResourcePoolUpdate`, `handleConditionAdded`, `handleConditionWithTimer`, `handleExhaustionDeath`) are similarly now called once in `index.tsx`, with the specific `Combatant` supplied at each call site instead of the hook closing over it per-card.

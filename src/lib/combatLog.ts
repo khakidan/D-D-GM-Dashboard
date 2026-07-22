@@ -8,6 +8,28 @@ export interface PartySnapshot {
   cr?: string; // NPCs only
 }
 
+export interface SnapshotCombatantInput {
+  id: string;
+  name: string;
+  type: string;
+  currentHp: number;
+  maxHp: number;
+  level?: number;
+  challengeRating?: string;
+}
+
+export function buildPartySnapshot(combatants: SnapshotCombatantInput[]): PartySnapshot[] {
+  return combatants.map(c => ({
+    id: c.id,
+    name: c.name,
+    type: c.type === 'pc' ? 'pc' : 'npc',
+    startingHp: c.currentHp,
+    maxHp: c.maxHp,
+    level: c.level ?? undefined,
+    cr: c.challengeRating ?? undefined,
+  }));
+}
+
 export interface InitiativeEntry {
   combatantId: string;
   name: string;

@@ -82,7 +82,7 @@ export function useSheetSync({ setIsGoogleConnected, onActiveTabChange }: UseShe
 
       // 5. Fetch Encounters
       addLog('Step 6: Loading encounter log...');
-      const encountersResponse = await fetchSheetData(sid, 'Encounters!A2:G');
+      const encountersResponse = await fetchSheetData(sid, SHEET_RANGES.encounters);
       const parsedEncounters = parseEncounters(encountersResponse.values || [], difficulties);
       addLog(`Encounters found: ${parsedEncounters.length}`);
 

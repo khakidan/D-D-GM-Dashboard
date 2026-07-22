@@ -3,7 +3,7 @@ import { useAppState, getSnapshot } from '../../../hooks/useAppState';
 import { useDashboardStore } from '../../../hooks/dashboardStore';
 import { getSpreadsheetId } from '../../../services/sheetsService';
 import { updateInitiativeDB, appendEncounterLog, fetchEncounterLogEventsDB, updateEncounterLoggingRequestedDB } from '../../../services/dbOperations';
-import { generateTranscript } from '../../../lib/combatLog';
+import { generateTranscript, buildPartySnapshot } from '../../../lib/combatLog';
 import { toast } from 'sonner';
 import { useInitiativeEvent } from '../../../hooks/useCombatOverlayEvents';
 import { calculateModifier, parseAbilityScores } from '../../../lib/abilityScores';
@@ -327,15 +327,7 @@ function ensureCombatLogInitialized(
     const encounters = latestState.encounters;
     const startingRound = latestState.combatState.round;
 
-    const snapshot = combatants.map(c => ({
-      id: c.id,
-      name: c.name,
-      type: (c.type === 'pc' ? 'pc' : 'npc') as 'pc' | 'npc',
-      startingHp: c.currentHp,
-      maxHp: c.maxHp,
-      level: c.level ?? undefined,
-      cr: c.challengeRating ?? undefined,
-    }));
+    const snapshot = buildPartySnapshot(combatants);
 
     const activeEncounter = encounters.find(e => e.id === encounterId);
     const encounterName = activeEncounter?.name ?? 'Unknown';
