@@ -1,5 +1,20 @@
 # Changelog
 
+---
+
+## Removed `VITE_GOOGLE_CLIENT_SECRET` Fallback for Server-Side OAuth
+
+Removed the technically deprecated and insecure `VITE_GOOGLE_CLIENT_SECRET` fallback from the backend Google OAuth route (`src/server/routes/auth.ts`). Vite automatically exposes environment variables prefixed with `VITE_` to the client-side bundle, making this prefix unsafe for sensitive server-only secrets like the OAuth client secret.
+
+**Implementation Details:**
+- Modified `src/server/routes/auth.ts` to only read the client secret from `GOOGLE_CLIENT_SECRET` or `CLIENT_SECRET` (the standard, non-exposed environment variables).
+- Removed the runtime `console.warn` deprecation check, as the fallback path itself no longer exists.
+- Updated `src/server/__tests__/auth.test.ts` to use `GOOGLE_CLIENT_SECRET` instead of the legacy `VITE_` variant.
+- Added a regression test to `auth.test.ts` verifying that providing only `VITE_GOOGLE_CLIENT_SECRET` results in a `400 Bad Request` with `CONFIGURATION_REQUIRED`, proving the fallback is genuinely inactive.
+- Verified via a codebase-wide investigation (`grep`) that all other "legacy"-flagged code in the project is intentional and required for backward compatibility (e.g., NPC recharge-ability Column N, `(nonmagical)` damage suffixes), leaving this as the only necessary cleanup item.
+
+Verified clean build via `tsc -p tsconfig.build.json --noEmit` and all 10 tests in Batch 4 passing.
+
 Referenced from the root [AGENTS.md](../../AGENTS.md). This file is a **pure historical record** of completed refactor/decomposition work — kept as documentation of what was built and why, for anyone who needs the rationale behind a specific past decision. It does not track current or in-progress work — see [ROADMAP.md](ROADMAP.md) for that.
 
 Per root AGENTS.md rule 12: when work in `ROADMAP.md` completes, it's removed from there entirely and a write-up documenting what was actually built is added here instead. Every section below is closed out — there should be nothing "in progress" in this file.

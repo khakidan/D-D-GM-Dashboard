@@ -29,7 +29,7 @@ describe('Auth Router', () => {
 
   it('POST /auth/token exchanges code for access token and returns it to the client', async () => {
     vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'test-id');
-    vi.stubEnv('VITE_GOOGLE_CLIENT_SECRET', 'test-secret');
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', 'test-secret');
 
     const app = await buildApp();
 
@@ -48,9 +48,31 @@ describe('Auth Router', () => {
     expect(response.body).toEqual(mockSuccessResponse);
   });
 
+  it('returns 400 CONFIGURATION_REQUIRED when only the insecure VITE_GOOGLE_CLIENT_SECRET is provided', async () => {
+    vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'test-id');
+    vi.stubEnv('VITE_GOOGLE_CLIENT_SECRET', 'unsafe-secret');
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', '');
+    vi.stubEnv('CLIENT_SECRET', '');
+
+    const app = await buildApp();
+
+    const response = await request(app)
+      .post('/api/auth/google-token')
+      .send({
+        code: 'valid-code',
+        redirect_uri: 'http://localhost:3000'
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      error: 'CONFIGURATION_REQUIRED',
+      message: 'Google Client Secret/ID is not configured in the environment.'
+    });
+  });
+
   it('POST /auth/token returns 400 when code is missing from the request body', async () => {
     vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'test-id');
-    vi.stubEnv('VITE_GOOGLE_CLIENT_SECRET', 'test-secret');
+    vi.stubEnv('GOOGLE_CLIENT_SECRET', 'test-secret');
 
     const app = await buildApp();
 

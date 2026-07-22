@@ -14,12 +14,7 @@ const GOOGLE_CLIENT_ID =
 
 const GOOGLE_CLIENT_SECRET =
   process.env.GOOGLE_CLIENT_SECRET ||
-  process.env.CLIENT_SECRET ||
-  process.env.VITE_GOOGLE_CLIENT_SECRET;
-
-if (process.env.VITE_GOOGLE_CLIENT_SECRET && !process.env.GOOGLE_CLIENT_SECRET && !process.env.CLIENT_SECRET) {
-  console.warn('⚠️ [Server] Deprecated: Using VITE_GOOGLE_CLIENT_SECRET for server-side secret. Please migrate to GOOGLE_CLIENT_SECRET to prevent accidental client exposure.');
-}
+  process.env.CLIENT_SECRET;
 
 const authLimiter = createRateLimiter('Too many auth requests, please try again later.');
 const configLimiter = createRateLimiter('Too many config requests, please try again later.', 100, 15 * 60 * 1000);
