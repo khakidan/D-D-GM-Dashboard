@@ -12,7 +12,7 @@ Features and bugs that have been discussed and approved but not yet implemented.
 
 ### 🔴 Bugs to Fix
 
-None currently open.
+- **`checkAndCaptureToken()` is called redundantly on every mount of any component using `useGoogleAuth`** (confirmed: `App.tsx` calls it once on load; `initGoogleAuth()` — invoked by `useGoogleAuth`, used by both `GMDashboard` and `CampaignSelector` — calls it again independently). Currently harmless only because the OAuth CSRF `state` check (added earlier this session) happens to catch and discard the second, stale attempt every time — but this means the app is relying on that guard to paper over an avoidable duplicate call, not actually preventing the duplicate at its source. Low priority: worth adding a guard (e.g. a module-level "already processed this URL's code" flag) so `initGoogleAuth()` skips re-attempting the exchange if it's already been handled, rather than depending on the CSRF check to quietly absorb the redundant call every time.
 
 ### 🟡 Features to Add
 
