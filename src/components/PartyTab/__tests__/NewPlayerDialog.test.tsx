@@ -5,11 +5,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { NewPlayerDialog } from '../NewPlayerDialog';
 import { getResourcePoolSuggestions } from '../../../lib/resourcePoolScaling';
 
-vi.mock('../../../hooks/useAppState', () => ({
-  useAppState: () => ({
-    state: { statuses: { '1': 'Active', '2': 'Inactive', '3': 'Deceased' } }
-  })
-}));
+const mockStatuses = { '1': 'Active', '2': 'Inactive', '3': 'Deceased' };
 
 // Mock ResizeObserver
 const MockResizeObserver = vi.fn(() => ({
@@ -21,6 +17,7 @@ vi.stubGlobal('ResizeObserver', MockResizeObserver);
 
 describe('NewPlayerDialog', () => {
   const defaultProps = {
+    statuses: mockStatuses,
     isOpen: true,
     onClose: vi.fn(),
     onConfirm: vi.fn(),
@@ -59,6 +56,7 @@ describe('NewPlayerDialog', () => {
 
     const { getByPlaceholderText, getByRole, container } = render(
       <NewPlayerDialog
+        statuses={mockStatuses}
         isOpen={true}
         onClose={vi.fn()}
         onConfirm={onConfirmMock}
@@ -133,6 +131,7 @@ describe('NewPlayerDialog', () => {
 
     const { getByPlaceholderText, getByRole } = render(
       <NewPlayerDialog
+        statuses={mockStatuses}
         isOpen={true}
         onClose={vi.fn()}
         onConfirm={onConfirmMock}

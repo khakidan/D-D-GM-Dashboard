@@ -2,6 +2,38 @@
 
 ---
 
+## `NewPlayerDialog.tsx` Store-Access Fix — Prop-Threaded from `PartyTab.tsx` (Completed)
+
+`NewPlayerDialog.tsx` called `useAppState()` directly to read `state.statuses`, bypassing its 
+coordinator (`PartyTab.tsx`) — a leftover oversight from the original "Status Labeling Consistency" 
+fix, which threaded `statuses` down as a prop for `CharacterCardHeader.tsx` ("Part 2" of that 
+effort) but never revisited `NewPlayerDialog.tsx` to apply the same treatment.
+
+**Confirmed as a genuine oversight, not a deliberate exception, before fixing**: `NewPlayerDialog` 
+is mounted from exactly one place in the codebase (`PartyTab.tsx`), which already computes the 
+identical `DEFAULT_STATUSES`-fallback formula one line before rendering the dialog, and already 
+threads that same value to a sibling component in the same render (`<CharacterCard statuses={statuses} />`). 
+No `CHANGELOG.md` entry anywhere flagged this as intentional.
+
+**Fix**: `PartyTab.tsx`'s existing `<NewPlayerDialog>` render now passes `statuses={statuses}`. 
+`NewPlayerDialog.tsx` takes `statuses: Record<string, string>` as a required prop instead of 
+computing it internally — the `useAppState()` call and its `DEFAULT_STATUSES` fallback computation 
+were removed entirely, along with both now-unused imports. `IdentityTab.tsx`'s `statuses` prop and 
+`handleSubmit`'s `statusName` lookup needed no changes, since both already referenced the local 
+`statuses` variable — it just arrives differently now.
+
+**Test coverage**: `NewPlayerDialog.test.tsx`'s `vi.mock('../../../hooks/useAppState', ...)` block 
+removed entirely; a shared `mockStatuses` constant added and passed as a prop at all 3 render call 
+sites in the file. The existing `expect(payload.statusName).toBe('Active')` assertion required no 
+change, since `mockStatuses` preserves the exact same values the old mock returned.
+
+Verified: `tsc -p tsconfig.build.json --noEmit` clean (0 errors) — confirmed the expected 3 
+intermediate errors (missing `statuses` prop at all 3 test render sites) before the test fix, and 
+a clean exit code after. Real, complete Batch 6A output confirmed 9 files/60 tests passing, 
+matching the established baseline exactly, no test count change.
+
+---
+
 ## PWA Icon Corruption and Broken Favicon Fixed
 
 Two related but independently-discovered issues, both surfaced via browser console errors reported directly from the live app.

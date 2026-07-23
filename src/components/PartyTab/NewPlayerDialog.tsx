@@ -3,7 +3,6 @@ import { UserPlus } from 'lucide-react';
 import { Character, NpcTrait, NpcAction, NpcReaction } from '../../types';
 import { cn } from '../../lib/utils';
 import { useFormState } from '../../hooks/useFormState';
-import { useAppState } from '../../hooks/useAppState';
 import { StatBlock } from '../ui/StatBlock';
 import { IdentityTab } from './IdentityTab';
 import { CombatTab } from './CombatTab';
@@ -15,7 +14,7 @@ import {
   getPassiveScore,
   proficiencyBonusFromLevel,
 } from '../../lib/abilityScores';
-import { DEFAULT_STATUSES } from '../../lib/constants';
+
 import {
   ResourcePool,
   serializeResourcePools,
@@ -31,6 +30,7 @@ import { NpcSimpleFieldEditor } from '../ui/NpcSimpleFieldEditor';
 import { NpcCombatActionFields } from '../ui/NpcCombatActionFields';
 
 interface NewPlayerDialogProps {
+  statuses: Record<string, string>;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (character: Omit<Character, 'id' | 'sheetRowIndex'>) => void;
@@ -46,10 +46,7 @@ const TABS: { id: TabId; label: string; optional?: boolean }[] = [
   { id: 'statBlock', label: 'Stat Block', optional: true },
 ];
 
-export function NewPlayerDialog({ isOpen, onClose, onConfirm }: NewPlayerDialogProps) {
-  const { state } = useAppState();
-  const statuses = Object.keys(state.statuses).length > 0 ? state.statuses : DEFAULT_STATUSES;
-
+export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPlayerDialogProps) {
   const [activeTab, setActiveTab] = useState<TabId>('identity');
 
   const { values: formData, handleChange, reset } = useFormState({

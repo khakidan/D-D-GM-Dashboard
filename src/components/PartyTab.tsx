@@ -132,6 +132,7 @@ export function PartyTab() {
         />
       )}
       <NewPlayerDialog
+        statuses={statuses}
         isOpen={isNewPlayerDialogOpen}
         onClose={() => setIsNewPlayerDialogOpen(false)}
         onConfirm={(data) => {
