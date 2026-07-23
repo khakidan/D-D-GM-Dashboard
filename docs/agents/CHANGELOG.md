@@ -2,6 +2,30 @@
 
 ---
 
+## PWA Icon Corruption and Broken Favicon Fixed
+
+Two related but independently-discovered issues, both surfaced via browser console errors reported directly from the live app.
+
+**PWA manifest icons corrupted.** Both `public/icon-192.png` and `public/icon-512.png` (referenced by `manifest.json` for the app's home-screen/PWA install icon) were failing to load, with the browser reporting "Download error or resource isn't a valid image." Investigated directly rather than assumed: both files existed at the correct path with plausible file sizes, but their binary headers had been corrupted — inspecting the raw bytes showed each file started with `EF BF BD` (the UTF-8 encoding of the Unicode replacement character) instead of the valid PNG signature (`89 50 4E 47 0D 0A 1A 0A`). This is consistent with the binary image data having been incorrectly handled as UTF-8 text at some point (e.g. an editor or tool re-saving the file as text rather than preserving raw bytes) — the images were not simply missing or misnamed, they were structurally invalid PNGs sitting at the right filename.
+
+**Fix, using a real source asset rather than a placeholder.** Checked available assets before choosing a fix — `src/assets/images/d20_icon_1784678046387.jpg` (a 1024×1024 d20 die image) was confirmed thematically appropriate for a D&D app's icon and high-resolution enough to downscale cleanly, versus the alternative candidate (a 300×300 favicon image, better suited for its own existing purpose). Regenerated both `public/icon-192.png` and `public/icon-512.png` from this source via ImageMagick, adding a ~10% padding margin around the die (filled with `#0f172a`, this app's established dark-navy theme color, not a default white/transparent) to satisfy the maskable-icon "safe zone" convention the manifest already declares (`"purpose": "any maskable"`) — without this padding, OS-level circular/rounded icon masking would have clipped the edges of the die. Verified directly: both regenerated files' raw header bytes now match the valid PNG signature, and their pixel dimensions match exactly (192×192 and 512×512).
+
+**Separately, a broken favicon link.** `index.html` referenced `/src/assets/images/new-favicon3.png` for the standard browser favicon — a file confirmed deleted from the repository, producing a 404 on every page load. Fixed by pointing to `new-favicon4.png`, confirmed as the evident, already-existing successor asset (same naming convention, one version higher, no other candidate found). `manifest.json` itself needed no changes — its `icons` array already correctly referenced `/icon-192.png`/`/icon-512.png`; the files at those paths were corrupted, not the references to them.
+
+---
+
+## Live Deployment Missing `GOOGLE_CLIENT_SECRET` — Sign-In Fully Blocked, Plus a Harmless Duplicate-Call Finding
+
+Reported directly from the live app: completing the Google OAuth consent screen returned users to the login screen instead of into the app, with the browser console showing a `400 CONFIGURATION_REQUIRED` response from `/api/auth/google-token` — the exact error `auth.ts` throws when neither `GOOGLE_CLIENT_SECRET` nor `CLIENT_SECRET` is set server-side.
+
+**Root cause confirmed as a deployment configuration gap, not a code bug.** This surfaced immediately after this session's earlier fix removing the `VITE_GOOGLE_CLIENT_SECRET` fallback from `auth.ts` (see the "Removed `VITE_GOOGLE_CLIENT_SECRET` Fallback" entry above) — that fix was correct in principle, and `GOOGLE_CLIENT_SECRET` had been confirmed set in the live deployment's environment before it shipped, but the actual running deployment was not yet reflecting that value (whether not yet redeployed, or not actually saved server-side, wasn't traceable after the fact). Confirmed directly by the person: setting `GOOGLE_CLIENT_SECRET` in the live deployment's environment and redeploying resolved sign-in immediately.
+
+**A separate, real-but-harmless finding surfaced during the same investigation and was deliberately not fixed, logged instead.** The browser console also showed a `"OAuth State Validation Failed (CSRF Warning)"` error alongside the configuration error, which looked at first like it might be the actual root cause (or evidence the CSRF check added earlier this session wasn't correctly halting execution). Investigated directly: the CSRF check does correctly `return false` immediately upon a state mismatch — confirmed via the real code, not assumed. The real explanation: `checkAndCaptureToken()` is invoked twice on every sign-in — once from `App.tsx`'s mount effect, once from `initGoogleAuth()` (called by `useGoogleAuth`, used independently by both `GMDashboard` and `CampaignSelector`). The first call consumes the single-use `state` value and attempts the real token exchange (which is what actually hit `CONFIGURATION_REQUIRED`); the second, redundant call finds the `state` already consumed and correctly self-aborts via the CSRF check, which is what produced the warning. This is currently harmless — the CSRF check happens to catch and discard the always-redundant second call — but relies on that guard rather than not making the redundant call in the first place. Logged as a low-priority `ROADMAP.md` cleanup item (deduplicating `checkAndCaptureToken`'s invocation) rather than fixed now, since it isn't currently causing any observable problem.
+
+No code was touched for the deployment-config fix — resolved entirely via the hosting environment's own settings. The PWA icon/favicon fix and this deployment issue were investigated and resolved close together but are unrelated to each other.
+
+---
+
 ## Removed `VITE_GOOGLE_CLIENT_SECRET` Fallback for Server-Side OAuth
 
 Removed the technically deprecated and insecure `VITE_GOOGLE_CLIENT_SECRET` fallback from the backend Google OAuth route (`src/server/routes/auth.ts`). Vite automatically exposes environment variables prefixed with `VITE_` to the client-side bundle, making this prefix unsafe for sensitive server-only secrets like the OAuth client secret.

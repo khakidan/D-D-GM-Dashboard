@@ -1,5 +1,5 @@
 {
   "name": "Remix: DnD GM Dashboard",
-  "description": "A responsive Game Master combat tracker and roster with a synced player-facing view.",
+  "description": "GM Dashboard is a full-stack Dungeons & Dragons 5e web application designed for Game Masters to run tabletop sessions and manage campaigns seamlessly. It provides real-time combat and initiative tracking, character health and condition monitoring, custom NPC statblock libraries, and multi-campaign data storage backed directly by Google Sheets. Additionally, it features an integrated ambient soundboard engine with customizable audio presets and sound effects to create an immersive table atmosphere.",
   "requestFramePermissions": []
 }
