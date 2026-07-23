@@ -30,6 +30,9 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). File-by-file inventory of
 - `audioFileStore.ts` — IndexedDB persistence for audio blobs, scoped per campaign.
 - `diceRoller.ts` — Parses dice notation (e.g. `1d20+5`) and generates results.
 - `utils.ts` — `tailwind-merge` helper.
+- `objectSchemas.ts`
+- `stringUtils.ts`
+- `uuid.ts`
 
 ---
 
@@ -64,6 +67,14 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). File-by-file inventory of
 - `useTabState.ts` — Active navigation tab with localStorage persistence.
 - `useSettings.ts` — App configuration and JSON export.
 - `useReferenceDataSeeder.ts` — Seeder utilities for Conditions and Spells reference data.
+- `useDeathSaves.ts` — Death saving throw state and stabilization logic.
+- `createOverlayEvent.ts`
+- `useCombatOverlayEvents.ts`
+- `useFormState.ts`
+- `useGoogleAuth.ts`
+- `useLevelUpAutomation.ts`
+- `useNpcCrAutomation.ts`
+- `usePlayerFormAutomation.ts`
 
 ---
 
@@ -96,7 +107,6 @@ Shared test data factories used across many test files. These are not tests them
 - `NpcLibraryTab.tsx` — Top-level NPC Library tab. Renders the search box (`SearchInput`), filter controls, the error banner (`Callout`, `severity="error"`), and the NPC card list (single-column, full-width — see `CHANGELOG.md`).
 - `EncountersTab.tsx` — Top-level Encounters tab. Renders the error banner (`Callout`, `severity="error"`) and the encounter card list.
 - `DiceRoller.tsx` — Floating dice-roller drawer. Parses dice notation (via `lib/diceRoller.ts`) and displays results. Uses `Accordion` for its expand/collapse drawer trigger. No dedicated test file exists for this component (confirmed directly — see `CHANGELOG.md`).
-- `EncounterLogModal.tsx` — Modal for browsing past encounter logs. Shows collapsible event view and raw transcript toggle.
 - `CampaignSelector.tsx` — Pre-dashboard launcher for campaign create/connect/switch.
 - `PlayerView.tsx` — Cross-tab broadcast view for a second monitor.
 - `ReferenceDataSeeder.tsx` — Settings page button that one-time seeds the Conditions and Spells sheet tabs from the Open5e public API (SRD content). Manual trigger only, idempotent (checks for existing data before writing).
@@ -107,6 +117,22 @@ Shared test data factories used across many test files. These are not tests them
 - `Soundboard.tsx` — 3×4 configurable sound effect grid, campaign-scoped layout.
 - `AudioLibrary.tsx` — Tabbed audio file manager with drag-and-drop and mood assignment.
 - `SettingsPage.tsx` — Settings page layout with `SheetConnectionSettings` full width, Auth + Backup in a two-column grid (the Backup card itself wrapped in `SettingsPanel`), then `ReferenceDataSeeder` and `GMTestingTools` each full width.
+- `DamageOverlay.tsx`
+- `DeathOverlay.tsx`
+- `ErrorBoundary.tsx`
+- `FilmGrainLayer.tsx`
+- `GMDashboardDialogs.tsx`
+- `GMLoadingScreen.tsx`
+- `GMTestingTools.tsx`
+- `GlobalControls.tsx`
+- `HealOverlay.tsx`
+- `InitiativeOverlay.tsx`
+- `RageOverlay.tsx`
+- `SheetConnectionSettings.tsx`
+- `SidebarIcon.tsx`
+- `SyncStatusIndicators.tsx`
+- `SyncingOverlay.tsx`
+- `UnconsciousOverlay.tsx`
 
 ### src/components/auth/
 
@@ -153,6 +179,8 @@ Shared test data factories used across many test files. These are not tests them
 - `DebouncedInput.tsx` — Standard debounced input. Local-state buffering, commits to the parent's `onChange` on blur or Enter (not time-based debounce). Extended with `size?: 'compact' | 'prominent'` (padding/focus-ring variant; default `'compact'` preserves original behavior) and `immediate?: boolean` (default `false`; when `true`, fires `onChange` on every keystroke instead of on blur/Enter, for filter-as-you-type fields). Neither prop has been adopted anywhere yet — built and available for a genuine future "prominent" or immediate-mode instance; see `CHANGELOG.md` for the investigation that found the originally-suspected adoption sites didn't actually need it.
 - `DebouncedTextarea.tsx` — Standard debounced textarea (light parchment theme).
 - `DialogShell.tsx` — Shared modal shell component (backdrop + panel, `title`/`icon`/`subtitle`/`subheader`/`footer` slots, `zIndex` and `dismissOnBackdropClick` props). Adopted by all 12 target dialogs — see CHANGELOG.md for the full migration history and patterns established.
+- `DashboardLayout.tsx`
+- `SectionHeader.tsx`
 
 ### src/components/PartyTab/
 
@@ -165,6 +193,15 @@ Shared test data factories used across many test files. These are not tests them
 - `hooks/partyStateHelpers.ts` — `withDefaultCombatState`, the one genuinely shared helper across `useParty.ts`'s 3 sub-hooks (extracted here specifically to avoid it being duplicated independently in more than one of them — see `CHANGELOG.md`). `mirrorCharacterFieldsToCombatants` stays local to `useParty.ts` itself, since it's only ever used by 2 of the 3 sub-hooks and is passed down rather than imported independently.
 - `LevelUpDialog.tsx` — Level-up flow. Writes `level`, `class`, `hitDiceConfig`, `maxHp`, `currentHp`, `ac`, `passivePerception`, `resistances`, `immunities`, `vulnerabilities`, `notes`, `proficiencies`, and `resourcePools`. HP increase is entered as a dice roll rather than a Max HP total. CON modifier is auto-added with helper text. Tough feat checkbox persists `toughFeat: boolean` in the proficiencies JSON. Resource Pools display pre-filled scaling suggestions via `getResourcePoolSuggestions()`, editable before confirmation. Newly gained pools can be individually included or excluded.
 - `NewPlayerDialog.tsx` — Four-tab character creation form. All Identity tab inputs now include proper `id` and `htmlFor` attributes for accessibility.
+- `CharacterCardExpanded.tsx`
+- `CharacterCardHeader.tsx`
+- `CharacterStatGrid.tsx`
+- `CombatTab.tsx`
+- `IdentityTab.tsx`
+- `LevelUpChecklist.tsx`
+- `LevelUpResourcePools.tsx`
+- `LongRestDialog.tsx`
+- `ShortRestDialog.tsx`
 
 ### src/components/ActiveEncounterTab/
 
@@ -181,7 +218,6 @@ Shared test data factories used across many test files. These are not tests them
 - `CombatantIrvDisplay.tsx` — Read-only display for combatant resistances, immunities, and vulnerabilities.
 - `CombatantLegendaryTracker.tsx` — Full-width legendary action/resistance tracker for the expanded combatant card view. Distinct from the compact dot-pip version in `CombatantCompactIndicators.tsx` used in the collapsed row.
 - `CombatantRechargeTracker.tsx` — Full-width recharge ability tracker for the expanded combatant card view. Distinct from the compact pill version in `CombatantCompactIndicators.tsx` used in the collapsed row.
-- `hooks/useDeathSaves.ts` — Death saving throw state and stabilization logic.
 - `hooks/useCombatantExpanded.ts` — Encapsulates resource pool updates and condition-triggered resource depletion logic (`handleResourcePoolUpdate`, `handleConditionAdded`, `handleConditionWithTimer`, `handleExhaustionDeath`). Called **once** at the top-level coordinator (`ActiveEncounterTab/index.tsx`), not once per card — each returned function takes the specific `Combatant` as its first argument instead of the hook closing over it, resolving the leaf-component store-access exception this hook (and the now-deleted `useCombatantCard.ts`) previously carried — see `CHANGELOG.md` and `patterns.md`.
 - `hooks/useHealthChange.ts` — Damage/healing with IRV math. Fires `fireConcentrationAlert()` whenever a concentrating combatant takes damage.
 - `hooks/useCombatSync.ts` (66 lines) — Turn, round, and combatant synchronization facade. Calls `initCombatLog`, `addCombatEvent`, `advanceCombatLogRound`, and `clearCombatLog`. Implements initiative sorting on first turn, dead-NPC skipping, and NPC initiative as `1d20 + DEX modifier`. Delegates core behaviors to `useCombatantMutations`, `useCombatLifecycle`, `useCombatTurn`, and `useCombatConcentration` internally and re-exposes their APIs.
@@ -191,13 +227,34 @@ Shared test data factories used across many test files. These are not tests them
 - `hooks/useCombatConcentration.ts` — Extracted from `useCombatSync`. Contains local React state `concentrationPrompt` and handlers `handleConcentrationPrompt`/`handleSelectCaster`, receiving `updateCombatant` via dependency injection rather than calling `useCombatantMutations()` internally.
 - `hooks/useEncounterPresetLoader.ts` — Handles adding PC and NPC presets to active encounters. Implements rollback fix: state snapshots are now captured BEFORE optimistic updates (not after), so a failed DB write correctly rolls back to pre-update state and shows a toast.error to the GM.
 - `hooks/useEncounterKeyboard.ts` — Global combat keyboard shortcuts. Escape exits selection mode, clears `expandedIds`, and closes modals.
+- `AnimatedHpDisplay.tsx`
+- `CasterAttributionDialog.tsx`
+- `CombatantCardBadges.tsx`
+- `CombatantCompactIndicators.tsx`
+- `CombatantHealthControls.tsx`
+- `DeathSaveTrackerDisplay.tsx`
+- `MultiTargetActionPanel.tsx`
+- `PcReferencePanel.tsx`
+- `RechargeToastContent.tsx`
+- `ShortcutCheatSheet.tsx`
+- `hooks/useBatchActions.ts`
+- `hooks/useCinematicVideo.ts`
+- `hooks/useSelectionMode.ts`
 
 ### src/components/EncountersTab/
 
 - `EncounterCard.tsx` — Pure prop-driven card; receives `encounterCombatants` and `difficulties` as props (no direct store access). Wrapped in `React.memo` with a custom comparator — see `patterns.md`'s "Card memoization pattern" and `CHANGELOG.md`.
 - `hooks/useEncounterLogs.ts` — On-demand hook for `EncounterLogs` sheet data. Not part of global Zustand sync. Exposes `fetchLogsForEncounter()` (returns logs filtered by encounter, newest first) and `deleteLog()`.
+- `EncounterLogModal.tsx` — Modal for browsing past encounter logs. Shows collapsible event view and raw transcript toggle.
+- `CombatEventRow.tsx`
+- `EncounterLogDetails.tsx`
+- `NewEncounterDialog.tsx`
+- `hooks/useEncounters.ts`
 
 ### src/components/NpcLibraryTab/
 
 - `NpcCard.tsx` — NPC library card. Expanded view displays `StatBlock`, `SpellcastingStatsRow`, editable combat stats (AC, HP, IRV, etc.), and read-only stat block sections (CR, speed, senses, languages, traits, actions, reactions, legendary actions) via `NpcStatBlockSection`. Its trait/action/reaction/legendary-action editors were decomposed into `NpcSimpleFieldEditor.tsx`/`NpcCombatActionFields.tsx` (513 → 388 lines) — see `CHANGELOG.md`. Wrapped in `React.memo` with a custom comparator — see `patterns.md`'s "Card memoization pattern" and `CHANGELOG.md`.
 - `NewNpcDialog.tsx` — NPC creation dialog using the shared `NpcFormFields` component.
+- `NpcCardHeader.tsx`
+- `NpcLegendarySection.tsx`
+- `hooks/useNpcLibrary.ts`

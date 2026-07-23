@@ -90,8 +90,9 @@ Character `spellcastingAbility` is stored in column **Z** (index 25) and is also
 Both values are written by `CharacterCardExpanded`'s `onOverrideChange` handler.
 
 ```ts
-SHEET_RANGES.characters = "Characters!A2:Z";
+SHEET_RANGES.characters = "Characters!A2:AD";
 ```
+Note: the range was expanded from Z to AD to add 4 columns (AA–AD) for gmControlled, traits, actions, and reactions as part of the "GM-Controlled PC Stat Block" feature.
 
 reads both values.
 
