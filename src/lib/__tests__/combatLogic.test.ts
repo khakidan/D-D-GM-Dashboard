@@ -288,6 +288,17 @@ describe('computeDamageWithIrv', () => {
     expect(result).toEqual({ finalDamage: 7, modifier: 'resistant' });
   });
 
+  
+  it('Returns resistant-vulnerable with base damage when both resistant and vulnerable match', () => {
+    const result = computeDamageWithIrv(10, 'fire', 'fire', '', 'fire');
+    expect(result).toEqual({ finalDamage: 10, modifier: 'resistant-vulnerable' });
+  });
+
+  it('Immunities take priority over both resistance and vulnerability', () => {
+    const result = computeDamageWithIrv(10, 'fire', 'fire', 'fire', 'fire');
+    expect(result).toEqual({ finalDamage: 0, modifier: 'immune' });
+  });
+
   it('Doubled damage is correct', () => {
     const result = computeDamageWithIrv(15, 'poison', '', '', 'poison');
     expect(result).toEqual({ finalDamage: 30, modifier: 'vulnerable' });

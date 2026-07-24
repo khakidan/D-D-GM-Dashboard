@@ -4,8 +4,9 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 901 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+**Current baseline: 910 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
 
+- **Batch 1: 479 → 488.** Breakdown: 479 (baseline) + 7 (Challenge Rating repair tests) + 2 (IRV overlap regression tests) = 488.
 - **Batch 4: 11 tests.** Breakdown: campaigns.test.ts (5), auth.test.ts (3), suiteIntegrity.test.ts (2), health.test.ts (1).
 - **Batch 5A: 69 → 65.** useCombatantCard.test.ts was removed from this batch's file list because useCombatantCard.ts (the hook it tested) was deleted in a prior refactor.
 
@@ -13,7 +14,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 
 | Batch | Description | Test Count |
 |-------|-------------|------------|
-| 1 | `src/lib/__tests__` | 479 |
+| 1 | `src/lib/__tests__` | 488 |
 | 2 | `src/services/__tests__` | 42 |
 | 3 | `src/hooks/__tests__` | 62 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 11 |

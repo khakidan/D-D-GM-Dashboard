@@ -98,6 +98,8 @@ export function useHealthChange(
           }
         } else if (modifier === 'vulnerable') {
           toast(`${c.name} is vulnerable to ${damageType} — damage doubled to ${finalDamage}`);
+        } else if (modifier === 'resistant-vulnerable') {
+          toast(`${c.name} is both resistant and vulnerable to ${damageType} — normal damage applied`);
         }
       }
 

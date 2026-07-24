@@ -2,6 +2,96 @@
 
 ---
 
+## `computeDamageWithIrv()` Resistance/Vulnerability Overlap Fixed (Completed)
+
+Discovered during the Round 2 modularity audit. RAW 5e (2014) rules state that if a creature is 
+both resistant and vulnerable to a damage type, both apply (halve the damage, then double it, or 
+vice versa), which mathematically nets to the original base damage. The original implementation 
+used an `if/else if` chain that returned immediately on a resistance match, ignoring any 
+vulnerability.
+
+**The fix**: `computeDamageWithIrv()` was refactored to independently check for immunity, 
+resistance, and vulnerability.
+- **Immunity** still takes absolute priority (0 damage).
+- **Overlap**: If both resistance and vulnerability match, the function now returns the original 
+  `baseDamage` with a new `modifier` value: `'resistant-vulnerable'`.
+- **UI Feedback**: `useHealthChange.ts` was updated to recognize the new 
+  `'resistant-vulnerable'` state and display a specific toast ("...is both resistant and 
+  vulnerable... normal damage applied"), ensuring the GM understands why the "half" or "double" 
+  they might expect didn't happen.
+
+**Verification**: `tsc` clean (0 errors). Batch 1 (`src/lib/__tests__`, 488 tests total) run in 
+full. Two new regression tests added to `combatLogic.test.ts` (growing it from 103 to 105 tests) 
+explicitly exercise the overlap case and the immunity-priority case.
+
+---
+
+## Challenge Rating Date-Serial Corruption Fixed (Completed)
+
+Discovered while investigating a screenshot showing an NPC's Challenge Rating displaying as 
+`46026` instead of `1/4`. **Corrects an earlier, incorrect `CHANGELOG.md` close-out** (see that 
+entry) which had diagnosed this as a stale, non-reproducible migration-window artifact — that 
+diagnosis was wrong, confirmed by the bug reproducing on a brand-new campaign ("New Test 
+Campaign") with zero migration history.
+
+**Root cause**: `sheetsService.ts`'s write functions use `valueInputOption=USER_ENTERED`, which 
+parses input the same way the Sheets UI would — a fractional CR like `"1/4"`, `"1/2"`, or `"1/8"` 
+gets silently reinterpreted as a calendar date and stored as a date serial number. `fetchSheetData`'s 
+`valueRenderOption=UNFORMATTED_VALUE` then reads back the raw serial number instead of the 
+formatted string, which is why CSV/manual exports still showed `"1/4"` (formatted display value) 
+while the app showed the corrupted number (raw underlying value).
+
+**Fixed in 2 stages:**
+
+**Stage 1 — new campaigns.** `src/server/routes/campaigns.ts`'s sheet-creation `batchUpdate` now 
+assigns deterministic client-side `sheetId`s (`1000 + index`) to each `addSheet` request and 
+includes a `repeatCell` request in the *same* batch, formatting the NPCs sheet's `Challenge_Rating` 
+column (index dynamically resolved via `headers.indexOf('Challenge_Rating')`, not hardcoded) as 
+Plain Text. Because the formatting request lives in the same atomic batch as sheet creation, it's 
+automatically covered by the existing `SHEET_STRUCTURE_FAILED` error path — no new failure-mode 
+handling was needed.
+
+**Stage 2 — existing campaigns.** A new "Data Repair Tools" section in `GMTestingTools.tsx` 
+(`ChallengeRatingRepair`), triggered by an explicit "Scan for Corrupted CRs" button (no automatic/ 
+background execution): reformats the existing campaign's Challenge_Rating column to Plain Text via 
+`resolveActiveSpreadsheetId()` + `fetchSpreadsheetMetadata`/`batchUpdateSpreadsheet`, scans all NPC 
+rows for a numeric `challengeRating` in the date-serial range, and — for genuine matches only — 
+proposes a corrected value the GM must explicitly Confirm (or Skip) per NPC before anything is 
+written back.
+
+**A cleaner reconstruction method than originally planned**: rather than fetching the spreadsheet's 
+locale to disambiguate MM/DD vs. DD/MM date interpretation, `src/lib/challengeRatingRepair.ts`'s 
+`reconstructChallengeRating()` exploits a mathematical property of the 3 valid fractional CRs 
+(`1/8`, `1/4`, `1/2`): reversing the month/day of any of their date-serial corruptions never 
+produces another value in that same set (e.g. `1/4` reversed is `4/1`, not a valid CR), so exactly 
+one interpretation is ever valid regardless of locale — no ambiguous-choice UI or locale lookup is 
+needed. Verified directly against real Sheets-epoch date math (Dec 30, 1899 UTC), not just asserted.
+
+**Process note, worth preserving**: this fix went through 2 fully fabricated/incorrect intermediate 
+states before landing correctly — first, an entire alternate-universe version of `campaigns.ts` 
+(using the `sheets_v4.Sheets` client library, a different set of provisioned sheets, and a named 
+export) was investigated, "fixed," and "verified" as if it were the real file, when the real file 
+uses raw `fetch()` calls to the REST API directly; second, `ChallengeRatingRepair`'s first version 
+referenced a `campaignId` field and an `updateNpc` action that don't exist anywhere in the real 
+`dashboardStore.ts`, hidden from `tsc` by blanket `(s: any)` casts on every store selector, and 
+undetected by its own test because the test's mock fabricated a store shape matching the 
+component's wrong assumption rather than the real store. Both were caught only by insisting on 
+literal, pasted, verbatim file content instead of prose descriptions of changes — the standing 
+discipline this project already had written down, reconfirmed the hard way twice in one bug fix.
+
+**Verification**: `tsc` clean across all changes. Batch 4 (`src/server/__tests__` + `src/__tests__`, 
+11 tests) for Stage 1, including a new assertion on the `repeatCell` request's shape and matching 
+`sheetId`. Batch 1 (`src/lib/__tests__`, 486 tests, including 7 new dedicated tests for 
+`reconstructChallengeRating`'s date math) and Batch 7B-2 (`src/components/__tests__`, 24 tests, 
+including a rebuilt `GMTestingTools.test.tsx` test that captures and invokes the real `updateState` 
+callback to assert on its actual return value, not just that it was called) for Stage 2. Manual 
+verification performed against the real running app and a real Google Sheet by the project owner: 
+confirmed a fresh `"1/4"` entry survives a reload on a newly-created campaign, and the repair tool 
+correctly found, proposed, and fixed the known-corrupted NPC on "New Test Campaign" with the fix 
+persisting across reload.
+
+---
+
 ## `googleAuth.ts` postMessage Origin Check Fixed — Critical Security Regression (Completed)
 
 Discovered incidentally during the Round 2 modularity re-audit while `googleAuth.ts` was being 

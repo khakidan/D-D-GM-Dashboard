@@ -234,7 +234,7 @@ export function computeDamageWithIrv(
   resistances: string | undefined,
   immunities: string | undefined,
   vulnerabilities: string | undefined
-): { finalDamage: number; modifier: 'immune' | 'resistant' | 'vulnerable' | 'normal' } {
+): { finalDamage: number; modifier: 'immune' | 'resistant' | 'vulnerable' | 'resistant-vulnerable' | 'normal' } {
   if (damageType === null) {
     return { finalDamage: baseDamage, modifier: 'normal' };
   }
@@ -243,11 +243,18 @@ export function computeDamageWithIrv(
     return { finalDamage: 0, modifier: 'immune' };
   }
   
-  if (checkIrvMatch(damageType, resistances)) {
+  const isResistant = checkIrvMatch(damageType, resistances);
+  const isVulnerable = checkIrvMatch(damageType, vulnerabilities);
+
+  if (isResistant && isVulnerable) {
+    return { finalDamage: baseDamage, modifier: 'resistant-vulnerable' };
+  }
+  
+  if (isResistant) {
     return { finalDamage: Math.floor(baseDamage / 2), modifier: 'resistant' };
   }
   
-  if (checkIrvMatch(damageType, vulnerabilities)) {
+  if (isVulnerable) {
     return { finalDamage: baseDamage * 2, modifier: 'vulnerable' };
   }
   
