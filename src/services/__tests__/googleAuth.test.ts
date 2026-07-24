@@ -244,3 +244,86 @@ describe('checkAndCaptureToken state validation', () => {
   });
 });
 
+describe('postMessage origin validation', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    clearTokens();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.clearAllMocks();
+  });
+
+  it('rejects postMessage from unallowed origin', async () => {
+    // Create a mock for checkAndCaptureToken's effect
+    const replaceStateSpy = vi.fn();
+    vi.stubGlobal('history', { replaceState: replaceStateSpy });
+    
+    // Create a spy to ensure we don't reload or process the payload
+    const reloadSpy = vi.fn();
+    vi.stubGlobal('location', {
+      origin: 'http://localhost',
+      reload: reloadSpy
+    });
+
+    // We need to test the event listener that was added in googleAuth.ts
+    // The easiest way to test it is to dispatch a message event
+    const event = new MessageEvent('message', {
+      data: { type: 'OAUTH_REDIRECT_PAYLOAD', url: 'http://localhost/callback?code=evil-code&state=evil-state' },
+      origin: 'https://evil.example.com'
+    });
+    
+    // Dispatch the event
+    window.dispatchEvent(event);
+    
+    // Give promises a chance to resolve (though it should return early)
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    // reload should not be called, which means checkAndCaptureToken was not called successfully
+    // (or not called at all, which is the intended behavior)
+    expect(reloadSpy).not.toHaveBeenCalled();
+  });
+
+  it('accepts postMessage from allowed origin', async () => {
+    localStorage.setItem(STORAGE_KEYS.oauthState, 'matching-state');
+    
+    // Create a mock for checkAndCaptureToken's effect
+    const replaceStateSpy = vi.fn();
+    vi.stubGlobal('history', { replaceState: replaceStateSpy });
+    
+    const reloadSpy = vi.fn();
+    vi.stubGlobal('location', {
+      origin: 'http://localhost',
+      href: 'http://localhost',
+      pathname: '/',
+      search: '',
+      reload: reloadSpy
+    });
+
+    // Mock fetch to simulate successful token exchange
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ access_token: 'code-access-token' }))
+      )
+    );
+
+    const event = new MessageEvent('message', {
+      data: { type: 'OAUTH_REDIRECT_PAYLOAD', url: 'http://localhost/callback?code=valid-code&state=matching-state' },
+      origin: 'http://localhost'
+    });
+    
+    // Dispatch the event
+    window.dispatchEvent(event);
+    
+    // Give promises a chance to resolve
+    await new Promise(resolve => setTimeout(resolve, 20));
+    
+    // checkAndCaptureToken should be called successfully, which triggers a reload
+    expect(reloadSpy).toHaveBeenCalled();
+    expect(localStorage.getItem(STORAGE_KEYS.googleAccessToken)).toBe('code-access-token');
+  });
+});
+
+

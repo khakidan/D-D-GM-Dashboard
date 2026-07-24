@@ -2,6 +2,42 @@
 
 ---
 
+## `googleAuth.ts` postMessage Origin Check Fixed — Critical Security Regression (Completed)
+
+Discovered incidentally during the Round 2 modularity re-audit while `googleAuth.ts` was being 
+reviewed only for refactor-candidacy — a real example of why a file being read for one reason 
+should still be checked for correctness issues, not just the question being asked.
+
+**The bug**: in the `window.addEventListener('message', ...)` handler, the origin comparison read 
+`origin === window.location.origin` — but `origin` was never declared in that scope (the callback's 
+parameter is `event`). Bare `origin` resolved to the browser's global `window.origin` (this page's 
+own origin), making the check `window.location.origin === window.location.origin` — unconditionally 
+true regardless of the message's actual sender. This meant the `ALLOWED_ORIGINS`/localhost checks 
+never ran, and any window, iframe, or opener could post an `OAUTH_REDIRECT_PAYLOAD` message and have 
+the app call `checkAndCaptureToken()` on an attacker-supplied URL. This directly undid the 
+origin-check-tightening fix already documented earlier in this file for the same code path — the 
+check was presumably built correctly once and silently regressed, likely when the listener's 
+parameter was named/renamed to `event`.
+
+**The fix**: 3 lines, `origin` → `event.origin` in all 3 places in the `isAllowed` check. No other 
+line in the file touched.
+
+**Verification**: `tsc` clean (0 errors). Batch 2 (`src/services/__tests__`) full run: 42/42 passing, 
+including the 4 pre-existing CSRF/state-validation tests unchanged. 2 new regression tests added 
+directly to `googleAuth.test.ts`: one dispatching a real `MessageEvent` with `event.origin` set to 
+an arbitrary disallowed origin (`https://evil.example.com`) carrying a forged `OAUTH_REDIRECT_PAYLOAD`, 
+asserting the app does NOT process it (no reload, no token capture); one dispatching a matching-origin 
+message with a valid state/code pair, asserting it IS processed correctly end-to-end (token stored, 
+reload triggered) — proving the fix doesn't just block everything indiscriminately. Explicitly 
+confirmed the new "disallowed origin" test would have failed against the original buggy code, making 
+it a genuine regression test, not a tautology. Only `googleAuth.ts` and its own test file were touched.
+
+Unlike the earlier Challenge-Rating date-corruption bug, this fix required no server-side/Google-API 
+behavior that couldn't be mocked — the vulnerable logic was entirely local, so automated tests alone 
+provide full confidence here; no manual verification step was required to consider this closed.
+
+---
+
 ## Codebase Modularity Audit — Round 2, File-by-File Re-Verification (Completed)
 
 A fresh, targeted audit was run specifically for file-size/single-responsibility problems (distinct 

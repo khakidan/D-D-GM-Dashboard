@@ -325,9 +325,9 @@ if (typeof window !== 'undefined') {
       'https://dnd-gm-dashboard-541768011837.us-west2.run.app',
       'https://ais-dev-xcoad5fmqkhpdotz7jjxwb-517220469539.us-east1.run.app',
     ]);
-    const isAllowed = origin === window.location.origin ||
-                      ALLOWED_ORIGINS.has(origin) ||
-                      origin.startsWith('http://localhost:');
+    const isAllowed = event.origin === window.location.origin ||
+                      ALLOWED_ORIGINS.has(event.origin) ||
+                      event.origin.startsWith('http://localhost:');
 
     if (!isAllowed) {
       return;
