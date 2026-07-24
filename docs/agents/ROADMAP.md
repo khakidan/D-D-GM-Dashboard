@@ -7,111 +7,83 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 ## Pending Features
 
-Features and bugs that have been discussed and approved but not yet implemented. Each entry contains enough context to implement without further discussion.
-
 ### 🔴 Bugs to Fix
 
-- **`checkAndCaptureToken()` is called redundantly on every mount of any component using `useGoogleAuth`** (confirmed: `App.tsx` calls it once on load; `initGoogleAuth()` — invoked by `useGoogleAuth`, used by both `GMDashboard` and `CampaignSelector` — calls it again independently). Currently harmless only because the OAuth CSRF `state` check (added earlier this session) happens to catch and discard the second, stale attempt every time — but this means the app is relying on that guard to paper over an avoidable duplicate call, not actually preventing the duplicate at its source. Low priority: worth adding a guard (e.g. a module-level "already processed this URL's code" flag) so `initGoogleAuth()` skips re-attempting the exchange if it's already been handled, rather than depending on the CSRF check to quietly absorb the redundant call every time.
+- **CRITICAL SECURITY BUG — `src/services/googleAuth.ts`'s `postMessage` origin check is completely inert.** Discovered during the Round 2 modularity re-audit (see `CHANGELOG.md`). In the `window.addEventListener('message', ...)` handler (~line 328), the origin comparison reads `origin === window.location.origin` — but `origin` is never declared in scope; the callback's parameter is `event`, and the correct property is `event.origin`. Bare `origin` resolves to the browser's global `window.origin` (the *receiving* page's own origin), so the check evaluates true unconditionally on every `message` event regardless of sender. This means the `ALLOWED_ORIGINS`/localhost checks never run and the `if (!isAllowed) return;` guard never fires — **any window, iframe, or opener can post an `OAUTH_REDIRECT_PAYLOAD` message and have this app call `checkAndCaptureToken()` on an attacker-supplied URL.** Fix is NOT included in this entry — needs its own careful, explicitly-reviewed implementation cycle (likely `origin` → `event.origin` on 3 lines) with real before/after security-behavior verification. High priority — live vulnerability in production auth code.
+- **`combatLogic.ts`'s `computeDamageWithIrv()` does not correctly handle a combatant with BOTH resistance AND vulnerability to the same damage type.** Discovered during the Round 2 modularity re-audit (see `CHANGELOG.md`). RAW 5e (2014) rules say both should apply (halve, then double — nets to the original amount). The code's sequential `if`/`else if` returns on the resistance match before vulnerability is ever checked, so an overlap is treated as merely resistant (half damage) instead of the correct full amount. Low-to-medium severity — standard stat blocks rarely have this overlap; matters mainly for homebrew content or a resistant PC hit by a vulnerability effect. No test currently covers this case. Fix: compute both matches; if both apply, net them out per RAW (return `baseDamage` with an appropriate combined label) — plus a new regression test.
+- **`checkAndCaptureToken()` is called redundantly on every mount of any component using `useGoogleAuth`** (`App.tsx` calls it once on load; `initGoogleAuth()`, used by both `GMDashboard` and `CampaignSelector`, calls it again independently). Currently harmless only because the OAuth CSRF `state` check discards the second, stale attempt every time. Low priority: add a module-level "already processed this URL's code" flag so `initGoogleAuth()` skips re-attempting the exchange if already handled.
 
-### 🟡 Features to Add
+### 🟡 Features to Add / Test Coverage Gaps
 
-None right now.
+- **`CampaignSelector.tsx` has thin test coverage.** Existing `CampaignSelector.test.tsx` (4 tests) only covers static render states. Zero coverage for: expanding/submitting either form, validation-failure paths, or the inline delete-confirmation lifecycle. Worth a dedicated pass given this is the first screen every user sees. Follow the seam-test standard — assert on actual `onCreateCampaign`/`onConnectCampaign`/`onDeleteCampaign` call arguments.
+- **`sheetsService.ts`'s `googleFetch` retry/backoff engine has zero dedicated test coverage.** No test exercises the 401→refresh→retry-once path, the 429/5xx exponential-backoff-with-jitter loop, or the `MAX_RETRIES` boundary. Given `googleAuth.ts` just turned up an undetected security regression specifically because a similar path had no test, this is worth prioritizing.
+- **Tiny doc-precision fix, `dashboardStore.ts`'s `getSnapshot()` comment.** Harmless (confirmed zero live bugs), but the comment claims to "return only the AppState fields, not the store methods" while also silently excluding `activeCombatLog` (real state, not a method). Recommended: `// Return only the core Sheets-synchronized AppState-shaped fields. // Note: Extended state like activeCombatLog and store methods are excluded. // Call useDashboardStore.getState() directly if the combat log is needed.`
+- **`ResourcePoolsSection.tsx`'s `PipTracker` doesn't respect `isSyncing`** the way the adjacent `-`/`+` buttons do (`disabled={... || isSyncing}`). Doesn't corrupt data, but is a real UX inconsistency — add `readOnly={isSyncing}` to the `PipTracker` call.
+- **`ResourcePoolsSection.tsx` has no dedicated test file** — coverage is indirect only via `useCombatantExpanded.test.ts`'s integration tests; the UI layer itself (form toggles, inline edit, pip interactions) is untested.
+- **Cross-file Traits/Actions/Reactions/Legendary-Actions render-prop wiring is duplicated across `CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, and `NpcCard.tsx`.** `renderTraitFields`/`renderReactionFields` are byte-identical across all 3; `renderActionFields`/`renderLegendaryActionFields` differ only by a per-file `idPrefix` string. Mirrors the exact situation that led to this codebase's `NpcSimpleFieldEditor.tsx`/`NpcCombatActionFields.tsx` extraction. Worth a dedicated investigation into a small shared factory/hook (e.g. `createNpcListRenderers(idPrefix)`).
+- **`NpcCard.tsx`'s Legendary Actions tests don't directly assert name-field editing** — only initial render, cost-editing, and add/remove are directly tested. Low priority; the underlying wiring was separately confirmed correct by direct code inspection.
 
 ---
 
 ## Refactor Candidates — Codebase Modularity Audit (Round 2)
 
-A fresh, targeted audit was run specifically for file-size/single-responsibility problems (distinct from the completed "Codebase Modularity Audit"/"Code Organization / Decomposition" work already in `CHANGELOG.md`, which covered `components/`/`lib/`/`services/`/`hooks/` more broadly). This audit was read-only — no code was changed. Two concrete, well-justified candidates came out of it; everything else considered was explicitly decided *not* worth touching, and that reasoning is preserved below so it doesn't get re-litigated or accidentally "fixed" later.
+The full audit (every file individually re-verified, including everything confirmed correctly-not-flagged) is documented in `CHANGELOG.md`. The 4 genuine candidates below are still open/unimplemented.
 
-**Raw line-count scan** (top of the list, for reference — `find` + `wc -l`, excluding tests):
-765 src/lib/conditionDefinitions.ts
-607 src/components/CommandPalette.tsx
-546 src/components/AudioLibrary.tsx
-532 src/components/ActiveEncounterTab/CombatantCardHeader.tsx
-502 src/components/ui/ConditionChips.tsx
-502 src/components/CampaignSelector.tsx
-484 src/components/PartyTab/LevelUpDialog.tsx
-473 src/components/ActiveEncounterTab/hooks/useCombatantMutations.ts
-449 src/services/dbOperations/encounterCombatants.ts
-441 src/hooks/useAudioEngine.ts
-439 src/components/PartyTab/CharacterCardExpanded.tsx
-434 src/components/PartyTab/ShortRestDialog.tsx
-427 src/components/PartyTab/NewPlayerDialog.tsx
-417 src/services/googleAuth.ts
-399 src/services/sheetsService.ts
-391 src/components/ui/ResourcePoolsSection.tsx
-387 src/lib/conditionDescriptions.ts
-380 src/hooks/dashboardStore.ts
-374 src/components/NpcLibraryTab/NpcCard.tsx
-360 src/lib/combatLogic.ts
+### Candidate 1 — `src/components/CommandPalette.tsx` (607 lines) — scope corrected, not yet decided whether worth doing
 
-### Candidate 1 — `src/components/CommandPalette.tsx` (607 lines) — CORRECTED SCOPE, RE-INVESTIGATED
+Original "command dispatch layer" premise didn't hold up (see `CHANGELOG.md`). Only 3 functions 
+(`testDeathAnimation`/`testDamageAnimation`/`testHealAnimation`) are genuinely extractable; everything 
+else is trivial inline dispatch next to its own menu item. The real problem is repetitive JSX 
+markup (~25 near-identical `Command.Item` blocks), not tangled logic. A markup-deduplication refactor 
+(a small render-helper or data-driven `.map()`) would be a different, smaller-scoped fix than 
+originally proposed — not yet decided if it's worth doing given the modest real payoff either way.
 
-**Original audit's premise did not hold up under direct file inspection.** The original 4-cluster 
-estimate (~150 setup, ~120 search/filter, ~180 command-dispatch handlers, ~157 layout render) 
-assumed a distinct, extractable "command dispatch" layer entangled with rendering. Direct 
-inspection of the real file found this isn't accurate:
-- There is no custom search/filter/scoring logic at all — `cmdk` handles filtering natively. The 
-  only search-related code is a 1-line `value={search.length >= 2 ? x.name : ''}` guard on 2 item 
-  types, to avoid rendering huge Spell/Condition lists before 2+ characters are typed.
-- Nearly every `onSelect` handler is a self-contained 1-4 line inline callback 
-  (`window.dispatchEvent(...); onClose();` or `updateState(...); onClose();`), written directly 
-  in the JSX next to its own menu item — not a separate, larger dispatch-logic block.
-- The file's real length comes from verbose, repetitive JSX markup (a long `COMMAND_ITEM_CLASS` 
-  string, and near-identical icon/label/`Command.Item` structure repeated ~25 times across ~9 
-  command groups), not from tangled business logic.
+### Candidate 2 — `src/lib/conditionDefinitions.ts` (766 lines) — genuine split warranted
 
-**Only 3 functions are genuinely extractable business logic**: `testDeathAnimation`, 
-`testDamageAnimation`, `testHealAnimation` — each fires a combat overlay event plus a toast, 
-multi-step logic distinct from the one-line dispatches everywhere else.
+498 lines (65%) of static `CONDITION_MECHANICS` data vs. 247 lines (32%) of real branching logic 
+across `buildConditionSummary`/`applyLongRestToConditions`. Proposed: extract the data + interface 
+into `src/lib/conditionMechanicsData.ts`; leave the 2 functions in a lean ~250-line 
+`conditionDefinitions.ts`. **Not a zero-file-touch change**: `src/lib/concentrationCheck.ts` imports 
+`CONDITION_MECHANICS` directly, bypassing the `conditions/index.ts` barrel — its import path must be 
+updated, or `CONDITION_MECHANICS` re-exported from `conditionDefinitions.ts` for backward compat (a 
+design choice to make explicitly before implementing). Every other consumer goes through the barrel 
+and needs no changes. Verification requirement: raw `tsc` output + Batch 1 (both dedicated test files, 
+24+5 tests) + every batch covering the 7 real downstream consumers.
 
-**Recommendation, revised**: extracting a `useCommandExecutor.ts` hook with a generic 
-`executeCommand(commandId, extraData)` dispatcher is NOT recommended — it would require either a 
-large `commandId`-keyed switch (moving logic away from its own menu item, a readability regression) 
-or keeping handlers as individually-exported functions called one at a time (a much smaller win 
-than originally scoped). If pursued at all, extraction should be limited to just the 3 test-
-animation functions. A more honest fix for this file's actual problem (repetitive JSX, not tangled 
-logic) would be reducing markup duplication — e.g. a small reusable render-helper or data-driven 
-`.map()` for the many structurally-identical `Command.Item`s — a different, smaller-scoped 
-refactor than what's proposed here. Not yet decided whether this is worth doing at all, given the 
-real win is modest either way.
+### Candidate 3 — `src/components/AudioLibrary.tsx` (546 lines) — split warranted, test coverage must come first
 
-**Test coverage/consumer facts, confirmed**: exactly one mount point (`GMDashboardDialogs.tsx`), 
-Batch 7B-1 (`CommandPalette.test.tsx`, 8 of its 13 tests) is the relevant batch, verified currently 
-passing at baseline.
+5 genuine responsibility clusters (upload/drag-drop, playback preview, mood-assignment popover, 
+cascading delete/localStorage sync, tab-switching). Proposed split into `MoodAssignmentPopover.tsx`, 
+`AudioFileRow.tsx` (does NOT own preview state — `previewingFileId`/`previewAudioRef`/
+`previewTimerRef` must stay lifted in the parent for the single-preview-at-a-time guarantee), and 
+`AudioLibraryDropzone.tsx`. Extracting `AudioFileRow.tsx` does NOT automatically prevent re-renders — 
+that requires a separate `React.memo` + `useCallback` step. **⚠️ Non-negotiable sequencing**: 
+`AudioLibrary.test.tsx` has only 2 tests; coverage (successful upload, delete-confirmation lifecycle, 
+single-preview enforcement) must be substantially expanded FIRST, verified via Batch 7B-1, before any 
+structural extraction begins.
 
-### Explicitly considered and correctly NOT flagged (preserve this reasoning — do not re-flag these later)
+### Candidate 4 — `src/components/ui/ConditionChips.tsx` (503 lines) — split warranted, test coverage must come first
 
-- `src/lib/conditionDefinitions.ts` (765 lines) — cohesive: a static mechanics lookup dictionary (~640 lines) plus a small computational summarization engine (~125 lines). Long because it's a flat data table, not because it's doing too much.
-- `src/components/AudioLibrary.tsx` (546 lines) — cohesive control panel (ingest/preview/organize/delete audio), 5 responsibility clusters but they're all genuinely part of one workflow.
-- `src/components/ui/ConditionChips.tsx` (502 lines) — cohesive: condition selection tightly integrated with automatic mechanical effects (concentration cascade, exhaustion death, immunity checks).
-- `src/components/CampaignSelector.tsx` (502 lines) — cohesive onboarding/auth page; ~352 of the lines are pure layout/list rendering, not distinct logic.
-- `src/components/PartyTab/LevelUpDialog.tsx` (484 lines) — cohesive wizard modal already leveraging modular sub-components (`LevelUpChecklist`, `LevelUpResourcePools`) and hooks (`useLevelUpAutomation`).
-- `src/components/ActiveEncounterTab/hooks/useCombatantMutations.ts` (473 lines) — already well-structured (separates pure helper functions from React hook logic); this is the file that was already decomposed in the "updateCombatant God Function Decomposed" work in `CHANGELOG.md`. Do not re-flag it for further splitting.
-- `src/services/dbOperations/encounterCombatants.ts` (449 lines) — cohesive CRUD interface for one sheet, cleanly organized into creation/updates/deletion/NPC-specific-action clusters.
-- `src/hooks/useAudioEngine.ts` (441 lines) — cohesive global audio coordinator; 8 responsibility clusters but genuinely need to share module-level state (dual-deck crossfade, gain nodes) — splitting would fragment tightly-coupled state, not simplify it.
-- `src/components/PartyTab/CharacterCardExpanded.tsx` (439 lines), `ShortRestDialog.tsx` (434), `NewPlayerDialog.tsx` (427) — each cohesive, single-purpose dialogs/cards.
-- `src/services/googleAuth.ts` (417 lines), `sheetsService.ts` (399 lines) — appropriately-sized low-level API/auth wrappers; length matches real protocol/flow complexity.
-- `src/components/ui/ResourcePoolsSection.tsx` (391), `src/lib/conditionDescriptions.ts` (387, static rules text), `src/hooks/dashboardStore.ts` (380, the central Zustand store — cohesive by definition), `src/components/NpcLibraryTab/NpcCard.tsx` (374, already decomposed — see `CHANGELOG.md`'s `NpcCard.tsx` entity-detail decomposition), `src/lib/combatLogic.ts` (360, pure math/algorithms, no React/network coupling) — all confirmed fine as-is.
-- `src/components/ActiveEncounterTab/hooks/useCombatSync.ts` (66 lines) — a clean facade delegating to already-decomposed sub-hooks (`useCombatantMutations`, `useCombatLifecycle`, `useCombatTurn`, `useCombatConcentration`). Not a candidate.
-- `src/services/writeQueue.ts` (140 lines) — a single-responsibility queue implementation. Not a candidate.
-
-### Precedent already fixed — do not re-audit or duplicate this work
-
-The following god-hook/god-file decompositions are **already completed** (full detail in `CHANGELOG.md`) and should not be re-flagged or re-attempted by a future audit pass:
-- `useParty.ts` (620 → ~80 lines): split into `usePartyRest.ts`, `usePartyLevelUp.ts`, `usePartyCharacterCrud.ts`, `partyStateHelpers.ts`.
-- `NpcFormFields.tsx` / `NpcCard.tsx`: shared `NpcSimpleFieldEditor.tsx` / `NpcCombatActionFields.tsx` extracted, `NpcActionEditors.tsx` deleted as a dead duplicate.
-- The full three-part card componentization effort: `CardShell.tsx` → `CardHeaderChevron.tsx` → `ExpandableContent.tsx`, adopted across `CombatantCard`/`NpcCard`/`CharacterCard` (`EncounterCard.tsx` deliberately excluded — structurally different, no expand/collapse mechanism).
-- The full store-access architecture fix: `useCombatantCard.ts`/`useCombatantExpanded.ts` resolved to props at the coordinator level; all narrow store-access components (`EncounterCard.tsx`, `CombatantCard.tsx`, `CombatantCardExpanded.tsx`, `CombatantCompactResourceRow.tsx`, `GlobalActionContextPanel.tsx`) converted to pure prop-driven components. **`EncountersTab.tsx`'s violation (see Bugs to Fix, above) is the one confirmed exception this pattern was never applied to — closing that bug completes this architecture fix project in full.**
+Mixes floating-portal positioning/scroll/outside-click plumbing (~150 lines) + inline duration-prompt 
+UI (~35 lines) with real D&D 5e rule automation (immunity blocking, exhaustion-6 death, concentration 
+cascade) — the automation orchestration must stay in the coordinator. Proposed: extract 
+`ConditionSearchDropdown.tsx` and `ConditionDurationPrompt.tsx` as pure presentational components — 
+confirmed the dropdown does NOT need the parent's `wrapperRef` passed down; keep `open` state and 
+scroll/outside-click listeners lifted in the parent, pass the dropdown only `isOpen`/`style`/results/
+`onSelect`. **⚠️ Non-negotiable sequencing**: zero dedicated test coverage exists at all — this is the 
+highest-stakes file in the whole audit (exhaustion-death, concentration-breaking automation). Tests 
+must be added FIRST (debounced `onChange`, immunity-blocked rejection, exhaustion-tier replacement, 
+exhaustion-6 death callback, incapacitation breaking concentration, manual "Concentrating" removal 
+cascade, duration-timer confirm/skip), added to Batch 8, verified before any structural change.
 
 ---
 
 ## Working Discipline — Lessons Baked Into This Project (read before starting any new work)
 
-These aren't optional style preferences — they're standing requirements, established after repeated, documented incidents in `CHANGELOG.md`. Apply them to every item in this file.
-
-1. **Never accept a "tests passed" or "verified" claim without literal, pasted, raw terminal output.** This project has caught fabricated batch numbers, fabricated per-file test names, invented rule citations (a fake "Rule 9," a fake `STYLE_GUIDE.md` quote), and narrated summaries standing in for real output — repeatedly, across dozens of separate incidents. A summary claim is not verification.
-2. **Never expand scope beyond what was explicitly requested in the current step.** This project has a documented history of "while I was in there" scope creep — e.g. the Phase 3 styling incident that touched 20+ unrelated files under a mislabeled stage name, and AI Studio editing `ROADMAP.md`/`CHANGELOG.md` directly despite repeated explicit instructions not to. Confirm the exact file list before implementation on any multi-file task.
-3. **Any "verbatim" or "raw" quote of a file must be independently checked against the real file before being trusted**, especially after any long gap or context switch. This project has multiple documented instances of fabricated file content presented as genuine reads.
-4. **Investigate before proposing a fix — especially for anything touching shared state, rollback logic, or cross-component data flow.** Several of the most serious bugs in this project's history (the full-app-state-rollback pattern, the NPC template/combat-instance state isolation project) required real dependency-tracing before a correct, scoped fix could even be designed.
-5. **When a redesign or consolidation has already happened to a file, check `CHANGELOG.md` for it before touching that file again.** `CombatantCardHeader.tsx`'s recent row redesign (see Candidate 2 above) is the current live example — do not let a structural refactor silently revert a recent, deliberate UX decision.
+1. **Never accept a "tests passed" or "verified" claim without literal, pasted, raw terminal output.**
+2. **Never expand scope beyond what was explicitly requested in the current step.**
+3. **Any "verbatim" or "raw" quote of a file must be independently checked against the real file before being trusted.** The `NpcCard.tsx` investigation (see `CHANGELOG.md`) is a live example: a suspected prop-mismatch bug turned out to be a transcription artifact from an earlier paste, caught only by re-verifying against the real file.
+4. **Investigate before proposing a fix — especially for anything touching shared state, rollback logic, or cross-component data flow.** The same principle applies to refactor *candidates*: an initial "this file is cohesive" judgment isn't trustworthy until independently re-verified line-by-line (see the Round 2 audit in `CHANGELOG.md`).
+5. **When a redesign or consolidation has already happened to a file, check `CHANGELOG.md` for it before touching that file again.**
+6. **When a refactor candidate's investigation reveals thin or nonexistent test coverage, treat expanding that coverage as a mandatory prerequisite stage, not an optional nice-to-have.**
+7. **A file being reviewed for one reason doesn't mean it should only be checked for that reason.** The `googleAuth.ts` and `combatLogic.ts` bugs above were both found only because a file was being read closely enough to verify a structural claim — watch for correctness issues too, always.

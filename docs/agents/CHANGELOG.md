@@ -2,6 +2,204 @@
 
 ---
 
+## Codebase Modularity Audit — Round 2, File-by-File Re-Verification (Completed)
+
+A fresh, targeted audit was run specifically for file-size/single-responsibility problems (distinct 
+from the earlier "Codebase Modularity Audit"/"Code Organization / Decomposition" work, which covered 
+`components/`/`lib/`/`services/`/`hooks/` more broadly). The audit's original read-only pass proposed 
+2 refactor candidates and left everything else in a top-20 line-count scan as "correctly not 
+flagged" via one-line group judgments. This round re-verified every one of those files individually, 
+line-by-line, rather than trusting the original one-line notes.
+
+**This was worth doing.** Of the 19 files independently re-checked, roughly two-thirds turned up 
+something real: a genuine split candidate the original pass missed, a live critical security bug, a 
+rules-math bug, a description error, cross-file duplication, or a minor UX/test-coverage gap. Only 8 
+files (`CampaignSelector.tsx`, `LevelUpDialog.tsx`, `useCombatantMutations.ts`, `useAudioEngine.ts`, 
+`CharacterCardExpanded.tsx`, `ShortRestDialog.tsx`, `NewPlayerDialog.tsx`, `conditionDescriptions.ts`) 
+held up cleanly with no findings at all. Notably, 3 real bugs were found purely because a file was 
+being read closely enough to verify a *structural* claim, unrelated to the modularity question being 
+asked — see `ROADMAP.md`'s open bugs list for the 2 still-unfixed ones (`googleAuth.ts`'s inert 
+postMessage origin check; `combatLogic.ts`'s IRV resistance/vulnerability overlap gap).
+
+**Raw line-count scan** (top of the list, `find` + `wc -l`, excluding tests):
+765 src/lib/conditionDefinitions.ts
+607 src/components/CommandPalette.tsx
+546 src/components/AudioLibrary.tsx
+502 src/components/ui/ConditionChips.tsx
+502 src/components/CampaignSelector.tsx
+484 src/components/PartyTab/LevelUpDialog.tsx
+473 src/components/ActiveEncounterTab/hooks/useCombatantMutations.ts
+449 src/services/dbOperations/encounterCombatants.ts
+442 src/components/PartyTab/CharacterCardExpanded.tsx
+441 src/hooks/useAudioEngine.ts
+434 src/components/PartyTab/ShortRestDialog.tsx
+426 src/components/PartyTab/NewPlayerDialog.tsx
+417 src/services/googleAuth.ts
+399 src/services/sheetsService.ts
+391 src/components/ui/ResourcePoolsSection.tsx
+387 src/lib/conditionDescriptions.ts
+380 src/hooks/dashboardStore.ts
+378 src/components/NpcLibraryTab/NpcCard.tsx
+360 src/lib/combatLogic.ts
+
+`CombatantCardHeader.tsx` (originally 532 lines) is not in this list — it was one of the original 2 
+candidates and was fully decomposed this round (see its own entry below).
+
+### Files re-verified and confirmed correctly NOT flagged (this reasoning should not be re-litigated by a future audit)
+
+- **`CampaignSelector.tsx`** (502 lines) — a linear, single-purpose onboarding wizard with genuinely 
+  zero shared state between blocks and zero complex coordination (no portals, no async races, no 
+  business-rule automation to protect). Verified line split: 160 lines logic (32%) / 343 lines layout 
+  (68%), matching the original estimate almost exactly. A hypothetical split 
+  (`CreateCampaignForm.tsx`/`ConnectCampaignForm.tsx`/`CampaignListItem.tsx`) was scoped and correctly 
+  rejected — zero coordination complications, but also zero real payoff beyond prop-pass-through 
+  boilerplate. (Its test coverage was found thin — see `ROADMAP.md`'s open items.)
+
+- **`LevelUpDialog.tsx`** (484 lines) — every state variable exists solely to feed one atomic 
+  `handleConfirm()` payload at the end; no independently-triggerable action, no floating portal, no 
+  rule-automation logic needing protection from a UI layer. Real non-trivial logic (multiclass 
+  level-distribution math, differential payload serialization) is tightly bound to the wizard's own 
+  inputs by design. `useLevelUpAutomation` already absorbs resource-pool-scaling/Jack-of-All-Trades 
+  automation; `LevelUpChecklist`/`LevelUpResourcePools` already absorb their own presentational 
+  blocks. Test coverage confirmed thorough (19 tests, genuinely exercising HP/Tough-feat math, 
+  multiclass selection, proficiency-bonus scaling).
+
+- **`useCombatantMutations.ts`** (474 lines, previously documented as 473 — trivial rounding 
+  discrepancy) — re-verified against its own documented decomposition ("updateCombatant God Function 
+  Decomposed," below). The 2 extracted pure helper functions (`calculateCombatantStateUpdates`, 
+  `getCombatantStateLogEvents`) still exist at module scope with the exact documented signatures; the 
+  hook's public API is unchanged; no new complexity has crept in. All gameplay automation lives in the 
+  pure functions, fully decoupled from React lifecycle. Test coverage confirmed thorough via Batch 5A 
+  (65 tests, including real deep-rollback-scoping assertions). New consumer confirmed: `useBatchActions.ts` 
+  also consumes this hook, alongside the already-documented `useCombatSync.ts` facade path.
+
+- **`encounterCombatants.ts`** (450 lines, matching the documented 449 within rounding) — the 
+  documented concurrency fix (`generateUuid()`-based ID generation, replacing the race-prone 
+  `getNextId` scheme) is confirmed still intact. All 10 exported functions are genuinely 
+  single-responsibility CRUD wrappers with no stray UI/business-rule logic. Test coverage confirmed 
+  thorough via Batch 2 (42 tests) — the dedicated concurrent-ID-collision regression test (3 
+  simultaneous `addEncounterCombatantDB` calls via `Promise.all`, asserting 3 distinct UUIDs) is 
+  confirmed still present and passing. New consumer confirmed: `useBatchActions.ts` also imports from 
+  this file directly. Minor, non-urgent observation: all 9 non-`add` functions repeat an identical 
+  overload-resolution pattern for an optional leading `spreadsheetId` — genuine small duplication, low 
+  priority, not worth its own refactor candidate.
+
+- **`useAudioEngine.ts`** (442 lines, matching the documented 441 within rounding) — confirmed correctly 
+  not a candidate, for a genuinely different reason than the files that turned out splittable: this is 
+  a pure hook with no JSX/UI layer, so the "presentational vs. logic" extraction pattern doesn't apply 
+  as a category. `playAmbient`/`stopAmbient`/`setAmbientVolume`/`resetAudioEngineState` all read AND 
+  write the same 4 module-level singletons (`deckA`, `deckB`, `activeDeck`, `cleanupTimers`) in 
+  genuinely interleaved ways. The one real extraction candidate considered (`addFiles`/`removeFile`/
+  `clearAllFiles` into `useAudioFiles.ts`) was correctly rejected: `removeFile` calls `stopAmbient()` 
+  when deleting the currently-playing track, a real coupling point back into the crossfade engine. The 
+  documented crossfade race-condition fix (`cleanupTimers` map) was confirmed present via direct line 
+  citation. Test coverage confirmed thorough via Batch 3 (62 tests, including the dedicated 
+  crossfade-race-condition regression test with mocked `AudioContext` + fake timers).
+
+- **`CharacterCardExpanded.tsx`** (442 lines) — exactly one piece of local React state 
+  (`isConfirmOpen`); everything else is derived `useMemo` or plain prop passthrough to already-shared 
+  components (`StatBlock`, `SpellcastingStatsRow`, `IrvSection`, `ResourcePoolsSection`, 
+  `NpcListEditor`, etc.). No async actions, no effects, no state machine. The only 2 genuinely bespoke 
+  blocks (Hit Dice tracker, GM-Controlled Traits/Actions/Reactions block) are pure layout/data-binding. 
+  Test coverage confirmed thorough via Batch 6A (60 tests).
+
+- **`ShortRestDialog.tsx`** (434 lines) — confirmed correctly not a *forced* candidate, for a more 
+  nuanced reason than "no benefit": exactly 2 pieces of local state, both cleanly keyed per-character 
+  with zero cross-row coupling. All game-rule logic already lives in `lib/`. A `ShortRestCharacterRow.tsx` 
+  extraction would genuinely be low-risk and would shrink the file (similar to `TempAcPopover.tsx`'s 
+  effect on `CombatantCardHeader.tsx`) — more honestly framed as a low-priority, purely cosmetic 
+  deferral rather than a "no benefit" rejection. Test coverage confirmed present via Batch 6A (60 
+  tests) — the HP-cap/combatant-mirroring regression tests appropriately live in `usePartyRest.test.ts`.
+
+- **`NewPlayerDialog.tsx`** (426 lines) — exactly 1 `useState`, 1 `useRef`, 1 `useEffect`; all 5 tabs 
+  already fully delegated to sub-components. Test coverage confirmed thorough via Batch 6A.
+
+- **`googleAuth.ts`** (418 lines) — 5 module-level mutable state variables genuinely read/written 
+  across nearly every function; a real, unified auth state machine, the same category of finding as 
+  `useAudioEngine.ts`. The 3 previously-documented security fixes (CSRF state validation, `noopener`-
+  omitted popup, `ALLOWED_ORIGINS` set) were all confirmed present. (A 4th, previously undetected 
+  security bug was found in the course of this investigation — see `ROADMAP.md`'s open bugs list. The 
+  "don't split it" verdict here stands independently of that bug.)
+
+- **`sheetsService.ts`** (400 lines, matching the documented 399 within rounding) — `googleFetch` is 
+  the one function with real non-trivial logic (401-refresh-and-retry, 429/5xx exponential backoff); 
+  everything else is a clean pass-through wrapper. No live bug found on direct read-through. One 
+  correction to a prior description: a second consecutive 401 does NOT loop back and retry again — the 
+  inline retry lives inside the `if (response.status === 401)` block, separate from the `while` loop's 
+  `continue` path (which only governs 429/5xx). (A confirmed test-coverage gap on the retry/backoff 
+  engine is logged in `ROADMAP.md`.)
+
+- **`ResourcePoolsSection.tsx`** (391 lines) — 9 `useState` hooks, all genuinely local UI concerns, 
+  zero `useRef`/`useEffect`. All real business logic delegated to `lib/resourcePools.ts`. Confirmed 
+  genuinely shared, with identical behavior, across its 2 real consumers (`CharacterCardExpanded.tsx`, 
+  `CombatantCardExpanded.tsx`). A specific race-condition question (the `-`/`+` buttons and 
+  `PipTracker`'s pip-click both mutating the same pool from a closure) was raised and resolved: both 
+  real consumer call sites perform a synchronous, optimistic Zustand update before the async DB write, 
+  so sequential fast clicks are safe by construction. (A minor `isSyncing`/`PipTracker` UX gap and a 
+  missing dedicated test file are logged in `ROADMAP.md`.)
+
+- **`conditionDescriptions.ts`** (388 lines) — genuinely different in kind from every other file 
+  audited: a pure static data dictionary (45 entries) plus one trivial helper function. Zero state, 
+  zero branching. A direct rules-accuracy spot-check (Prone, Grappled, Restrained, Exhaustion tiers, 
+  Concentration, Haste) found the stored text faithful to real D&D 5e (2014) mechanics. Test coverage 
+  confirmed present (5 dedicated tests, Batch 1). No issues found.
+
+- **`dashboardStore.ts`** (381 lines) — "cohesive by definition" confirmed for a real, specific reason: 
+  a single combat action (e.g. applying damage) genuinely needs to atomically touch character HP, 
+  status, the combat log, and cross-tab sync simultaneously — splitting into multiple stores would 
+  introduce real cross-store coordination overhead for no benefit. All real business logic lives in 
+  `lib/`, not inside store actions. The `partialize`/`onRehydrateStorage`/cross-tab sync trio was read 
+  closely and found correctly designed. Test coverage confirmed thorough via Batch 3. (A resolved, 
+  harmless `getSnapshot()` documentation-precision gap is logged in `ROADMAP.md` for the actual comment 
+  fix.)
+
+- **`NpcCard.tsx`** (379 lines) — "already decomposed" confirmed still true: a clean layout coordinator 
+  delegating nearly everything to already-shared components, with only 1 piece of local state plus 4 
+  memoized JSON-parses. The `React.memo` custom comparator is present and correctly structured. A 
+  suspected bug (a mismatched `onItemChange` vs `onNameChange` prop in `renderLegendaryActionFields`) 
+  was raised and directly disproven on re-verification against both the real file and 
+  `NpcCombatActionFields.tsx`'s actual prop interface — the earlier appearance of the mismatch was a 
+  transcription artifact from an intermediate paste in this investigation, not a real defect in the 
+  codebase. Test coverage confirmed thorough via Batch 6C (24 tests).
+
+- **`combatLogic.ts`** (361 lines, matching the documented 360 within rounding) — confirmed pure 
+  (zero React/network/side-effect imports, no module-level mutable state), all 13 exported functions 
+  are stateless mathematical transformations. One deliberate design choice, correctly distinguished 
+  from a bug: generic "bludgeoning" resistance behaves like "bludgeoning (nonmagical)," requiring an 
+  explicit "(magical)" tag to resist magical physical damage — an intentional, well-tested shorthand, 
+  not an error. Test coverage confirmed extremely thorough via Batch 1 (a dedicated 724-line test file 
+  covering all 13 functions and the IRV magical/nonmagical bypass matrix exhaustively). (A real IRV 
+  resistance/vulnerability overlap bug was found — see `ROADMAP.md`'s open bugs list.) This was the 
+  last file in the original scan — closing out the Round 2 audit.
+
+- **`useCombatSync.ts`** (66 lines) and **`writeQueue.ts`** (140 lines) — both quickly confirmed as 
+  clean, appropriately-scoped, single-responsibility files; not candidates.
+
+### Candidate 1 corrected — `CommandPalette.tsx` (607 lines)
+
+The original audit's premise (a distinct, extractable "command dispatch" layer, ~180 lines) did not 
+hold up under direct inspection. There is no custom search/filter logic at all (`cmdk` handles this 
+natively); nearly every `onSelect` handler is a self-contained 1-4 line inline callback written 
+directly next to its own menu item, not a separate dispatch block. The file's real length comes from 
+verbose, repetitive JSX (a long `COMMAND_ITEM_CLASS` string and near-identical `Command.Item` markup 
+repeated ~25 times), not tangled logic. Only 3 functions are genuinely extractable business logic 
+(`testDeathAnimation`/`testDamageAnimation`/`testHealAnimation`). Extracting a generic 
+`useCommandExecutor.ts` dispatcher was rejected as a readability regression. See `ROADMAP.md` for the 
+still-undecided smaller-scoped markup-deduplication alternative.
+
+### `CombatantCardHeader.tsx` decomposed (532 → 330 lines)
+
+The original Round 2 "Candidate 2." `TempAcPopover.tsx` and `TempHpPopover.tsx` were extracted in 2 
+independently-verified stages. The `group`/`group-hover` CSS DOM-ancestry relationship (the ghost "+" 
+buttons' hover-reveal depends on a `group` class living on the parent, not just matching class names) 
+and the genuine behavioral difference between the two popovers (`tempAcModifier` has no floor and can 
+go negative; `tempHp` is floored at 0) were both explicitly identified and preserved — the two 
+components were built as separately-designed, not parameterized twins of one generic component. `tsc` 
+clean and Batch 5B (50/50 across 14 files) verified at each stage; final line count confirmed via 
+direct `wc -l`.
+
+---
+
 ## `CombatantCardHeader.tsx` Decomposed — Temp AC/Temp HP Popovers Extracted (532 → 330 Lines) (Completed)
 
 Second confirmed candidate from the Codebase Modularity Audit (Round 2). Unlike Candidate 1 
