@@ -237,6 +237,8 @@ Shared test data factories used across many test files. These are not tests them
 - `PcReferencePanel.tsx`
 - `RechargeToastContent.tsx`
 - `ShortcutCheatSheet.tsx`
+- `TempAcPopover.tsx` — Extracted popover for AC display and temp AC modifier adjustments in the combatant card header.
+- `TempHpPopover.tsx` — Extracted popover for Temp HP display and adjustments (clamped to Math.max(0, ...)) in the combatant card header.
 - `hooks/useBatchActions.ts`
 - `hooks/useCinematicVideo.ts`
 - `hooks/useSelectionMode.ts`

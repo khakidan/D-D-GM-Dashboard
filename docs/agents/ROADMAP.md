@@ -45,42 +45,40 @@ A fresh, targeted audit was run specifically for file-size/single-responsibility
 374 src/components/NpcLibraryTab/NpcCard.tsx
 360 src/lib/combatLogic.ts
 
-### Candidate 1 — `src/components/CommandPalette.tsx` (607 lines)
+### Candidate 1 — `src/components/CommandPalette.tsx` (607 lines) — CORRECTED SCOPE, RE-INVESTIGATED
 
-**Problem, precisely**: this file mixes two genuinely distinct responsibilities — `cmdk`-based UI layout/rendering, and business-logic command dispatch (search/filter matching, and the actual action handlers for adding monsters, starting combat initiatives, casting spells, applying condition filters, rolling dice, toggling ambient music decks). The dispatch logic has zero UI concerns and is fully unit-testable in isolation once separated; right now it's entangled with the render tree.
+**Original audit's premise did not hold up under direct file inspection.** The original 4-cluster 
+estimate (~150 setup, ~120 search/filter, ~180 command-dispatch handlers, ~157 layout render) 
+assumed a distinct, extractable "command dispatch" layer entangled with rendering. Direct 
+inspection of the real file found this isn't accurate:
+- There is no custom search/filter/scoring logic at all — `cmdk` handles filtering natively. The 
+  only search-related code is a 1-line `value={search.length >= 2 ? x.name : ''}` guard on 2 item 
+  types, to avoid rendering huge Spell/Condition lists before 2+ characters are typed.
+- Nearly every `onSelect` handler is a self-contained 1-4 line inline callback 
+  (`window.dispatchEvent(...); onClose();` or `updateState(...); onClose();`), written directly 
+  in the JSX next to its own menu item — not a separate, larger dispatch-logic block.
+- The file's real length comes from verbose, repetitive JSX markup (a long `COMMAND_ITEM_CLASS` 
+  string, and near-identical icon/label/`Command.Item` structure repeated ~25 times across ~9 
+  command groups), not from tangled business logic.
 
-**Responsibility breakdown** (from the audit, for reference):
-- Palette setup & sub-state (~150 lines): props, `open`/`query`/`searchHistory` state, DOM refs, backdrop handlers.
-- Search & dynamic option filtering (~120 lines): `filterItems`, search index matching, query-sorting, command scoring.
-- Command selection handlers (~180 lines): the actual action executors — this is the piece to extract.
-- Custom component layout renderer (~157 lines): `cmdk` DOM, grouped lists, item rows, icons.
+**Only 3 functions are genuinely extractable business logic**: `testDeathAnimation`, 
+`testDamageAnimation`, `testHealAnimation` — each fires a combat overlay event plus a toast, 
+multi-step logic distinct from the one-line dispatches everywhere else.
 
-**Proposed split**:
-- **Keep in `CommandPalette.tsx`**: the `cmdk` wrapper, open/close state, backdrop animation, container markup, search/filter logic (arguably could move too, but the dispatch handlers are the clearest, highest-value first cut).
-- **Extract to `src/components/CommandPalette/hooks/useCommandExecutor.ts`**: every command-dispatch function (search-command matching, character-action firing, dice-roll launching, etc.).
+**Recommendation, revised**: extracting a `useCommandExecutor.ts` hook with a generic 
+`executeCommand(commandId, extraData)` dispatcher is NOT recommended — it would require either a 
+large `commandId`-keyed switch (moving logic away from its own menu item, a readability regression) 
+or keeping handlers as individually-exported functions called one at a time (a much smaller win 
+than originally scoped). If pursued at all, extraction should be limited to just the 3 test-
+animation functions. A more honest fix for this file's actual problem (repetitive JSX, not tangled 
+logic) would be reducing markup duplication — e.g. a small reusable render-helper or data-driven 
+`.map()` for the many structurally-identical `Command.Item`s — a different, smaller-scoped 
+refactor than what's proposed here. Not yet decided whether this is worth doing at all, given the 
+real win is modest either way.
 
-**Constraint carried over from `CHANGELOG.md` — do not lose sight of this**: no prior CommandPalette-specific decomposition exists yet, so there's no risk of undoing earlier work here. Standard risk applies: this file is imported broadly (Cmd+K is global), so the relevant test batch (Batch 7B-1, which covers `CommandPalette.test.tsx` via `GMDashboard.test.tsx` integration) must be run in full, with raw output, both before and after.
-
-### Candidate 2 — `src/components/ActiveEncounterTab/CombatantCardHeader.tsx` (532 lines)
-
-**Problem, precisely**: this file bundles the collapsed combatant-card header layout with two fully self-contained, independently-stateful popover widgets (Temp AC stepper, Temp HP stepper) that have their own local state, click-outside-to-close handling, and interactive markup — none of which needs to live in the parent header file.
-
-**Responsibility breakdown** (from the audit, for reference):
-- Setup & properties (~45 lines).
-- PC spellcasting DC & modifier computation (~40 lines).
-- Temporary AC stepper component (~75 lines): `showTempAcStepper` state, click-outside hook, stepper markup.
-- Temporary HP stepper component (~65 lines): `showTempHpStepper` state, click-outside hook, stepper markup.
-- Primary combatant info renderer (~130 lines): name, initiative, status icons, death-save checkers.
-- Status badges & controls renderer (~177 lines): reaction badges, resource pool tracking, condition badges.
-
-**Proposed split**:
-- **Keep in `CombatantCardHeader.tsx`**: grid layout, name heading, initiative input, condition indicator bars, the two rows' overall structure.
-- **Extract to `src/components/ActiveEncounterTab/TempAcPopover.tsx`**: the Temp AC stepper's state, click-outside hook, and controls.
-- **Extract to `src/components/ActiveEncounterTab/TempHpPopover.tsx`**: the Temp HP stepper's state, click-outside hook, and controls.
-
-**⚠️ Critical constraint — this file was recently, deliberately redesigned. Read this before touching it.** See `CHANGELOG.md`'s "PC Combatant Card Header Redesign (Completed) — 4 Rows Down to 2" entry: this file went through careful, multi-round, user-reviewed mockup iteration to go from 4 rows down to 2 (Row 1: vitals — Init/name/AC/HP/damage+heal controls/chevron, plus spell-stat text and the restructured death-save tracker; Row 2: status — Reaction toggle, resource-pool `PipTracker` pips, mechanical/health badges). **Any popover extraction must preserve this exact 2-row structure and every specific decision made in that redesign** — do not let a refactor pass silently revert font sizes, badge wording (e.g. `VULNERABLE` as a real `Badge`, not a dot), or the row-1/row-2 content split. Also note: `CombatantCardHeader.tsx`'s name field is **deliberately non-editable** (plain `<h3>`, not a `DebouncedInput`) — this is intentional (you don't rename a combatant mid-fight), not an oversight to "fix" during extraction.
-
-**Verification requirement for both candidates**: raw, complete batch output (not summaries) for every batch touching the modified files, both before starting and after each extraction step. Given this project's repeated history of fabricated/narrated test output (see the many process-note entries throughout `CHANGELOG.md`), treat any unverified "tests passed" claim as unverified until literal terminal output is pasted.
+**Test coverage/consumer facts, confirmed**: exactly one mount point (`GMDashboardDialogs.tsx`), 
+Batch 7B-1 (`CommandPalette.test.tsx`, 8 of its 13 tests) is the relevant batch, verified currently 
+passing at baseline.
 
 ### Explicitly considered and correctly NOT flagged (preserve this reasoning — do not re-flag these later)
 

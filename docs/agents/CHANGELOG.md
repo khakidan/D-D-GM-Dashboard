@@ -2,6 +2,48 @@
 
 ---
 
+## `CombatantCardHeader.tsx` Decomposed — Temp AC/Temp HP Popovers Extracted (532 → 330 Lines) (Completed)
+
+Second confirmed candidate from the Codebase Modularity Audit (Round 2). Unlike Candidate 1 
+(`CommandPalette.tsx`, investigated and correctly NOT refactored — see that entry), this file's 
+original audit premise held up under direct inspection: the Temp AC and Temp HP steppers are 
+genuinely self-contained (own state, own ref, own click-outside handler), communicating with the 
+rest of the header only through the `c` combatant object and the `onUpdateCombatant` callback.
+
+**Given this file was recently, deliberately redesigned** (see the "PC Combatant Card Header 
+Redesign — 4 Rows Down to 2" entry above), the investigation first confirmed the real current 
+2-row structure matched that redesign exactly before any extraction was planned — no risk of 
+silently reverting a recent UX decision.
+
+**A real, load-bearing behavioral difference between the two popovers was confirmed and 
+deliberately preserved, not normalized away**: `tempAcModifier` has no floor (can go negative, 
+since AC-lowering effects like Slow exist); `tempHp` is floored at 0 on both the decrement button 
+and manual input. `TempAcPopover.tsx` and `TempHpPopover.tsx` were built as two separately-designed 
+components with their own prop shapes, not one generic component parameterized two ways.
+
+**A real CSS-architecture risk was identified and confirmed handled correctly**: both popovers' 
+ghost "+" buttons rely on `group-hover:opacity-100`, which depends on DOM ancestry (a `group` class 
+on `CombatantCardHeader.tsx`'s own outer wrapper), not just matching class names in isolation. Both 
+extractions were verified to render as direct descendants of that same `group`-classed container — 
+confirmed explicitly at each stage, not assumed.
+
+**Staged in 2 steps, each independently verified**: Stage 1 extracted `TempAcPopover.tsx` (verified 
+via Batch 5B, all 18 `CombatantCard.test.tsx` tests passing unchanged). Stage 2 extracted 
+`TempHpPopover.tsx` (same verification), and confirmed the now-unused `Shield` icon import was 
+correctly removed from `CombatantCardHeader.tsx` (it's only used inside `TempHpPopover.tsx` now).
+
+Every `data-testid` and `aria-label` referenced by `CombatantCard.test.tsx` was preserved exactly 
+across both extractions — `tempac-*`/`add-tempac-ghost` and `temphp-*`/`add-temphp-ghost` — with 
+zero test changes required.
+
+Verified across both stages: `tsc -p tsconfig.build.json --noEmit` clean (0 errors). Real, complete 
+Batch 5B output at each stage — 14 files/50 tests, matching the documented baseline exactly, no 
+test count change since this was a pure structural extraction with no new behavior. Final line 
+count: `CombatantCardHeader.tsx` 532 → 330 lines (a ~38% reduction), plus 2 new focused files 
+(`TempAcPopover.tsx`, `TempHpPopover.tsx`).
+
+---
+
 ## Collapsible Traits/Actions/Reactions/Legendary Actions — Shared Across 4 Locations (Completed)
 
 Originated as a possible complement to the `DialogShell.tsx` overflow fix, but built as its own 
