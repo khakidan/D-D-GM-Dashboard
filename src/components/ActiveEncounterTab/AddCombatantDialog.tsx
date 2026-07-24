@@ -162,7 +162,7 @@ export function AddCombatantDialog({
         />
       }
     >
-      <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-[#e2e8f0] flex-1">
+      <div className="scrollbar-thin scrollbar-thumb-[#e2e8f0]">
         {activeTab === 'library' && (
             <div className="space-y-4">
               <SearchInput

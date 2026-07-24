@@ -53,7 +53,7 @@ export function ReferenceDetailDialog({ reference, onClose }: ReferenceDetailDia
       maxWidth="max-w-lg"
       zIndex="z-[100]"
     >
-      <div className="space-y-4 overflow-y-auto max-h-[70vh] text-[#0f172a] text-sm leading-relaxed">
+      <div className="space-y-4 text-[#0f172a] text-sm leading-relaxed">
         {reference.type === 'condition' && (
           <div className="text-[#0f172a]">
             <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>

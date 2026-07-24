@@ -77,7 +77,7 @@ export function EncounterLogModal({ encounterId, encounterName, isOpen, onClose 
         </div>
       }
     >
-      <div className="overflow-y-auto text-[#0f172a] text-sm leading-relaxed space-y-4">
+      <div className="text-[#0f172a] text-sm leading-relaxed space-y-4">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-3">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2563eb]"></div>

@@ -243,7 +243,7 @@ export const LevelUpDialog: React.FC<LevelUpDialogProps> = ({
         </div>
       }
     >
-      <div className="space-y-6 overflow-y-auto max-h-[70vh]">
+      <div className="space-y-6">
         {/* SECTION A: GM Checklist */}
         <LevelUpChecklist
           chkHp={chkHp}

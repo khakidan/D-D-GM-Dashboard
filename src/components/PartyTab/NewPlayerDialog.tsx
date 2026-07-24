@@ -297,7 +297,6 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
       <form 
         id="new-player-form" 
         onSubmit={handleSubmit} 
-        className="flex-1 overflow-y-auto flex flex-col min-h-0 max-h-[90vh]"
       >
         <div className="flex-1">
           {activeTab === 'identity' && (

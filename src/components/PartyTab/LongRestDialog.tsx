@@ -63,7 +63,7 @@ export function LongRestDialog({ isOpen, characters, onConfirm, onClose }: LongR
         </div>
       }
     >
-      <div className="max-h-[50vh] overflow-y-auto space-y-3">
+      <div className="space-y-3">
         {characters.length === 0 ? (
           <p className="text-[#8d8db9] text-center text-sm py-4 italic">No active characters to select.</p>
         ) : (

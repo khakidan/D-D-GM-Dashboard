@@ -85,7 +85,7 @@ export function NewNpcDialog({ isOpen, onClose, onConfirm }: NewNpcDialogProps) 
       title="Add New NPC"
       icon={<UserPlus className="w-6 h-6 text-[#2563eb]" />}
     >
-      <form onSubmit={handleSubmit} className="space-y-6 overflow-y-auto max-h-[70vh]">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <NpcFormFields data={formData} onChange={setFormData} errors={errors} />
 
         <div className="pt-4 flex gap-4">

@@ -45,7 +45,7 @@ export function DialogShell({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className={`relative z-10 w-full ${maxWidth} bg-white rounded-2xl border border-[#e2e8f0] shadow-2xl overflow-hidden flex flex-col`}
+            className={`relative z-10 w-full ${maxWidth} bg-white rounded-2xl border border-[#e2e8f0] shadow-2xl overflow-hidden flex flex-col max-h-full`}
           >
             {(title || icon) && (
               <div className="bg-[#0f172a] flex items-center justify-between p-4">
@@ -60,7 +60,7 @@ export function DialogShell({
               </div>
             )}
             {subheader}
-            <div className="flex-1 p-6">{children}</div>
+            <div className="flex-1 p-6 overflow-y-auto min-h-0">{children}</div>
             {footer && <div className="border-t border-[#e2e8f0] px-6 py-4 bg-[#ffffff]">{footer}</div>}
           </motion.div>
         </div>
