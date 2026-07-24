@@ -324,6 +324,86 @@ describe('postMessage origin validation', () => {
     expect(reloadSpy).toHaveBeenCalled();
     expect(localStorage.getItem(STORAGE_KEYS.googleAccessToken)).toBe('code-access-token');
   });
+
+  it('accepts postMessage from an ALLOWED_ORIGINS entry', async () => {
+    localStorage.setItem(STORAGE_KEYS.oauthState, 'matching-state');
+    
+    // Create a mock for checkAndCaptureToken's effect
+    const replaceStateSpy = vi.fn();
+    vi.stubGlobal('history', { replaceState: replaceStateSpy });
+    
+    const reloadSpy = vi.fn();
+    vi.stubGlobal('location', {
+      origin: 'https://other.origin.com', // different from message origin
+      href: 'https://other.origin.com',
+      pathname: '/',
+      search: '',
+      reload: reloadSpy
+    });
+
+    // Mock fetch to simulate successful token exchange
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ access_token: 'code-access-token' }))
+      )
+    );
+
+    const event = new MessageEvent('message', {
+      data: { type: 'OAUTH_REDIRECT_PAYLOAD', url: 'https://other.origin.com/callback?code=valid-code&state=matching-state' },
+      origin: 'https://dnd-gm-dashboard-541768011837.us-west2.run.app'
+    });
+    
+    // Dispatch the event
+    window.dispatchEvent(event);
+    
+    // Give promises a chance to resolve
+    await new Promise(resolve => setTimeout(resolve, 20));
+    
+    // checkAndCaptureToken should be called successfully, which triggers a reload
+    expect(reloadSpy).toHaveBeenCalled();
+    expect(localStorage.getItem(STORAGE_KEYS.googleAccessToken)).toBe('code-access-token');
+  });
+
+  it('accepts postMessage from a localhost origin with a port', async () => {
+    localStorage.setItem(STORAGE_KEYS.oauthState, 'matching-state');
+    
+    // Create a mock for checkAndCaptureToken's effect
+    const replaceStateSpy = vi.fn();
+    vi.stubGlobal('history', { replaceState: replaceStateSpy });
+    
+    const reloadSpy = vi.fn();
+    vi.stubGlobal('location', {
+      origin: 'http://localhost', // no port, different from message origin
+      href: 'http://localhost',
+      pathname: '/',
+      search: '',
+      reload: reloadSpy
+    });
+
+    // Mock fetch to simulate successful token exchange
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ access_token: 'code-access-token' }))
+      )
+    );
+
+    const event = new MessageEvent('message', {
+      data: { type: 'OAUTH_REDIRECT_PAYLOAD', url: 'http://localhost/callback?code=valid-code&state=matching-state' },
+      origin: 'http://localhost:5173'
+    });
+    
+    // Dispatch the event
+    window.dispatchEvent(event);
+    
+    // Give promises a chance to resolve
+    await new Promise(resolve => setTimeout(resolve, 20));
+    
+    // checkAndCaptureToken should be called successfully, which triggers a reload
+    expect(reloadSpy).toHaveBeenCalled();
+    expect(localStorage.getItem(STORAGE_KEYS.googleAccessToken)).toBe('code-access-token');
+  });
 });
 
 

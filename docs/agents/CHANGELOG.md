@@ -11,6 +11,54 @@ should still be checked for correctness issues, not just the question being aske
 **The bug**: in the `window.addEventListener('message', ...)` handler, the origin comparison read 
 `origin === window.location.origin` — but `origin` was never declared in that scope (the callback's 
 parameter is `event`). Bare `origin` resolved to the browser's global `window.origin` (this page's 
+own origin), making the check unconditionally true regardless of the message's actual sender. Any 
+window, iframe, or opener could post an `OAUTH_REDIRECT_PAYLOAD` message and have the app call 
+`checkAndCaptureToken()` on an attacker-supplied URL. This directly undid the origin-check-tightening 
+fix already documented earlier in this file for the same code path.
+
+**The fix**: 3 lines, `origin` → `event.origin` in all 3 places in the `isAllowed` check. No other 
+line in the file touched.
+
+**Verification**: `tsc` clean (0 errors). Batch 2 (`src/services/__tests__`) full run: 42/42 passing 
+initially, growing to include 4 new regression tests added to `googleAuth.test.ts`'s "postMessage 
+origin validation" block (13 tests total in that file):
+- Rejects a message from a disallowed third-party origin (confirmed this specific test would have 
+  failed against the original buggy code — a genuine regression test, not a tautology).
+- Accepts a message matching `window.location.origin`.
+- Accepts a message from an `ALLOWED_ORIGINS` entry specifically — `window.location.origin` 
+  deliberately stubbed to a *different* value in this test to force isolation of that branch.
+- Accepts a message from a `localhost:<port>` origin specifically — `window.location.origin` 
+  stubbed to bare `localhost` (no port) to force isolation of the `.startsWith()` branch.
+
+All 3 clauses of the `isAllowed` OR-chain are now independently exercised by a dedicated test, not 
+just incidentally covered by overlap.
+
+**Cross-tab auth behavior, investigated as an adjacent concern and confirmed to need no fix**: 
+confirmed there is no cross-tab sync mechanism for `googleAccessToken`/`googleRefreshToken` anywhere 
+in the codebase (the only other `storage`-key listener, in `dashboardStore.ts`, is scoped to 
+`STORAGE_KEYS.appState` and never touches auth keys; `AuthRelay.tsx`'s listener is scoped to the 
+OAuth popup route itself, not a second already-open application tab). A second open tab (e.g. a 
+`PlayerView` tab on a separate monitor) does not automatically pick up a sign-in completed in 
+another tab — it shows a stale "Connect & Sync" UI state until refreshed. This is standard, expected 
+SPA behavior, not a regression or a gap: any actual API call from that stale tab would still succeed 
+silently, since `requestAccessToken()` re-reads `localStorage` fresh on every call via 
+`refreshLocalTokens()`. No fix or `ROADMAP.md` entry warranted.
+
+Unlike the earlier Challenge-Rating date-corruption bug, this fix required no server-side/Google-API 
+behavior that couldn't be mocked — the vulnerable logic was entirely local and fully testable, so no 
+manual verification step was required to consider this closed.
+
+---
+
+## `googleAuth.ts` postMessage Origin Check Fixed — Critical Security Regression (Completed)
+
+Discovered incidentally during the Round 2 modularity re-audit while `googleAuth.ts` was being 
+reviewed only for refactor-candidacy — a real example of why a file being read for one reason 
+should still be checked for correctness issues, not just the question being asked.
+
+**The bug**: in the `window.addEventListener('message', ...)` handler, the origin comparison read 
+`origin === window.location.origin` — but `origin` was never declared in that scope (the callback's 
+parameter is `event`). Bare `origin` resolved to the browser's global `window.origin` (this page's 
 own origin), making the check `window.location.origin === window.location.origin` — unconditionally 
 true regardless of the message's actual sender. This meant the `ALLOWED_ORIGINS`/localhost checks 
 never ran, and any window, iframe, or opener could post an `OAUTH_REDIRECT_PAYLOAD` message and have 
