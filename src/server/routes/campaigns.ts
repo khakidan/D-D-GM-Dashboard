@@ -117,15 +117,45 @@ router.post('/create', campaignCreateLimiter, requireBody, async (req, res) => {
     const defaultSheetId = createData.sheets?.[0]?.properties?.sheetId ?? 0;
 
     const batchRequests: sheets_v4.Schema$Request[] = [];
-    for (const sheet of requiredSheets) {
+    const TEMP_SHEET_ID_START = 1000;
+
+    for (let i = 0; i < requiredSheets.length; i++) {
+      const sheet = requiredSheets[i];
       batchRequests.push({
         addSheet: {
           properties: {
+            sheetId: TEMP_SHEET_ID_START + i,
             title: sheet.title
           }
         }
       });
     }
+
+    const npcIndex = requiredSheets.findIndex(s => s.title === 'NPCs');
+    if (npcIndex !== -1) {
+      const crIndex = requiredSheets[npcIndex].headers.indexOf('Challenge_Rating');
+      if (crIndex !== -1) {
+        batchRequests.push({
+          repeatCell: {
+            range: {
+              sheetId: TEMP_SHEET_ID_START + npcIndex,
+              startRowIndex: 1,
+              startColumnIndex: crIndex,
+              endColumnIndex: crIndex + 1
+            },
+            cell: {
+              userEnteredFormat: {
+                numberFormat: {
+                  type: 'TEXT'
+                }
+              }
+            },
+            fields: 'userEnteredFormat.numberFormat'
+          }
+        });
+      }
+    }
+
     batchRequests.push({
       deleteSheet: {
         sheetId: defaultSheetId

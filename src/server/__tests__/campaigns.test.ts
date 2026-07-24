@@ -69,17 +69,28 @@ describe('Campaigns Router', () => {
     expect(sheetsCall[0]).toBe('https://sheets.googleapis.com/v4/spreadsheets/spread-123:batchUpdate');
     const sheetsBody = JSON.parse(sheetsCall[1]!.body as string);
     
-    // Should have 9 requests (8 addSheets + 1 delete default sheet)
-    expect(sheetsBody.requests).toHaveLength(9);
+    // Should have 10 requests (8 addSheets + 1 repeatCell + 1 delete default sheet)
+    expect(sheetsBody.requests).toHaveLength(10);
     expect(sheetsBody.requests[0].addSheet.properties.title).toBe('Characters');
+    expect(sheetsBody.requests[0].addSheet.properties.sheetId).toBe(1000);
     expect(sheetsBody.requests[1].addSheet.properties.title).toBe('NPCs');
+    expect(sheetsBody.requests[1].addSheet.properties.sheetId).toBe(1001);
     expect(sheetsBody.requests[2].addSheet.properties.title).toBe('Encounters');
     expect(sheetsBody.requests[3].addSheet.properties.title).toBe('Encounter_Combatants');
     expect(sheetsBody.requests[4].addSheet.properties.title).toBe('Status');
     expect(sheetsBody.requests[5].addSheet.properties.title).toBe('Difficulty_Level');
     expect(sheetsBody.requests[6].addSheet.properties.title).toBe('EncounterLogs');
     expect(sheetsBody.requests[7].addSheet.properties.title).toBe('EncounterLogEvents');
-    expect(sheetsBody.requests[8].deleteSheet.sheetId).toBe(0);
+
+    // Verify Challenge_Rating format request
+    const formatReq = sheetsBody.requests[8].repeatCell;
+    expect(formatReq).toBeDefined();
+    expect(formatReq.range.sheetId).toBe(1001); // Matches NPCs sheet ID
+    expect(formatReq.range.startColumnIndex).toBe(16); // Column Q
+    expect(formatReq.range.endColumnIndex).toBe(17);
+    expect(formatReq.cell.userEnteredFormat.numberFormat.type).toBe('TEXT');
+
+    expect(sheetsBody.requests[9].deleteSheet.sheetId).toBe(0);
 
     // Verify values write request
     const valuesCall = vi.mocked(fetch).mock.calls[2];
