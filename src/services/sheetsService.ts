@@ -30,7 +30,27 @@ export interface AddSheetRequest {
   };
 }
 
-export type BatchRequest = DeleteDimensionRequest | AddSheetRequest;
+export interface RepeatCellRequest {
+  repeatCell: {
+    range: {
+      sheetId: number;
+      startRowIndex?: number;
+      endRowIndex?: number;
+      startColumnIndex?: number;
+      endColumnIndex?: number;
+    };
+    cell: {
+      userEnteredFormat: {
+        numberFormat: {
+          type: string;
+        }
+      }
+    };
+    fields: string;
+  };
+}
+
+export type BatchRequest = DeleteDimensionRequest | AddSheetRequest | RepeatCellRequest;
 
 async function withSheetToast<T>(promise: Promise<T>): Promise<T> {
   try {
