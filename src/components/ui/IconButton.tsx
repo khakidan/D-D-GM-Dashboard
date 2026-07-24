@@ -33,10 +33,12 @@ export const IconButton: React.FC<IconButtonProps> = ({
   className,
   'aria-label': ariaLabel,
   disabled,
+  type = 'button',
   ...props
 }) => {
   return (
     <button
+      type={type}
       aria-label={ariaLabel}
       className={cn(baseStyle, styleMap[intent][onDark ? 'dark' : 'light'], className)}
       disabled={disabled || loading}

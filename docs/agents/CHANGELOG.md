@@ -2,6 +2,46 @@
 
 ---
 
+## `IconButton.tsx` Default `type="button"` — Fixes 3 Known Form-Submission Bugs at Once (Completed)
+
+Reported from manual testing: clicking the Skills section's expand chevron in `NewPlayerDialog.tsx`'s 
+Stat Block tab submitted and closed the entire dialog instead of expanding the section — the 
+character was still created, but the GM never got to select skill proficiencies.
+
+**Root cause, confirmed via direct inspection**: `IconButton.tsx` set no default `type` on its 
+underlying `<button>`, so any instance rendered inside a `<form>` silently defaulted to 
+`type="submit"` per standard HTML behavior.
+
+**An exhaustive, individually-traced audit of all 8 real `IconButton` usages in the codebase was 
+run before choosing a fix** — deliberately, rather than patching only the one reported call site. 
+Every instance was checked for whether it sits inside a `<form>`, and whether submission was ever 
+its intended behavior. Result: not a single real instance is designed to submit anything — every 
+one is a secondary action (close/delete/edit/expand). This confirmed the bug wasn't isolated to 
+the reported chevron — 2 more, previously unreported instances of the identical bug were found:
+- `ResourcePoolManager.tsx`'s Edit/Delete buttons (rendered inside `NewPlayerDialog.tsx`'s form).
+- `NpcListEditor.tsx`'s remove/trash button (rendered inside `NewPlayerDialog.tsx`'s form, and 
+  inside `NpcFormFields.tsx`'s NPC-creation forms — `NewNpcDialog.tsx`/`AddCombatantDialog.tsx`'s 
+  create-NPC tab).
+
+`EncounterLogModal.tsx`'s delete `IconButton` was separately confirmed safe either way — its 
+delete flow opens a `ConfirmationDialog` (confirmed directly via `ConfirmationDialog.tsx`'s real 
+source) which contains no `<form>` element anywhere in its tree.
+
+**Fix**: a single change inside `IconButton.tsx` itself, not per-call-site — `type` destructured 
+from props with a default value (`type = 'button'`), applied to the underlying `<button>`, still 
+overridable by an explicit `type` prop if any future caller genuinely needs `type="submit"` (none 
+currently do). This closes all 3 known instances at once, and pre-emptively protects any future 
+`IconButton` usage inside a form from the same class of bug.
+
+Verified: `tsc -p tsconfig.build.json --noEmit` clean (0 errors). Every batch covering a real 
+`IconButton` consumer run in full with real raw output — Batch 5A (7 files/65 tests), Batch 5B 
+(14 files/50 tests), Batch 6A (9 files/60 tests), Batch 6B (6 files/26 tests), Batch 6C (6 
+files/21 tests), Batch 7B-1 (5 files/13 tests), Batch 8 (4 files/27 tests) — all matching 
+documented baselines exactly, zero regressions. Only `IconButton.tsx` was modified; no per-call-
+site changes were needed anywhere.
+
+---
+
 ## `NewPlayerDialog.tsx` Store-Access Fix — Prop-Threaded from `PartyTab.tsx` (Completed)
 
 `NewPlayerDialog.tsx` called `useAppState()` directly to read `state.statuses`, bypassing its 
