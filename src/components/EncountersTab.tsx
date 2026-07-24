@@ -8,7 +8,6 @@ import { useEncounters } from './EncountersTab/hooks/useEncounters';
 import { EncounterCard } from './EncountersTab/EncounterCard';
 import { NewEncounterDialog } from './EncountersTab/NewEncounterDialog';
 import { DifficultyLevel } from '../types';
-import { readEncounterLogs } from '../services/dbOperations';
 import { DashboardLayout } from './ui/DashboardLayout';
 
 export function EncountersTab({ 
@@ -24,25 +23,11 @@ export function EncountersTab({
     isAdding,
     isDeletingId,
     globalError,
+    completedEncounterIds,
     handleCreateEncounter,
     handleDelete,
     handleUpdateEncounter,
   } = useEncounters({ onSelectEncounter, onSyncRequested });
-
-  const [completedEncounterIds, setCompletedEncounterIds] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    async function loadLogs() {
-      try {
-        const logs = await readEncounterLogs();
-        const encounterIds = new Set(logs.map(log => String(log[1])));
-        setCompletedEncounterIds(encounterIds);
-      } catch (err) {
-        console.error('Failed to load encounter logs for completed check:', err);
-      }
-    }
-    loadLogs();
-  }, []);
 
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
 

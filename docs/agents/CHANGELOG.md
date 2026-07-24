@@ -2,6 +2,36 @@
 
 ---
 
+## `EncountersTab.tsx` Store-Access Layer Violation Fixed — Log Fetch Moved to `useEncounters.ts` (Completed)
+
+`EncountersTab.tsx` imported `readEncounterLogs` directly from `services/dbOperations` and called 
+it inside its own `useEffect`, violating the project's `lib ← services ← hooks ← components` 
+layering rule — components must never import from `services/` directly.
+
+**Fix**: `readEncounterLogs` import, the `completedEncounterIds` state, and the log-loading 
+`useEffect` all moved verbatim into `useEncounters.ts`, including the unchanged empty dependency 
+array (`[]`) — confirmed via prior investigation that this mount-only effect is correct as-is, 
+since `GMTabContent.tsx` fully unmounts/remounts each tab on switch. `completedEncounterIds` is 
+now returned from the hook and destructured by `EncountersTab.tsx` instead of computed locally. 
+No other logic changed.
+
+Confirmed via direct search before starting: no test renders `<EncountersTab />` directly, so no 
+test file needed changes for this fix.
+
+This closes the last confirmed exception to the project's completed store-access architecture 
+fix — every top-level tab component now gets its data exclusively through a hook, never a direct 
+`services/` import.
+
+Verified: `tsc -p tsconfig.build.json --noEmit` clean (0 errors). Real, complete Batch 6B output 
+confirmed 6 files/26 tests passing, matching the documented baseline exactly, no test count 
+change. One expected, harmless side effect noted: `useEncounters.test.ts`'s existing mock for 
+`dbOperations` doesn't stub `readEncounterLogs`, so the relocated effect now throws internally 
+during that test's render and is silently caught by its own `try/catch` (visible as a console 
+error in the raw test output) — this doesn't affect any assertion or test outcome, since nothing 
+in that file asserts on `completedEncounterIds`.
+
+---
+
 ## `IconButton.tsx` Default `type="button"` — Fixes 3 Known Form-Submission Bugs at Once (Completed)
 
 Reported from manual testing: clicking the Skills section's expand chevron in `NewPlayerDialog.tsx`'s 

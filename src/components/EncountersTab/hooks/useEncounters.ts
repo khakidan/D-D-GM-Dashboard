@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppState, getSnapshot } from '../../../hooks/useAppState';
 import { Encounter } from '../../../types';
-import { addEncounterDB, deleteEncounterFully, updateEncounterDB } from '../../../services/dbOperations';
+import { addEncounterDB, deleteEncounterFully, updateEncounterDB, readEncounterLogs } from '../../../services/dbOperations';
 import { toast } from 'sonner';
 
 interface UseEncountersProps {
@@ -14,6 +14,20 @@ export function useEncounters({ onSelectEncounter, onSyncRequested }: UseEncount
   const [isAdding, setIsAdding] = useState(false);
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
+  const [completedEncounterIds, setCompletedEncounterIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    async function loadLogs() {
+      try {
+        const logs = await readEncounterLogs();
+        const encounterIds = new Set(logs.map(log => String(log[1])));
+        setCompletedEncounterIds(encounterIds);
+      } catch (err) {
+        console.error('Failed to load encounter logs for completed check:', err);
+      }
+    }
+    loadLogs();
+  }, []);
 
   const handleCreateEncounter = async (data: { name: string; location: string; difficultyId: number }) => {
     setIsAdding(true);
@@ -143,6 +157,7 @@ export function useEncounters({ onSelectEncounter, onSyncRequested }: UseEncount
     isAdding,
     isDeletingId,
     globalError,
+    completedEncounterIds,
     handleCreateEncounter,
     handleDelete,
     handleUpdateEncounter,
