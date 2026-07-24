@@ -372,6 +372,7 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                     <NpcListEditor<NpcTrait>
                       title="Traits"
                       items={traits}
+                      defaultExpanded={true}
                       emptyItem={{ name: '', description: '' }}
                       renderFields={renderTraitFields}
                       onChange={(updated: NpcTrait[]) =>
@@ -384,6 +385,7 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                     <NpcListEditor<NpcAction>
                       title="Actions"
                       items={actions}
+                      defaultExpanded={true}
                       emptyItem={{
                         name: '',
                         description: '',
@@ -405,6 +407,7 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                     <NpcListEditor<NpcReaction>
                       title="Reactions"
                       items={reactions}
+                      defaultExpanded={true}
                       emptyItem={{ name: '', description: '' }}
                       renderFields={renderReactionFields}
                       onChange={(updated: NpcReaction[]) =>

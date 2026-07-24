@@ -366,6 +366,7 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
               <NpcListEditor<NpcTrait>
                 title="Traits"
                 items={traits}
+                defaultExpanded={traits.length > 0}
                 emptyItem={{ name: '', description: '' }}
                 renderFields={renderTraitFields}
                 onChange={(updated) =>
@@ -378,6 +379,7 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
               <NpcListEditor<NpcAction>
                 title="Actions"
                 items={actions}
+                defaultExpanded={actions.length > 0}
                 emptyItem={{
                   name: '',
                   description: '',
@@ -399,6 +401,7 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
               <NpcListEditor<NpcReaction>
                 title="Reactions"
                 items={reactions}
+                defaultExpanded={reactions.length > 0}
                 emptyItem={{ name: '', description: '' }}
                 renderFields={renderReactionFields}
                 onChange={(updated) =>

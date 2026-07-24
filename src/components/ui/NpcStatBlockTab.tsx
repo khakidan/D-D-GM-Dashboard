@@ -38,6 +38,7 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
       <NpcListEditor<NpcTrait>
         title="Traits"
         items={traits}
+        defaultExpanded={true}
         emptyItem={{ name: '', description: '' }}
         renderFields={(item, index, onChange) => (
           <NpcSimpleFieldEditor
@@ -54,6 +55,7 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
       <NpcListEditor<NpcAction>
         title="Actions"
         items={actions}
+        defaultExpanded={true}
         emptyItem={{
           name: '',
           description: '',
@@ -94,6 +96,7 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
       <NpcListEditor<NpcReaction>
         title="Reactions"
         items={reactions}
+        defaultExpanded={true}
         emptyItem={{ name: '', description: '' }}
         renderFields={(item, index, onChange) => (
           <NpcSimpleFieldEditor
@@ -110,6 +113,7 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
       <NpcListEditor<NpcLegendaryAction>
         title="Legendary Actions"
         items={legendaryActionsList}
+        defaultExpanded={true}
         emptyItem={{
           name: '',
           description: '',

@@ -280,6 +280,7 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
             <NpcListEditor<NpcTrait>
               title="Traits"
               items={traits}
+              defaultExpanded={traits.length > 0}
               emptyItem={{ name: '', description: '' }}
               renderFields={renderTraitFields}
               onChange={(updated) =>
@@ -292,6 +293,7 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
             <NpcListEditor<NpcAction>
               title="Actions"
               items={actions}
+              defaultExpanded={actions.length > 0}
               emptyItem={{
                 name: '',
                 description: '',
@@ -313,6 +315,7 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
             <NpcListEditor<NpcReaction>
               title="Reactions"
               items={reactions}
+              defaultExpanded={reactions.length > 0}
               emptyItem={{ name: '', description: '' }}
               renderFields={renderReactionFields}
               onChange={(updated) =>
@@ -326,6 +329,7 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
             <NpcListEditor<NpcLegendaryAction>
               title="Legendary Actions"
               items={legendaryActions}
+              defaultExpanded={legendaryActions.length > 0}
               emptyItem={{
                 name: '',
                 description: '',

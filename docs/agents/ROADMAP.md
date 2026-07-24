@@ -15,7 +15,7 @@ Features and bugs that have been discussed and approved but not yet implemented.
 
 ### 🟡 Features to Add
 
-- **Collapsible Traits/Actions/Reactions/Legendary Actions sections — candidate for a shared component, not yet investigated.** Originated as a possible fix for the `DialogShell.tsx` overflow bug (collapsing sections in `NewPlayerDialog.tsx`'s Stat Block tab would reduce visible content and lessen how often the overflow is reached), but the same "list of Traits/Actions/Reactions/Legendary Actions rendered fully expanded" pattern also exists in `NewNpcDialog.tsx`, `CharacterCardExpanded.tsx`, and `NpcCard.tsx`'s expanded view. Worth investigating whether a single shared collapsible-section component could serve all 4 locations — following this project's established pattern of verifying real structural sameness before building (see `CHANGELOG.md`'s `Accordion.tsx`/`CardHeaderChevron.tsx` precedent, and the "Two-Column Form Field Grid" case where an assumed match didn't hold up under direct comparison). **Not yet investigated** — needs a dedicated read-only pass across all 4 files before any component is designed, to confirm: do all 4 render the same underlying `NpcListEditor`/`NpcSimpleFieldEditor`/`NpcCombatActionFields` components today? Do they share the same default-expanded-or-collapsed state expectations? Does `Legendary Actions` (NPC-only) fit the same shape as Traits/Actions/Reactions (shared between PCs and NPCs), or does it need its own handling? This is a separate effort from the `DialogShell.tsx` bug fix above — do not bundle them.
+None right now.
 
 ---
 

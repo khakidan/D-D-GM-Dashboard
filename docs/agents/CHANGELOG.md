@@ -1,6 +1,77 @@
 # Changelog
 
 ---
+
+## Collapsible Traits/Actions/Reactions/Legendary Actions — Shared Across 4 Locations (Completed)
+
+Originated as a possible complement to the `DialogShell.tsx` overflow fix, but built as its own 
+standalone UX improvement once investigation confirmed a genuine 4-location structural match: 
+`NewPlayerDialog.tsx` (Stat Block tab), `NewNpcDialog.tsx` (via `NpcStatBlockTab.tsx`), 
+`CharacterCardExpanded.tsx`, and `NpcCard.tsx`'s expanded view all delegate their Traits/Actions/
+Reactions/Legendary Actions rendering through the same shared `NpcListEditor` component — 
+confirmed via direct inspection of all 4 files before any design work began, not assumed from a 
+surface pattern match.
+
+**Design, fully resolved before implementation**: extend `NpcListEditor` itself with a required 
+`defaultExpanded: boolean` prop rather than building a new wrapper component. Internal 
+`isExpanded` state is initialized once via `useState(defaultExpanded)` — confirmed safe, since 
+React only evaluates a `useState` initial value at mount, so a later change to the prop on an 
+unrelated re-render does not reset a user's manual expand/collapse mid-session.
+
+**Two genuinely different default behaviors, resolved as the caller's responsibility, not baked 
+into the component**: `NpcListEditor` does not auto-collapse empty sections itself. Each of the 4 
+consumers decides its own default:
+- **Creation contexts** (`NewPlayerDialog.tsx`, `NewNpcDialog.tsx`/`NpcStatBlockTab.tsx`): always 
+  pass `defaultExpanded={true}` regardless of item count — preserves the existing always-open 
+  behavior exactly, keeping the "+ Add" button visible for data entry with zero regression.
+- **Display contexts** (`NpcCard.tsx`, `CharacterCardExpanded.tsx`): pass 
+  `defaultExpanded={items.length > 0}`, computed independently per section from that section's own 
+  array — an empty "Reactions" section starts collapsed rather than showing a bare header and "Add" 
+  button taking up space in a reference view.
+
+**`NpcLegendarySection` (the legendary-points/resistances pip trackers in `NpcCard.tsx`) 
+deliberately does not collapse alongside the Legendary Actions list.** These are live, 
+frequently-updated combat-tracking widgets a GM marks spent/regained turn-by-turn, fundamentally 
+different from the static descriptive text in the list beneath them — collapsing them would bury 
+active combat state behind an extra click. Confirmed its JSX position and rendering were left 
+completely untouched at every stage.
+
+**Trigger chosen deliberately, not defaulted**: `CardHeaderChevron` was used instead of the 
+existing `Accordion` component, since `Accordion` wraps its entire trigger row in a `<button>` — 
+nesting the section's own "+ Add" `<button>` inside it would produce invalid, nested-button HTML. 
+`CardHeaderChevron` is just the chevron element itself, allowing a plain `<div onClick>` wrapper to 
+safely contain both the chevron and an independent "+ Add" button as siblings.
+
+**Built and verified in 4 deliberately staged steps, each independently confirmed before the next 
+began** — the same discipline as the `DialogShell.tsx` fix, given `NpcListEditor` is a shared 
+component with 4 real consumers:
+1. `NpcListEditor.tsx` itself — added the `defaultExpanded` prop, internal state, and the 
+   chevron/trigger UI. Verified in isolation; this stage deliberately left all 14 downstream call 
+   sites (across the 4 consumer files) uncompiled, confirming via `tsc` that every single resulting 
+   error was the same "missing `defaultExpanded`" type error at a known call site, nothing else.
+2. `NpcStatBlockTab.tsx` (creation context, all 4 categories in one centralized file) — chosen 
+   first per the staging plan as the cleanest isolated testbed. Verified via Batch 6C, confirming 
+   the error count dropped from 14 to the expected 10.
+3. `NpcCard.tsx` (display context, all 4 categories) — verified via Batch 6C. The 3 
+   `NpcCard.test.tsx` failures that appeared after Stage 1 (before this file was fixed) were 
+   individually confirmed to be exactly the predicted failure mode — sections rendering collapsed 
+   because `defaultExpanded` was `undefined` — not an unrelated regression, before being resolved 
+   by this stage.
+4. `CharacterCardExpanded.tsx` (display context) and `NewPlayerDialog.tsx` (creation context) — 
+   combined into one final stage since both are small, mechanically identical applications of 
+   patterns already proven in Stages 2-3. Verified via Batch 6A, bringing `tsc` to a fully clean 0 
+   errors across the whole codebase.
+
+Verified across all 4 stages: `tsc -p tsconfig.build.json --noEmit` clean at the end (0 errors, 
+after deliberately passing through intermediate, expected non-zero states between stages). Real, 
+complete batch output at every stage, all matching documented baselines exactly with no test count 
+changes — Batch 6C (6 files/21 tests, both after Stage 2 and Stage 3), Batch 8 (4 files/27 tests, 
+after Stage 1), Batch 6A (9 files/60 tests, after Stage 4). 5 files touched in total: 
+`NpcListEditor.tsx`, `NpcStatBlockTab.tsx`, `NpcCard.tsx`, `CharacterCardExpanded.tsx`, 
+`NewPlayerDialog.tsx`.
+
+---
+
 ## `DialogShell.tsx` Overflow/Scroll Bug Fixed — 8 of 9 Consumers, Staged Across 6 Verified Steps (Completed)
 
 Reported from manual testing: adding several Actions/Reactions in `NewPlayerDialog.tsx`'s Stat 
