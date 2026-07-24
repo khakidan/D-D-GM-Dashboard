@@ -181,4 +181,20 @@ describe('NewNpcDialog', () => {
     expect(onConfirmMock)
       .not.toHaveBeenCalled();
   });
+
+  it('creation context (NewNpcDialog) sections are always expanded by default even with 0 items', () => {
+    const { getByRole, getByText } = render(
+      <NewNpcDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} />
+    );
+
+    // Navigate to Stat Block tab
+    fireEvent.click(getByRole('tab', { name: /stat block/i }));
+
+    // Assert "Add Trait" is visible immediately despite 0 items
+    // This proves defaultExpanded={true} holds in creation context
+    expect(getByText('Add Trait')).toBeInTheDocument();
+    expect(getByText('Add Action')).toBeInTheDocument();
+    expect(getByText('Add Reaction')).toBeInTheDocument();
+    expect(getByText('Add Legendary Action')).toBeInTheDocument();
+  });
 });

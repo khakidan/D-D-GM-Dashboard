@@ -293,4 +293,77 @@ describe('NpcCard', () => {
 
     spy.mockRestore();
   });
+
+  it('auto-collapses empty sections in display context (NpcCard)', () => {
+    const mockNpcWithEmptyTraits: NPC = {
+      ...mockNpcForMemoTests,
+      id: 'npc-empty-traits',
+      traits: '[]',
+      actions: JSON.stringify([{ name: 'Attack', description: 'Hit stuff' }]),
+    };
+
+    render(
+      <NpcCard
+        npc={mockNpcWithEmptyTraits}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // Actions section has items, so it should be expanded
+    expect(screen.getByText('Add Action')).toBeInTheDocument();
+
+    // Traits section is empty, so it should be collapsed by defaultExpanded={traits.length > 0}
+    expect(screen.queryByText('Add Trait')).not.toBeInTheDocument();
+
+    // Clicking Traits header should expand it
+    fireEvent.click(screen.getByText('Traits'));
+    expect(screen.getByText('Add Trait')).toBeInTheDocument();
+  });
+
+  it('legendary pip trackers stay visible even when Legendary Actions list is collapsed', () => {
+    const mockNpcWithLegendary: NPC = {
+      ...mockNpcForMemoTests,
+      id: 'npc-legendary',
+      legendaryActions: 3,
+      legendaryResistances: 3,
+      legendaryActionsList: JSON.stringify([{ name: 'Tail Swipe', description: 'Hits back', cost: 1 }]),
+    };
+
+    render(
+      <NpcCard
+        npc={mockNpcWithLegendary}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // Initially expanded
+    expect(screen.getByDisplayValue('Tail Swipe')).toBeInTheDocument();
+    // Pip trackers (NpcLegendarySection) should be visible
+    expect(screen.getAllByText(/Legendary Actions/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Resistances/i)).toBeInTheDocument();
+
+    // Click the "Legendary Actions" list header to collapse it
+    // We need to be careful because there are two "Legendary Actions" texts:
+    // 1. The pip tracker label
+    // 2. The NpcListEditor title
+    // In NpcCard, the list editor title is what has the click handler.
+    const listHeader = screen.getAllByText('Legendary Actions').find(el => el.closest('div')?.classList.contains('cursor-pointer'));
+    expect(listHeader).toBeDefined();
+    fireEvent.click(listHeader!);
+
+    // List content should be gone
+    expect(screen.queryByDisplayValue('Tail Swipe')).not.toBeInTheDocument();
+
+    // BUT pip trackers (NpcLegendarySection) must still be visible per resolved design
+    expect(screen.getAllByText(/Legendary Actions/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Resistances/i)).toBeInTheDocument();
+  });
 });

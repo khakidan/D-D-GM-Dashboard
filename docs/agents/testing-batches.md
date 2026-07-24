@@ -4,7 +4,7 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 895 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+**Current baseline: 901 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
 
 - **Batch 4: 11 tests.** Breakdown: campaigns.test.ts (5), auth.test.ts (3), suiteIntegrity.test.ts (2), health.test.ts (1).
 - **Batch 5A: 69 → 65.** useCombatantCard.test.ts was removed from this batch's file list because useCombatantCard.ts (the hook it tested) was deleted in a prior refactor.
@@ -21,10 +21,10 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 5B | ActiveEncounterTab components (`.test.tsx`) | 50 |
 | 6A | `src/components/PartyTab/__tests__` | 60 |
 | 6B | `src/components/EncountersTab/__tests__` | 26 |
-| 6C | `src/components/NpcLibraryTab/__tests__` | 21 |
+| 6C | `src/components/NpcLibraryTab/__tests__` | 24 |
 | 7B-1 | Audio + main dashboard top-level components | 13 |
 | 7B-2 | Other top-level components | 23 |
-| 8 | `src/components/ui/__tests__` | 27 |
+| 8 | `src/components/ui/__tests__` | 30 |
 | 9 | `src/components/auth/__tests__` | 16 |
 
 ```bash
@@ -52,7 +52,7 @@ npx vitest run src/components/PartyTab/__tests__
 # BATCH 6B — 26 tests
 npx vitest run src/components/EncountersTab/__tests__
 
-# BATCH 6C — 21 tests
+# BATCH 6C — 24 tests
 npx vitest run src/components/NpcLibraryTab/__tests__
 
 # BATCH 7B-1 — 13 tests
@@ -61,7 +61,7 @@ npx vitest run src/components/__tests__/CommandPalette.test.tsx src/components/_
 # BATCH 7B-2 — 23 tests
 npx vitest run src/components/__tests__/CampaignSelector.test.tsx src/components/__tests__/GMTabContent.test.tsx src/components/__tests__/PlayerView.test.tsx src/components/__tests__/ThemeContext.test.tsx src/components/__tests__/GMTestingTools.test.tsx src/components/__tests__/SheetConnectionSettings.test.tsx src/components/__tests__/ReferenceDataSeeder.test.tsx src/components/__tests__/SettingsPage.test.tsx
 
-# BATCH 8 — 27 tests
+# BATCH 8 — 30 tests
 npx vitest run src/components/ui/__tests__
 
 # BATCH 9 — 16 tests
