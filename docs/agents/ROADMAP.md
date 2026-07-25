@@ -27,10 +27,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 - **Tiny doc-precision fix, `dashboardStore.ts`'s `getSnapshot()` comment.** Harmless (confirmed zero live bugs), but the comment claims to "return only the AppState fields, not the store methods" while also silently excluding `activeCombatLog` (real state, not a method). Recommended: `// Return only the core Sheets-synchronized AppState-shaped fields. // Note: Extended state like activeCombatLog and store methods are excluded. // Call useDashboardStore.getState() directly if the combat log is needed.`
 
-- **`ResourcePoolsSection.tsx`'s `PipTracker` doesn't respect `isSyncing`** the way the adjacent `-`/`+` buttons do (`disabled={... || isSyncing}`). Doesn't corrupt data, but is a real UX inconsistency — add `readOnly={isSyncing}` to the `PipTracker` call.
-
-- **`ResourcePoolsSection.tsx` has no dedicated test file** — coverage is indirect only via `useCombatantExpanded.test.ts`'s integration tests; the UI layer itself (form toggles, inline edit, pip interactions) is untested.
-
 - **Cross-file Traits/Actions/Reactions/Legendary-Actions render-prop wiring is duplicated across `CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, and `NpcCard.tsx`.** `renderTraitFields`/`renderReactionFields` are byte-identical across all 3; `renderActionFields`/`renderLegendaryActionFields` differ only by a per-file `idPrefix` string. Mirrors the exact situation that led to this codebase's `NpcSimpleFieldEditor.tsx`/`NpcCombatActionFields.tsx` extraction. **This is being addressed as part of the Bonus Actions feature above**, rather than as a separate effort — the shared factory will be built there and all 4 files (including `NpcStatBlockTab.tsx`) migrated onto it in the same pass.
 
 - **`NpcCard.tsx`'s Legendary Actions tests don't directly assert name-field editing** — only initial render, cost-editing, and add/remove are directly tested. Low priority; the underlying wiring was separately confirmed correct by direct code inspection.

@@ -2,6 +2,56 @@
 
 ---
 
+## `ResourcePoolsSection.tsx` Test Coverage Added + `PipTracker` isSyncing Gap Fixed (Completed)
+Closed two related, previously-flagged gaps together: the component had no dedicated
+test file (coverage was only indirect, via `useCombatantExpanded.test.ts`'s integration
+tests), and its `PipTracker` didn't respect `isSyncing` the way the adjacent `-`/`+`
+buttons already did — a real UX inconsistency, not data-corrupting, but a GM could click
+pips mid-sync when the flanking buttons were already correctly disabled.
+
+**Staged in 2 steps, coverage before the fix, per this project's established sequencing
+discipline for exactly this kind of gap.**
+
+**Stage 1 — dedicated test file.** `src/components/ui/__tests__/ResourcePoolsSection.test.tsx`
+created (7 tests): rendering pools with correct name/current/max/reset-cycle `Badge`;
+the add-pool form's toggle/fill/submit flow; inline edit with correctly-merged updates;
+`PipTracker`'s standardized click semantics (filled pip at index `i` → `current = i`;
+empty pip at index `i` → `current = i+1`); the `-`/`+` spend/recover buttons, including
+their existing correct `disabled={... || isSyncing}` wiring; the `pendingDeleteName`/
+`ConfirmationDialog` delete lifecycle (cancel vs. confirm); and `handleResetPool`.
+
+**A real prop-interface mismatch surfaced during verification and was resolved with
+direct evidence, not just a corrected re-paste.** An intermediate description of
+`ResourcePoolsSectionProps` (`characterId`/`resourcePools` as separate top-level props)
+directly contradicted the test file, which renders a single `character: Character`
+prop — a contradiction that couldn't both be true given the batch was reported passing.
+Resolved by demanding a fresh `cat` of both the real component and the real test file
+as actually run; confirmed the interface is genuinely `{ character, isSyncing, onUpdate }`,
+and the earlier prop breakdown was an error in an intermediate explanation, not a
+reflection of the real code. Also disclosed honestly: `testing-batches.md`'s initial
+935/37 update was made before the final passing run, not after — corrected in the same
+round once challenged.
+
+**Stage 2 — the fix.** `readOnly={isSyncing}` added to the `PipTracker` call in
+`ResourcePoolsSection.tsx` — the only production-code change in scope. One new
+regression test added (`does not call onUpdate when clicking pips if isSyncing=true`),
+**concretely proven to catch the bug, not just asserted**: run against the unfixed code
+first and shown genuinely failing (`expected vi.fn() to not be called... actually been
+called 1 times`, with the real spend payload), then passing once the fix was reapplied.
+Confirmed via the real component source that `PipTracker`'s `readOnly` mode renders a
+non-interactive `div` (not a `button`) with `aria-hidden`, while preserving the `title`
+attribute for hover tooltips — the regression test targets it via `getByTitle` rather
+than `getByRole('button', ...)` for exactly this reason.
+
+**Verification**: `tsc -p tsconfig.build.json --noEmit` clean (0 errors) at both stages.
+Batch 8 full run: 6 files, 37 → 38 tests passing (Stage 1 added 7, Stage 2 added 1).
+Batch 5B (14 files/50 tests) and Batch 6A (9 files/60 tests) — this component's 2 real
+consumers, `CombatantCardExpanded.tsx` and `CharacterCardExpanded.tsx` — both re-run in
+full and confirmed unchanged against documented baselines, real per-file output at every
+stage. `testing-batches.md` updated: Batch 8 30 → 38, total baseline 928 → 936.
+
+---
+
 ## `CampaignSelector.tsx` Test Coverage — Interactions & Validation (Completed)
 
 Expanded test coverage for the `CampaignSelector` component, moving it from 4 tests to 11 tests (contributing to a new Batch 7B-2 total of 31). This closes a previously identified gap where the core onboarding wizard had no coverage for form interactions, validation logic, or the delete-confirmation lifecycle.

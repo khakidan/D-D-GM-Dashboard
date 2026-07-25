@@ -358,6 +358,7 @@ export const ResourcePoolsSection: React.FC<ResourcePoolsSectionProps> = ({
                       <PipTracker
                         max={pool.max}
                         remaining={pool.current}
+                        readOnly={isSyncing}
                         onChange={(newValue) => {
                           if (newValue > pool.current) {
                             savePools(recoverResourcePip(pools, pool.name, newValue - pool.current));
