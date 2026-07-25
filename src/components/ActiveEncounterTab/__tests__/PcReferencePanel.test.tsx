@@ -29,6 +29,11 @@ describe('PcReferencePanel', () => {
         attackBonus: 5,
         damage: '1d8+3 bludgeoning'
       }]),
+      bonusActions: JSON.stringify([{
+        name: 'Quick Step',
+        description: 'Moves as a bonus action.',
+        range: 'Self'
+      }]),
       reactions: JSON.stringify([{ name: 'Parry', description: 'Blocks attack.' }]),
     });
 
@@ -47,6 +52,10 @@ describe('PcReferencePanel', () => {
     expect(screen.getByText('Strike')).toBeInTheDocument();
     expect(screen.getByText('Hits with weapon.')).toBeInTheDocument();
     expect(screen.getByText('+5 to hit | 1d8+3 bludgeoning')).toBeInTheDocument();
+
+    // Check bonus actions
+    expect(screen.getByText('Quick Step')).toBeInTheDocument();
+    expect(screen.getByText('Moves as a bonus action.')).toBeInTheDocument();
 
     // Check reactions
     expect(screen.getByText('Parry')).toBeInTheDocument();

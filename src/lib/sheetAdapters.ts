@@ -52,6 +52,7 @@ export function mapCharacterRowToCharacter(
     traits,
     actions,
     reactions,
+    bonusActions,
   ] = data;
 
   let syncedProficiencies = proficiencies ?? JSON.stringify(DEFAULT_PROFICIENCIES);
@@ -100,6 +101,7 @@ export function mapCharacterRowToCharacter(
     traits: traits ?? '[]',
     actions: actions ?? '[]',
     reactions: reactions ?? '[]',
+    bonusActions: bonusActions ?? '[]',
   };
 }
 
@@ -130,6 +132,7 @@ export function mapNpcRowToNpc(
     reactions,
     legendaryActionsList,
     spellcastingAbility,
+    bonusActions,
   ] = data;
 
   let syncedProficiencies = proficiencies ?? JSON.stringify(DEFAULT_PROFICIENCIES);
@@ -173,6 +176,7 @@ export function mapNpcRowToNpc(
     reactions: reactions ?? '[]',
     legendaryActionsList: legendaryActionsList ?? '[]',
     spellcastingAbility: spellcastingAbility ?? '',
+    bonusActions: bonusActions ?? '[]',
   };
 }
 

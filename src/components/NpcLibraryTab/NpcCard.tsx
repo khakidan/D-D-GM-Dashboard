@@ -12,8 +12,7 @@ import { StatTile } from '../ui/StatTile';
 import { ExpandableContent } from '../ui/ExpandableContent';
 import { LabeledField } from '../ui/LabeledField';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
-import { NpcSimpleFieldEditor } from '../ui/NpcSimpleFieldEditor';
-import { NpcCombatActionFields } from '../ui/NpcCombatActionFields';
+import { createNpcListRenderers } from '../ui/npcListFieldRenderers';
 
 // Modular Sub-components
 import { NpcCardHeader } from './NpcCardHeader';
@@ -67,6 +66,15 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
     }
   }, [npc.reactions]);
 
+  const bonusActions = React.useMemo(() => {
+    try {
+      const parsed = JSON.parse(npc.bonusActions || '[]');
+      return Array.isArray(parsed) ? (parsed as NpcAction[]) : [];
+    } catch {
+      return [] as NpcAction[];
+    }
+  }, [npc.bonusActions]);
+
   const legendaryActions = React.useMemo(() => {
     try {
       const parsed = JSON.parse(npc.legendaryActionsList || '[]');
@@ -76,77 +84,13 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
     }
   }, [npc.legendaryActionsList]);
 
-  const renderTraitFields = (item: NpcTrait, index: number, onItemChange: (updated: NpcTrait) => void) => (
-    <NpcSimpleFieldEditor
-      name={item.name}
-      onNameChange={name => onItemChange({ ...item, name })}
-      namePlaceholder="Trait name"
-      description={item.description}
-      onDescriptionChange={description => onItemChange({ ...item, description })}
-    />
-  );
-
-  const renderActionFields = (item: NpcAction, index: number, onItemChange: (updated: NpcAction) => void) => (
-    <NpcCombatActionFields
-       idPrefix={`npc-card-action-${index}`}
-       name={item.name}
-       onNameChange={name => onItemChange({ ...item, name })}
-       namePlaceholder="Action name (e.g. Bite)"
-       recharge={item.recharge}
-       onRechargeChange={val => onItemChange({ ...item, recharge: val })}
-       attackBonus={item.attackBonus}
-       onAttackBonusChange={val => onItemChange({ ...item, attackBonus: val })}
-       damage={item.damage}
-       onDamageChange={val => onItemChange({ ...item, damage: val })}
-       damagePlaceholder="2d8+5 fire"
-       saveDC={item.saveDC}
-       onSaveDCChange={val => onItemChange({ ...item, saveDC: val })}
-       saveType={item.saveType}
-       onSaveTypeChange={val => onItemChange({ ...item, saveType: val })}
-       rangeValue={item.range}
-       onRangeValueChange={val => onItemChange({ ...item, range: val })}
-       description={item.description}
-       onDescriptionChange={description => onItemChange({ ...item, description })}
-       descriptionRows={3}
-    />
-  );
-
-  const renderReactionFields = (item: NpcReaction, index: number, onItemChange: (updated: NpcReaction) => void) => (
-    <NpcSimpleFieldEditor
-      name={item.name}
-      onNameChange={name => onItemChange({ ...item, name })}
-      namePlaceholder="Reaction name"
-      description={item.description}
-      onDescriptionChange={description => onItemChange({ ...item, description })}
-    />
-  );
-
-  const renderLegendaryActionFields = (
-    item: NpcLegendaryAction,
-    index: number,
-    onItemChange: (updated: NpcLegendaryAction) => void
-  ) => (
-    <NpcCombatActionFields
-      idPrefix={`npc-card-legendary-${index}`}
-      name={item.name}
-      onNameChange={name => onItemChange({ ...item, name })}
-      namePlaceholder="Action name"
-      cost={item.cost}
-      onCostChange={val => onItemChange({ ...item, cost: val })}
-      attackBonus={item.attackBonus}
-      onAttackBonusChange={val => onItemChange({ ...item, attackBonus: val })}
-      damage={item.damage}
-      onDamageChange={val => onItemChange({ ...item, damage: val })}
-      damagePlaceholder="2d8+5"
-      saveDC={item.saveDC}
-      onSaveDCChange={val => onItemChange({ ...item, saveDC: val })}
-      saveType={item.saveType}
-      onSaveTypeChange={val => onItemChange({ ...item, saveType: val })}
-      description={item.description}
-      onDescriptionChange={description => onItemChange({ ...item, description })}
-      descriptionRows={2}
-    />
-  );
+  const {
+    renderTraitFields,
+    renderActionFields,
+    renderReactionFields,
+    renderBonusActionFields,
+    renderLegendaryActionFields,
+  } = React.useMemo(() => createNpcListRenderers('npc-card'), []);
 
   return (
     <CardShell
@@ -320,6 +264,28 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
               renderFields={renderReactionFields}
               onChange={(updated) =>
                 onUpdate({ reactions: JSON.stringify(updated) })
+              }
+            />
+          </div>
+
+          <div className="space-y-4 pt-4 border-t border-[#e2e8f0]/40">
+            <NpcListEditor<NpcAction>
+              title="Bonus Actions"
+              items={bonusActions}
+              defaultExpanded={bonusActions.length > 0}
+              emptyItem={{
+                name: '',
+                description: '',
+                attackBonus: undefined,
+                damage: undefined,
+                saveDC: undefined,
+                saveType: undefined,
+                range: undefined,
+                recharge: undefined,
+              }}
+              renderFields={renderBonusActionFields}
+              onChange={(updated) =>
+                onUpdate({ bonusActions: JSON.stringify(updated) })
               }
             />
           </div>

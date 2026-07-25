@@ -73,9 +73,10 @@ export async function addNpcDB(
       sanitizeString(npcData.reactions ?? '[]'),
       sanitizeString(npcData.legendaryActionsList ?? '[]'),
       finalSpellcastingAbility,
+      sanitizeString(npcData.bonusActions ?? '[]'),
     ];
 
-    await appendSheetData(resolvedId, 'NPCs!A:V', [rowData]);
+    await appendSheetData(resolvedId, 'NPCs!A:W', [rowData]);
     return {
       id: finalId,
       name: npcData.name,
@@ -99,6 +100,7 @@ export async function addNpcDB(
       reactions: npcData.reactions ?? '[]',
       legendaryActionsList: npcData.legendaryActionsList ?? '[]',
       spellcastingAbility: npcData.spellcastingAbility ?? finalSpellcastingAbility,
+      bonusActions: npcData.bonusActions ?? '[]',
     };
   } catch (err) {
     console.error('[DB] addNpcDB failed:', err);
@@ -150,14 +152,15 @@ export async function updateNpcFullDB(
       npc.senses ?? '',
       npc.languages ?? '',
       npc.challengeRating ?? '',
-      npc.traits ?? '[]',
-      npc.actions ?? '[]',
-      npc.reactions ?? '[]',
-      npc.legendaryActionsList ?? '[]',
+      sanitizeString(npc.traits ?? '[]'),
+      sanitizeString(npc.actions ?? '[]'),
+      sanitizeString(npc.reactions ?? '[]'),
+      sanitizeString(npc.legendaryActionsList ?? '[]'),
       getSpellcastingAbilityToSave(npc, npc),
+      sanitizeString(npc.bonusActions ?? '[]'),
     ];
 
-    queueWriteResolved(resolvedId, `NPCs!A${a1Row}:V${a1Row}`, [rowData]);
+    queueWriteResolved(resolvedId, `NPCs!A${a1Row}:W${a1Row}`, [rowData]);
   } catch (err) {
     console.error('[DB] updateNpcFullDB failed:', err);
     throw err;

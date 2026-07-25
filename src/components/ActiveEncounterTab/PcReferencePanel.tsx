@@ -18,6 +18,7 @@ export const PcReferencePanel: React.FC<PcReferencePanelProps> = ({ combatant })
   const hasNoContent = 
     isFieldEmpty(combatant.traits) &&
     isFieldEmpty(combatant.actions) &&
+    isFieldEmpty(combatant.bonusActions) &&
     isFieldEmpty(combatant.reactions);
 
   if (hasNoContent) return null;
@@ -37,6 +38,14 @@ export const PcReferencePanel: React.FC<PcReferencePanelProps> = ({ combatant })
       return [] as NpcAction[];
     }
   }, [combatant.actions]);
+
+  const bonusActions = useMemo(() => {
+    try {
+      return JSON.parse(combatant.bonusActions || '[]') as NpcAction[];
+    } catch {
+      return [] as NpcAction[];
+    }
+  }, [combatant.bonusActions]);
 
   const reactions = useMemo(() => {
     try {
@@ -77,6 +86,18 @@ export const PcReferencePanel: React.FC<PcReferencePanelProps> = ({ combatant })
                 name: a.name,
                 description: a.description,
                 meta: formatActionMeta(a),
+              }))}
+            />
+          )}
+
+          {/* Bonus Actions section */}
+          {bonusActions.length > 0 && (
+            <NpcStatBlockSection
+              title="Bonus Actions"
+              items={bonusActions.map(ba => ({
+                name: ba.name,
+                description: ba.description,
+                meta: formatActionMeta(ba),
               }))}
             />
           )}

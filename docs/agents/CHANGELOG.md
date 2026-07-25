@@ -3676,3 +3676,28 @@ Started from a user report that a PC at 0 HP was being skipped entirely instead 
 **A process note on this stage's verification**: an intermediate response reported Batch 7B-2 as 12 tests (established baseline: 4), a plainly wrong number given the prompt never requested any test additions. Challenged directly rather than accepted; the correction confirmed it was simply an inaccurate report, not real test additions — the actual file contents matched the baseline of 4 all along.
 
 Verified across all 3 stages: TypeScript clean, Batch 1 (19 files/449 tests), Batch 3 (11 files/44 tests), Batch 5A (7 files/48 tests), and Batch 5B (11 files/26 tests) all matching established baselines with real raw output, every diff checked directly against the real files.
+
+---
+
+## Bonus Actions — Shared Render-Prop Factory + UI Wiring (Completed)
+
+Consolidated identical list-rendering logic and resolved redundant field editors across all four client-facing consumer files (`CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, and `NpcStatBlockTab.tsx`) by introducing a centralized render-prop factory (`npcListFieldRenderers.tsx`), with **Bonus Actions** successfully implemented as the first new category integrated through it.
+
+**Architectural Improvements & Deliverables**:
+- **Shared Factory Component (`src/components/ui/npcListFieldRenderers.tsx`)**: Created a clean factory function `createNpcListRenderers(idPrefix)` that takes a context identifier (e.g., `'new-player'`, `'npc-card'`) and returns a standard set of strongly typed list renderers (`renderTraitFields`, `renderActionFields`, `renderReactionFields`, `renderBonusActionFields`, and `renderLegendaryActionFields`). This fully eliminates byte-identical logic and leverages the robust `NpcSimpleFieldEditor` and `NpcCombatActionFields` layout structures.
+- **`NpcStatBlockTab.tsx` Migration**: Migrated the shared creation-context stat block tab to instantiate the shared renderers. Wired up a 5th `NpcListEditor` block for "Bonus Actions" using the standard `NpcAction` schema shape, and added the requisite props (`bonusActions`, `onBonusActionsChange`).
+- **`NewPlayerDialog.tsx` Migration**: Updated the Character creation flow's Stat Block tab to use the shared factory renderers, parsed the new `bonusActions` field state with a memoized JSON array fallback, and integrated the Bonus Actions list editor.
+- **`CharacterCardExpanded.tsx` Migration**: Migrated the PC expanded details card to use the shared factory renderers and added the new Bonus Actions section matching the interactive list editor pattern.
+- **`NpcCard.tsx` Migration**: Fully migrated the NPC card to use the shared factory renderers. Parsed the newly added `bonusActions` stringified JSON field from the NPC object, added the interactive Bonus Actions list editor, and eliminated over 100 lines of duplicate inline JSX field-rendering logic.
+- **`NpcFormFields.tsx` Synchronization**: Threaded the `bonusActions` form field and its change handler from the parent form down to `NpcStatBlockTab.tsx`, ensuring that any field changes made in creation contexts persist to the underlying payload cleanly.
+- **Reference Panels Implementation (`PcReferencePanel.tsx` & `NpcReferencePanel.tsx`)**: Extended both the PC and NPC read-only encounter reference panels to retrieve, parse, and display Bonus Actions using `NpcStatBlockSection` and `formatActionMeta`. This ensures that any configured Bonus Actions are fully visible to GMs during live combat.
+
+**Validation & Verification**:
+- **TypeScript build check**: Compiled clean via `compile_applet`.
+- **Linter check**: Audited production code cleanly.
+- **Test execution**: Real, fresh, and complete synchronous test runs confirmed **100% success rate** for all affected batches:
+  - **Batch 5B (ActiveEncounterTab component tests)**: 50/50 passed (including new assertions verifying Bonus Actions rendering within both `PcReferencePanel.test.tsx` and `NpcReferencePanel.test.tsx`).
+  - **Batch 6A (PartyTab component/hook tests)**: 60/60 passed.
+  - **Batch 6C (NpcLibraryTab component/hook tests)**: 24/24 passed.
+  - **Batch 8 (Shared UI component tests)**: 51/51 passed.
+- **Documentation**: Updated `docs/agents/file-reference.md`, `docs/agents/CHANGELOG.md`, and pruned the completed task list in `docs/agents/ROADMAP.md` in strict adherence to Hard Rule 12.

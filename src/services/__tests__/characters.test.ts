@@ -61,7 +61,7 @@ describe('updateCharacterDB — row array integrity', () => {
     await updateCharacterDB({ spellcastingAbility: 'WIS' }, fullState as any);
     expect(writeQueue.queueWrite).toHaveBeenCalled();
     const writeCall = vi.mocked(writeQueue.queueWrite).mock.calls[0];
-    const row = writeCall[2][0];
+    const row = writeCall[2][0] as any[];
     expect(row[25]).toBe('WIS');
   });
 
@@ -72,18 +72,18 @@ describe('updateCharacterDB — row array integrity', () => {
       fullState as any
     );
     const writeCall = vi.mocked(writeQueue.queueWrite).mock.calls[0];
-    const row = writeCall[2][0];
+    const row = writeCall[2][0] as any[];
     expect(row[24]).toContain('spellcastingAbility');
   });
 
-  it('writes to Characters!A{row}:AD{row}', async () => {
+  it('writes to Characters!A{row}:AE{row}', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({
       values: [['other'], ['char-1']],
     });
     await updateCharacterDB({}, fullState as any);
     expect(writeQueue.queueWrite).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'Characters!A3:AD3',
+      'Characters!A3:AE3',
       [[
         'char-1',
         'Player 1',
@@ -115,6 +115,7 @@ describe('updateCharacterDB — row array integrity', () => {
         '[]',
         '[]',
         '[]',
+        '[]',
       ]]
     );
   });
@@ -123,10 +124,18 @@ describe('updateCharacterDB — row array integrity', () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [['other']] });
     await expect(updateCharacterDB({}, fullState as any)).rejects.toThrow();
   });
+  it("correctly includes a non-empty bonusActions value in the updated row", async () => {
+    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [["char-1"]] });
+    await updateCharacterDB({ bonusActions: "[{\"name\":\"Dash\"}]" }, fullState as any);
+    const writeCall = vi.mocked(writeQueue.queueWrite).mock.calls[0];
+    const row = writeCall[2][0] as any[];
+    expect(row[30]).toBe("[{\"name\":\"Dash\"}]");
+  });
+
 });
 
 describe('addCharacterDB — row structure', () => {
-  it('writes 30 values with spellcastingAbility at index 25', async () => {
+  it('writes 31 values with spellcastingAbility at index 25', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
     await addCharacterDB({
       characterName: 'Mage',
@@ -134,17 +143,18 @@ describe('addCharacterDB — row structure', () => {
     });
     expect(sheetsService.appendSheetData).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'Characters!A:AD',
+      'Characters!A:AE',
       expect.any(Array)
     );
     const appendCall = vi.mocked(sheetsService.appendSheetData).mock.calls[0];
-    const row = appendCall[2][0];
-    expect(row).toHaveLength(30);
+    const row = appendCall[2][0] as any[];
+    expect(row).toHaveLength(31);
     expect(row[25]).toBe('CHA');
     expect(row[26]).toBe('FALSE');
     expect(row[27]).toBe('[]');
     expect(row[28]).toBe('[]');
     expect(row[29]).toBe('[]');
+    expect(row[30]).toBe('[]');
   });
 });
 
@@ -181,14 +191,14 @@ describe('addCharacterDB — row array integrity', () => {
     vi.clearAllMocks();
   });
 
-  it('writes all 30 fields at correct column indices (0–29)', async () => {
+  it('writes all 31 fields at correct column indices (0–30)', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
     await addCharacterDB(charData as any);
     
     expect(sheetsService.appendSheetData).toHaveBeenCalled();
-    const row = vi.mocked(sheetsService.appendSheetData).mock.calls[0][2][0];
+    const row = vi.mocked(sheetsService.appendSheetData).mock.calls[0][2][0] as any[];
     
-    expect(row).toHaveLength(30);
+    expect(row).toHaveLength(31);
     expect(row[1]).toBe('Player One'); // playerName
     expect(row[2]).toBe('Paladin Hero'); // characterName
     expect(row[3]).toBe(18); // ac
@@ -218,6 +228,7 @@ describe('addCharacterDB — row array integrity', () => {
     expect(row[27]).toBe('[]'); // traits
     expect(row[28]).toBe('[]'); // actions
     expect(row[29]).toBe('[]'); // reactions
+    expect(row[30]).toBe('[]'); // bonusActions
   });
 
   it('writes gmControlled and stat block JSON fields correctly to indices 26-29', async () => {
@@ -237,5 +248,16 @@ describe('addCharacterDB — row array integrity', () => {
     expect(row[27]).toBe('[{"name":"Tough"}]');
     expect(row[28]).toBe('[{"name":"Strike"}]');
     expect(row[29]).toBe('[{"name":"Parry"}]');
+  });
+
+  it('correctly includes a non-empty bonusActions value in the appended row', async () => {
+    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
+    await addCharacterDB({
+      ...charData as any,
+      bonusActions: '[{"name":"Dash"}]'
+    });
+    expect(sheetsService.appendSheetData).toHaveBeenCalled();
+    const row = vi.mocked(sheetsService.appendSheetData).mock.calls[0][2][0];
+    expect(row[30]).toBe('[{"name":"Dash"}]');
   });
 });

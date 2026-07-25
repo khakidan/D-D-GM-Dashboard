@@ -141,6 +141,7 @@ describe('useParty - Character CRUD', () => {
           gmControlled: true,
           traits: '[{"name":"Tough"}]',
           actions: '[{"name":"Strike"}]',
+          bonusActions: '[{"name":"Quick Step"}]',
           reactions: '[{"name":"Parry"}]'
         });
       });
@@ -150,6 +151,7 @@ describe('useParty - Character CRUD', () => {
           gmControlled: true,
           traits: '[{"name":"Tough"}]',
           actions: '[{"name":"Strike"}]',
+          bonusActions: '[{"name":"Quick Step"}]',
           reactions: '[{"name":"Parry"}]'
         }), 
         expect.objectContaining({ id: 'char-1' })

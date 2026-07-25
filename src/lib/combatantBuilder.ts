@@ -128,6 +128,7 @@ export function buildSingleNpcCombatant(
     actions: npcTemplate.actions,
     reactions: npcTemplate.reactions,
     legendaryActionsList: npcTemplate.legendaryActionsList,
+    bonusActions: npcTemplate.bonusActions,
   };
 }
 
@@ -192,6 +193,7 @@ export function buildCombatantsFromState(
             traits: c.traits,
             actions: c.actions,
             reactions: c.reactions,
+            bonusActions: c.bonusActions,
           });
         }
       } else if (ec.npcId) {
@@ -271,6 +273,7 @@ export function buildCombatantsFromState(
         traits: c.traits,
         actions: c.actions,
         reactions: c.reactions,
+        bonusActions: c.bonusActions,
       });
     });
   }

@@ -4,10 +4,10 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 949 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+**Current baseline: 955 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
 
-- **Batch 1: 479 → 488.** Breakdown: 479 (baseline) + 7 (Challenge Rating repair tests) + 2 (IRV overlap regression tests) = 488.
-- **Batch 2: 42 → 52.** Breakdown: 42 (baseline) + 6 (sheetsService retry engine tests) + 4 (other missed/new tests confirmed via fresh run) = 52.
+- **Batch 1: 488 → 490.** Breakdown: 488 (baseline) + 2 (bonusActions round-trip coverage) = 490.
+- **Batch 2: 52 → 56.** Breakdown: 52 (baseline) + 4 (bonusActions round-trip coverage for add/update characters and npcs) = 56.
 - **Batch 4: 11 tests.** Breakdown: campaigns.test.ts (5), auth.test.ts (3), suiteIntegrity.test.ts (2), health.test.ts (1).
 - **Batch 5A: 69 → 65.** useCombatantCard.test.ts was removed from this batch's file list because useCombatantCard.ts (the hook it tested) was deleted in a prior refactor.
 - **Batch 7B-2: 23 → 31.** Breakdown: 23 (baseline) + 8 (CampaignSelector interactions/validation/delete-lifecycle tests, plus 1 other unrecorded test confirmed via fresh run) = 31.

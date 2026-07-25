@@ -17,6 +17,7 @@ describe('NpcReferencePanel', () => {
       challengeRating: '',
       traits: '',
       actions: '',
+      bonusActions: '',
       reactions: '',
       legendaryActionsList: '',
     });
@@ -32,6 +33,10 @@ describe('NpcReferencePanel', () => {
       speed: '30 ft., climb 20 ft.',
       senses: 'Darkvision 60 ft.',
       languages: 'Common, Goblin',
+      bonusActions: JSON.stringify([{
+        name: 'Goblin Dash',
+        description: 'Dashes as a bonus action.',
+      }]),
     });
 
     render(<NpcReferencePanel combatant={npcWithContent} />);
@@ -43,5 +48,7 @@ describe('NpcReferencePanel', () => {
 
     expect(screen.getByText('Darkvision 60 ft.')).toBeInTheDocument();
     expect(screen.getByText('Common, Goblin')).toBeInTheDocument();
+    expect(screen.getByText('Goblin Dash')).toBeInTheDocument();
+    expect(screen.getByText('Dashes as a bonus action.')).toBeInTheDocument();
   });
 });

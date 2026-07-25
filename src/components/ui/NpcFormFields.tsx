@@ -39,6 +39,7 @@ export interface NpcFormData {
   traits?: string;
   actions?: string;
   reactions?: string;
+  bonusActions?: string;
   legendaryActionsList?: string;
 }
 
@@ -61,6 +62,7 @@ export const DEFAULT_NPC_FORM_DATA: NpcFormData = {
   traits: '[]',
   actions: '[]',
   reactions: '[]',
+  bonusActions: '[]',
   legendaryActionsList: '[]',
 };
 
@@ -96,6 +98,13 @@ export function NpcFormFields({ data, onChange, errors = {}, compact = false }: 
     onChange({
       ...data,
       reactions: JSON.stringify(updated),
+    });
+  };
+
+  const handleBonusActionsChange = (updated: NpcAction[]) => {
+    onChange({
+      ...data,
+      bonusActions: JSON.stringify(updated),
     });
   };
 
@@ -143,6 +152,15 @@ export function NpcFormFields({ data, onChange, errors = {}, compact = false }: 
       return [] as NpcReaction[];
     }
   }, [data.reactions]);
+
+  const bonusActions = React.useMemo(() => {
+    try {
+      const parsed = JSON.parse(data.bonusActions || '[]');
+      return Array.isArray(parsed) ? (parsed as NpcAction[]) : [];
+    } catch {
+      return [] as NpcAction[];
+    }
+  }, [data.bonusActions]);
 
   const legendaryActionsList = React.useMemo(() => {
     try {
@@ -222,10 +240,12 @@ export function NpcFormFields({ data, onChange, errors = {}, compact = false }: 
           traits={traits}
           actions={actions}
           reactions={reactions}
+          bonusActions={bonusActions}
           legendaryActionsList={legendaryActionsList}
           onTraitsChange={handleTraitsChange}
           onActionsChange={handleActionsChange}
           onReactionsChange={handleReactionsChange}
+          onBonusActionsChange={handleBonusActionsChange}
           onLegendaryActionsChange={handleLegendaryActionsListChange}
           compact={compact}
         />

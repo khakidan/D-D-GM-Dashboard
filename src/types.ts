@@ -37,6 +37,7 @@ export interface Character {
   traits?: string;
   actions?: string;
   reactions?: string;
+  bonusActions?: string;
 }
 
 export interface NpcTrait {
@@ -100,6 +101,7 @@ export interface NPC {
   reactions: string;         // JSON: NpcReaction[]
   legendaryActionsList: string; // JSON: NpcLegendaryAction[]
   spellcastingAbility?: string;
+  bonusActions?: string;
 }
 
 export interface Encounter {
@@ -168,6 +170,7 @@ export interface Combatant {
   reactions?: string;
   legendaryActionsList?: string;
   gmControlled?: boolean;
+  bonusActions?: string;
 }
 
 export interface CombatState {

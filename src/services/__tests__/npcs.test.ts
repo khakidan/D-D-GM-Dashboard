@@ -24,7 +24,7 @@ vi.mock('../writeQueue', () => ({
 }));
 
 describe('addNpcDB — row array integrity', () => {
-  const npcData = {
+const npcData = {
     name: 'Test Dragon',
     ac: 18,
     maxHp: 200,
@@ -55,18 +55,18 @@ describe('addNpcDB — row array integrity', () => {
     vi.clearAllMocks();
   });
 
-  it('writes exactly 25 values to NPCs!A:Y', async () => {
+  it('writes exactly 23 values to NPCs!A:W', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
     await addNpcDB(npcData as any);
     expect(writeQueue.queueWrite).not.toHaveBeenCalled();
     expect(sheetsService.appendSheetData).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'NPCs!A:V',
+      'NPCs!A:W',
       expect.any(Array)
     );
     const appendCall = vi.mocked(sheetsService.appendSheetData).mock.calls[0];
-    const row = appendCall[2][0];
-    expect(row).toHaveLength(22);
+    const row = appendCall[2][0] as any[];
+    expect(row).toHaveLength(23);
   });
 
   it('writes new stat block fields at correct indices (13–21)', async () => {
@@ -100,6 +100,14 @@ describe('addNpcDB — row array integrity', () => {
     const row = appendCall[2][0];
     expect(row[3]).toBe(200);
   });
+  it("correctly includes a non-empty bonusActions value in the appended row (addNpcDB)", async () => {
+    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
+    await addNpcDB({ ...npcData as any, bonusActions: "[{\"name\":\"Quick Step\"}]" });
+    const appendCall = vi.mocked(sheetsService.appendSheetData).mock.calls[0];
+    const row = appendCall[2][0] as any[];
+    expect(row[22]).toBe("[{\"name\":\"Quick Step\"}]");
+  });
+
 });
 
 describe('updateNpcFullDB — row array integrity', () => {
@@ -140,7 +148,7 @@ describe('updateNpcFullDB — row array integrity', () => {
     await updateNpcFullDB(npc as any);
     expect(writeQueue.queueWrite).toHaveBeenCalled();
     const writeCall = vi.mocked(writeQueue.queueWrite).mock.calls[0];
-    const row = writeCall[2][0];
+    const row = writeCall[2][0] as any[];
     expect(row[21]).toBe('INT');
   });
 
@@ -149,18 +157,18 @@ describe('updateNpcFullDB — row array integrity', () => {
     const updatedNpc = { ...npc, actions: '[{"name":"Bite","recharge":"Recharge 5-6"}]' };
     await updateNpcFullDB(updatedNpc as any);
     const writeCall = vi.mocked(writeQueue.queueWrite).mock.calls[0];
-    const row = writeCall[2][0];
+    const row = writeCall[2][0] as any[];
     expect(row[18]).toBe('[{"name":"Bite","recharge":"Recharge 5-6"}]');
   });
 
-  it('writes to NPCs!A{row}:V{row}', async () => {
+  it('writes to NPCs!A{row}:W{row}', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({
       values: [['other'], ['other'], ['101']],
     });
     await updateNpcFullDB(npc as any);
     expect(writeQueue.queueWrite).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'NPCs!A4:V4',
+      'NPCs!A4:W4',
       expect.any(Array)
     );
   });
@@ -169,6 +177,14 @@ describe('updateNpcFullDB — row array integrity', () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [['other']] });
     await expect(updateNpcFullDB(npc as any)).rejects.toThrow(/not found/i);
   });
+  it("correctly includes a non-empty bonusActions value in the updated row (updateNpcFullDB)", async () => {
+    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [["101"]] });
+    await updateNpcFullDB({ ...npc as any, id: "101", bonusActions: "[{\"name\":\"Quick Step\"}]" });
+    const writeCall = vi.mocked(writeQueue.queueWrite).mock.calls[0];
+    const row = writeCall[2][0] as any[];
+    expect(row[22]).toBe("[{\"name\":\"Quick Step\"}]");
+  });
+
 });
 
 describe('deleteNpcDB', () => {
@@ -183,6 +199,7 @@ describe('NPC spellcastingAbility dual-write', () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [['npc-1']] });
     const npc = { id: 'npc-1', name: 'Mage', spellcastingAbility: 'WIS' };
     
+    vi.clearAllMocks();
     // Test update
     await updateNpcFullDB(npc as any);
     expect(writeQueue.queueWrite).toHaveBeenCalled();
@@ -200,3 +217,4 @@ describe('NPC spellcastingAbility dual-write', () => {
     expect(appendRow[21]).toBe('WIS');
   });
 });
+

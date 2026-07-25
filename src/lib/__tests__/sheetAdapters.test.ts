@@ -65,6 +65,7 @@ describe('sheetAdapters', () => {
         '[]',                     // [27] traits
         '[]',                     // [28] actions
         '[]',                     // [29] reactions
+        '[]',                     // [30] bonusActions
       ];
 
       const character = mapCharacterRowToCharacter(data, 2, mockStatuses);
@@ -103,6 +104,7 @@ describe('sheetAdapters', () => {
         traits: '[]',
         actions: '[]',
         reactions: '[]',
+        bonusActions: '[]',
       });
     });
 
@@ -135,6 +137,7 @@ describe('sheetAdapters', () => {
         '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
         '',
         false,
+        '[]',
         '[]',
         '[]',
         '[]',
@@ -176,6 +179,7 @@ describe('sheetAdapters', () => {
         '[]',
         '[]',
         '[]',
+        '[]',
       ];
 
       const characterUnknown = mapCharacterRowToCharacter(dataUnknown, 4, mockStatuses);
@@ -203,6 +207,7 @@ describe('sheetAdapters', () => {
         '[]',
         '[]',
         '[]',
+        '[]',
       ];
       const character = mapCharacterRowToCharacter(data, 6, mockStatuses);
       expect(character.class).toBe('Barbarian');
@@ -223,6 +228,7 @@ describe('sheetAdapters', () => {
         '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
         '',
         false,
+        '[]',
         '[]',
         '[]',
         '[]',
@@ -255,6 +261,7 @@ describe('sheetAdapters', () => {
         '[{"name":"Tough","description":"+2 HP per level"}]', // traits
         '[{"name":"Slash","description":"1d8 damage"}]', // actions
         '[{"name":"Parry","description":"+2 AC"}]', // reactions
+        '[{"name":"Dash","description":"Move faster"}]', // bonusActions
       ];
 
       const character = mapCharacterRowToCharacter(data, 2, mockStatuses);
@@ -262,6 +269,7 @@ describe('sheetAdapters', () => {
       expect(character.traits).toBe('[{"name":"Tough","description":"+2 HP per level"}]');
       expect(character.actions).toBe('[{"name":"Slash","description":"1d8 damage"}]');
       expect(character.reactions).toBe('[{"name":"Parry","description":"+2 AC"}]');
+      expect(character.bonusActions).toBe('[{"name":"Dash","description":"Move faster"}]');
 
       // Now with undefined/missing fields (using as any shortRow or undefined elements)
       const dataMissing = [
@@ -276,6 +284,7 @@ describe('sheetAdapters', () => {
       expect(characterMissing.traits).toBe('[]');
       expect(characterMissing.actions).toBe('[]');
       expect(characterMissing.reactions).toBe('[]');
+      expect(characterMissing.bonusActions).toBe('[]');
     });
   });
 
@@ -290,6 +299,21 @@ describe('sheetAdapters', () => {
         'slashing',               // [5] resistances
         'acid',                   // [6] immunities
         'fire',                   // [7] vulnerabilities
+        0,                        // [8] legendaryActions
+        0,                        // [9] legendaryResistances
+        '',                       // [10] rechargeAbilities
+        '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}', // [11] abilityScores
+        '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}', // [12] proficiencies
+        '',                       // [13] speed
+        '',                       // [14] senses
+        '',                       // [15] languages
+        '',                       // [16] challengeRating
+        '[]',                     // [17] traits
+        '[]',                     // [18] actions
+        '[]',                     // [19] reactions
+        '[]',                     // [20] legendaryActionsList
+        '',                       // [21] spellcastingAbility
+        '[]',                     // [22] bonusActions
       ];
 
       const npc = mapNpcRowToNpc(data, 5);
@@ -317,13 +341,14 @@ describe('sheetAdapters', () => {
         reactions: '[]',
         legendaryActionsList: '[]',
         spellcastingAbility: '',
+        bonusActions: '[]',
       });
     });
   });
 
   describe('mapEncounterRowToEncounter', () => {
     it('correctly resolves difficultyName from the difficulties map', () => {
-      const data: EncounterRowData = [
+      const data = [
         'enc-1',                      // [0] id
         'Ambush',                     // [1] name
         'Forest road',                // [2] location
@@ -333,7 +358,7 @@ describe('sheetAdapters', () => {
         'ec-42',                      // [6] activeTurnId
       ];
 
-      const encounter = mapEncounterRowToEncounter(data, 1, mockDifficulties);
+      const encounter = mapEncounterRowToEncounter(data as any as EncounterRowData, 1, mockDifficulties);
 
       expect(encounter).toEqual({
         id: 'enc-1',
@@ -349,7 +374,7 @@ describe('sheetAdapters', () => {
         loggingRequested: false,
       });
 
-      const dataUnknown: EncounterRowData = [
+      const dataUnknown = [
         'enc-2',
         'Cave Run',
         'Dark cave',
@@ -358,25 +383,25 @@ describe('sheetAdapters', () => {
         0,
         '',
       ];
-      const encounterUnknown = mapEncounterRowToEncounter(dataUnknown, 2, mockDifficulties);
+      const encounterUnknown = mapEncounterRowToEncounter(dataUnknown as any as EncounterRowData, 2, mockDifficulties);
       expect(encounterUnknown.difficultyName).toBe('Unknown');
     });
 
     it('mapEncounterRowToEncounter correctly maps index 5 to currentRound', () => {
-      const data: EncounterRowData = ['enc-1', 'Name', 'Loc', 1, '', 4, 'ec-1'];
-      const encounter = mapEncounterRowToEncounter(data, 1, mockDifficulties);
+      const data = ['enc-1', 'Name', 'Loc', 1, '', 4, 'ec-1'];
+      const encounter = mapEncounterRowToEncounter(data as any as EncounterRowData, 1, mockDifficulties);
       expect(encounter.currentRound).toBe(4);
     });
 
     it('mapEncounterRowToEncounter correctly maps index 6 to activeTurnId', () => {
-      const data: EncounterRowData = ['enc-1', 'Name', 'Loc', 1, '', 4, 'ec-99'];
-      const encounter = mapEncounterRowToEncounter(data, 1, mockDifficulties);
+      const data = ['enc-1', 'Name', 'Loc', 1, '', 4, 'ec-99'];
+      const encounter = mapEncounterRowToEncounter(data as any as EncounterRowData, 1, mockDifficulties);
       expect(encounter.activeTurnId).toBe('ec-99');
     });
 
     it('mapEncounterRowToEncounter defaults currentRound to 0 when the row is shorter than 7 columns', () => {
       const data = ['enc-1', 'Name', 'Loc', 1, ''] as any as EncounterRowData;
-      const encounter = mapEncounterRowToEncounter(data, 1, mockDifficulties);
+      const encounter = mapEncounterRowToEncounter(data as any as EncounterRowData, 1, mockDifficulties);
       expect(encounter.currentRound).toBe(0);
       expect(encounter.activeTurnId).toBe('');
     });
@@ -384,7 +409,7 @@ describe('sheetAdapters', () => {
 
   describe('mapEncounterCombatantRowToEC', () => {
     it('parses conditionTimers JSON string into a Record correctly', () => {
-      const data: ECRowData = [
+      const data = [
         'ec-1',                                   // [0] id
         'enc-1',                                  // [1] encounterId
         'char-1',                                 // [2] playerId
@@ -394,7 +419,7 @@ describe('sheetAdapters', () => {
         '{"Blessed":2,"Hasted":5}',               // [6] conditionTimers
       ];
 
-      const ec = mapEncounterCombatantRowToEC(data, 1);
+      const ec = mapEncounterCombatantRowToEC(data as any as ECRowData, 1);
 
       expect(ec.conditionTimers).toEqual({
         Blessed: 2,
@@ -404,7 +429,7 @@ describe('sheetAdapters', () => {
     });
 
     it('defaults conditionTimers to empty object when JSON is invalid', () => {
-      const data: ECRowData = [
+      const data = [
         'ec-2',
         'enc-1',
         null,
@@ -414,14 +439,14 @@ describe('sheetAdapters', () => {
         '{invalid-json',
       ];
 
-      const ec = mapEncounterCombatantRowToEC(data, 2);
+      const ec = mapEncounterCombatantRowToEC(data as any as ECRowData, 2);
 
       expect(ec.conditionTimers).toEqual({});
       expect(ec.quantity).toBe(5);
     });
 
     it('defaults conditionTimers to empty object when conditionTimers is empty string or absent', () => {
-      const data: ECRowData = [
+      const data = [
         'ec-3',
         'enc-1',
         null,
@@ -431,12 +456,12 @@ describe('sheetAdapters', () => {
         '',
       ];
 
-      const ec = mapEncounterCombatantRowToEC(data, 3);
+      const ec = mapEncounterCombatantRowToEC(data as any as ECRowData, 3);
       expect(ec.conditionTimers).toEqual({});
     });
 
     it('maps npcCurrentHp and npcTempHp correctly if present in ECRowData', () => {
-      const data: ECRowData = [
+      const data = [
         'ec-4',
         'enc-1',
         null,
@@ -448,13 +473,13 @@ describe('sheetAdapters', () => {
         10
       ];
 
-      const ec = mapEncounterCombatantRowToEC(data, 4);
+      const ec = mapEncounterCombatantRowToEC(data as any as ECRowData, 4);
       expect(ec.npcCurrentHp).toBe(35);
       expect(ec.npcTempHp).toBe(10);
     });
 
     it('defaults npcCurrentHp to -1 and npcTempHp to 0 if absent dynamically', () => {
-      const data: ECRowData = [
+      const data = [
         'ec-5',
         'enc-1',
         null,
@@ -464,7 +489,7 @@ describe('sheetAdapters', () => {
         '{"Blessed":2}'
       ];
 
-      const ec = mapEncounterCombatantRowToEC(data, 5);
+      const ec = mapEncounterCombatantRowToEC(data as any as ECRowData, 5);
       expect(ec.npcCurrentHp).toBe(-1);
       expect(ec.npcTempHp).toBe(0);
     });
@@ -586,6 +611,45 @@ describe('sheetAdapters', () => {
       const results = parseEncounterLogs(rows);
       expect(results).toHaveLength(1);
       expect(results[0].id).toBe('log-1');
+    });
+  });
+});
+
+describe('Legacy Row Parsing', () => {
+  it('parses legacy Character and NPC rows (missing bonusActions) correctly, defaulting to []', () => {
+    // 30-element character row (missing bonusActions at index 30)
+    const charData = [
+      'char-legacy', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]',
+      '{"STR":10}', '{"skills":{}}', '', false, '[]', '[]', '[]'
+    ] as any as CharacterRowData;
+    
+    const character = mapCharacterRowToCharacter(charData, 2, { '1': 'Active' });
+    expect(character.bonusActions).toBe('[]');
+
+    // 22-element NPC row (missing bonusActions at index 22)
+    const npcData = [
+      'npc-legacy', 'Goblin', 12, 7, '', '', '', '', 0, 0, '', '{"STR":10}', '{"skills":{}}', '', '', '', '', '[]', '[]', '[]', '[]', ''
+    ] as any as NpcRowData;
+
+    const npc = mapNpcRowToNpc(npcData, 3);
+  });
+
+  describe('Legacy Row Parsing', () => {
+    it('parses legacy Character and NPC rows (missing bonusActions) correctly, defaulting to []', () => {
+      const charData = [
+        'char-legacy', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]',
+        '{"STR":10}', '{"skills":{}}', '', false, '[]', '[]', '[]'
+      ] as any as CharacterRowData;
+      
+      const character = mapCharacterRowToCharacter(charData, 2, { '1': 'Active' });
+      expect(character.bonusActions).toBe('[]');
+
+      const npcData = [
+        'npc-legacy', 'Goblin', 12, 7, '', '', '', '', 0, 0, '', '{"STR":10}', '{"skills":{}}', '', '', '', '', '[]', '[]', '[]', '[]', ''
+      ] as any as NpcRowData;
+
+      const npc = mapNpcRowToNpc(npcData, 3);
+      expect(npc.bonusActions).toBe('[]');
     });
   });
 });
