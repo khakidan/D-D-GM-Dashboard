@@ -2,6 +2,53 @@
 
 ---
 
+## `conditionDefinitions.ts` Split — `conditionMechanicsData.ts` Extracted (Completed)
+Closed the last unimplemented candidate from the Round 2 modularity audit. The file was
+765 lines (`wc -l`), ~65% static `CONDITION_MECHANICS` data and ~35% real branching logic
+(`buildConditionSummary`, `applyLongRestToConditions`) — confirmed via fresh line-boundary
+verification rather than trusted from the original audit's estimate, which turned out
+accurate (data block: lines 224–720, 497 lines; logic: lines 22–222 and 722–764).
+
+**Investigation before design, per this project's standing discipline.** Before touching
+anything, a real `grep -rn` (not a narrated summary) confirmed the consumer picture: 8 real
+production consumers (one more than ROADMAP's original "7" — a genuine correction to the
+prior audit, not a miscount this round, confirmed and explicitly reconciled), of which
+exactly one (`concentrationCheck.ts`) imports `CONDITION_MECHANICS` directly, bypassing the
+`conditions/index.ts` barrel. Every other consumer (`combatLogic.ts`, `ConditionChips.tsx`,
+`usePartyRest.ts`, `useCombatantMutations.ts`, `useCombatTurn.ts`, `CombatantCardExpanded.tsx`,
+`CombatantCardBadges.tsx`) goes through the barrel.
+
+**Design decision, made explicitly before implementing**: given `concentrationCheck.ts` is
+confirmed the *only* non-barrel consumer, its import was updated directly to point at the
+new file rather than adding a backward-compat re-export from `conditionDefinitions.ts` —
+the cost of a re-export (an unnecessary middleman in the dependency graph, for data
+`conditionDefinitions.ts` no longer owns) outweighed the cost of the one-line direct update.
+
+**Fix**: new `src/lib/conditionMechanicsData.ts` holds the `ConditionMechanics` interface and
+the `CONDITION_MECHANICS` constant only. `conditionDefinitions.ts` reduced to `buildConditionSummary`
+and `applyLongRestToConditions`, importing `CONDITION_MECHANICS` from the new file. The barrel
+(`conditions/index.ts`) updated to re-export `CONDITION_MECHANICS`/`ConditionMechanics` from
+the new file while continuing to re-export the 2 logic functions from `conditionDefinitions.ts`
+unchanged. `concentrationCheck.ts`'s one direct import repointed to the new file.
+
+**No dedicated test file created for `conditionMechanicsData.ts`** — a deliberate decision,
+not an oversight: the file is pure static data plus a type interface, zero branching logic.
+Its correctness is already exhaustively covered by `conditionDefinitions.test.ts` (the
+mechanical consequences derived from the data), `conditions.barrel.test.ts` (correct
+barrel export, updated to assert equality against the new file's export rather than the
+old one), and the TypeScript compiler (the data literal's conformance to the interface).
+
+**Verification**: `tsc -p tsconfig.build.json --noEmit` clean (0 errors). Real, complete
+batch output confirmed for all consumers found in the investigation — Batch 1 (21 files,
+488 tests, matching the documented baseline exactly; a mid-verification "498" figure was
+identified as a narrative error in an intermediate response and retracted, not a real
+count), Batch 5A (7 files/65 tests, `useCombatantMutations.ts`/`useCombatTurn.ts`),
+Batch 5B (14 files/50 tests, `CombatantCardExpanded.tsx`/`CombatantCardBadges.tsx`),
+Batch 6A (9 files/60 tests, `usePartyRest.ts`), Batch 8 (6 files/38 tests, `ConditionChips.tsx`).
+All matching documented baselines exactly, zero regressions.
+
+---
+
 ## `ResourcePoolsSection.tsx` Test Coverage Added + `PipTracker` isSyncing Gap Fixed (Completed)
 Closed two related, previously-flagged gaps together: the component had no dedicated
 test file (coverage was only indirect, via `useCombatantExpanded.test.ts`'s integration

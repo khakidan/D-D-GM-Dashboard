@@ -1,5 +1,5 @@
 import { toast } from 'sonner';
-import { CONDITION_MECHANICS } from './conditionDefinitions';
+import { CONDITION_MECHANICS } from './conditionMechanicsData';
 import { parseCommaSeparatedList } from './stringUtils';
 import { CONCENTRATION_EFFECTS } from './irvOptions';
 

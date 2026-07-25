@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as barrel from '../conditions';
 import * as irv from '../irvOptions';
 import * as defs from '../conditionDefinitions';
+import * as data from '../conditionMechanicsData';
 import * as logic from '../combatLogic';
 
 describe('Conditions Barrel Exports', () => {
@@ -12,7 +13,7 @@ describe('Conditions Barrel Exports', () => {
 
   it('exports CONDITION_MECHANICS', () => {
     expect(barrel.CONDITION_MECHANICS).toBeDefined();
-    expect(barrel.CONDITION_MECHANICS).toBe(defs.CONDITION_MECHANICS);
+    expect(barrel.CONDITION_MECHANICS).toBe(data.CONDITION_MECHANICS);
   });
 
   it('exports buildConditionSummary', () => {

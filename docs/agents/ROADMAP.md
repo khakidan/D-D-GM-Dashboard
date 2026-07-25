@@ -46,18 +46,6 @@ markup (~25 near-identical `Command.Item` blocks), not tangled logic. A markup-d
 (a small render-helper or data-driven `.map()`) would be a different, smaller-scoped fix than 
 originally proposed — not yet decided if it's worth doing given the modest real payoff either way.
 
-### Candidate 2 — `src/lib/conditionDefinitions.ts` (766 lines) — genuine split warranted
-
-498 lines (65%) of static `CONDITION_MECHANICS` data vs. 247 lines (32%) of real branching logic 
-across `buildConditionSummary`/`applyLongRestToConditions`. Proposed: extract the data + interface 
-into `src/lib/conditionMechanicsData.ts`; leave the 2 functions in a lean ~250-line 
-`conditionDefinitions.ts`. **Not a zero-file-touch change**: `src/lib/concentrationCheck.ts` imports 
-`CONDITION_MECHANICS` directly, bypassing the `conditions/index.ts` barrel — its import path must be 
-updated, or `CONDITION_MECHANICS` re-exported from `conditionDefinitions.ts` for backward compat (a 
-design choice to make explicitly before implementing). Every other consumer goes through the barrel 
-and needs no changes. Verification requirement: raw `tsc` output + Batch 1 (both dedicated test files, 
-24+5 tests) + every batch covering the 7 real downstream consumers.
-
 ### Candidate 3 — `src/components/AudioLibrary.tsx` (546 lines) — split warranted, test coverage must come first
 
 5 genuine responsibility clusters (upload/drag-drop, playback preview, mood-assignment popover, 

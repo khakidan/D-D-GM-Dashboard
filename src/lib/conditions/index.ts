@@ -11,10 +11,12 @@ export { isConcentrating, stripConcentrationEffects, isIncapacitating } from '..
 
 export {
   CONDITION_MECHANICS,
+} from '../conditionMechanicsData';
+export {
   buildConditionSummary,
   applyLongRestToConditions,
 } from '../conditionDefinitions';
-export type { ConditionMechanics } from '../conditionDefinitions';
+export type { ConditionMechanics } from '../conditionMechanicsData';
 
 export {
   getEffectiveResistances,
