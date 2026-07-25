@@ -6,6 +6,8 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '../../lib/utils';
 import { ConditionPopover } from './ConditionPopover';
+import { ConditionSearchDropdown } from './ConditionSearchDropdown';
+import { ConditionDurationPrompt } from './ConditionDurationPrompt';
 import { checkIrvMatch } from '../../lib/combatLogic';
 import { toast } from 'sonner';
 import { isIncapacitating, stripConcentrationEffects } from '../../lib/concentrationCheck';
@@ -248,7 +250,7 @@ export function ConditionChips({
     onConditionAdded?.(label);
 
     // Automation: Incapacitation breaks concentration
-    if (isIncapacitating(label)) {
+    if (isIncapacitating(trimmed)) {
       const currentFullList = chips.map(c => c.toLowerCase().trim());
       const hasConcentrating = currentFullList.includes('concentrating');
       
@@ -377,112 +379,27 @@ export function ConditionChips({
 
       {/* Dropdown */}
       {open && !disabled && (filtered.length > 0 || showCustomEntry) && typeof document !== 'undefined' && createPortal(
-        <div 
-          id="condition-chips-dropdown"
-          className="bg-white border border-[#e2e8f0] rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto"
-          style={dropdownStyle}
-        >
-
-          {conditionResults.length > 0 && (
-            <>
-              <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest
-                              text-red-600 bg-red-50 border-b border-[#f0f0f0]">
-                Conditions
-              </div>
-              {conditionResults.map(opt => (
-                <button
-                  key={opt.label}
-                  type="button"
-                  onMouseDown={e => { e.preventDefault(); addChip(opt.label); }}
-                  className="w-full text-left px-3 py-2 text-xs font-sans text-red-700
-                             hover:bg-red-50 transition-colors capitalize"
-                >
-                  {opt.label}
-                  {isImmune(opt.label) && (
-                    <span className="ml-2 text-[9px] font-bold text-red-400 uppercase tracking-wider">
-                      immune
-                    </span>
-                  )}
-                </button>
-              ))}
-            </>
-          )}
-
-          {effectResults.length > 0 && (
-            <>
-              <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest
-                              text-blue-600 bg-blue-50 border-b border-[#f0f0f0]">
-                Effects
-              </div>
-              {effectResults.map(opt => (
-                <button
-                  key={opt.label}
-                  type="button"
-                  onMouseDown={e => { e.preventDefault(); addChip(opt.label); }}
-                  className="w-full text-left px-3 py-2 text-xs font-sans text-blue-700
-                             hover:bg-blue-50 transition-colors capitalize"
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </>
-          )}
-
-          {showCustomEntry && (
-            <>
-              <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest
-                              text-[#8d8db9] bg-[#e2e8f0] border-b border-[#e2e8f0]">
-                Custom
-              </div>
-              <button
-                type="button"
-                onMouseDown={e => { e.preventDefault(); addChip(query); }}
-                className="w-full text-left px-3 py-2 text-xs font-sans text-[#8d8db9]
-                           hover:bg-[#e2e8f0] transition-colors"
-              >
-                Add "{query}"
-              </button>
-            </>
-          )}
-        </div>,
+        <ConditionSearchDropdown
+          dropdownStyle={dropdownStyle}
+          conditionResults={conditionResults}
+          effectResults={effectResults}
+          showCustomEntry={!!showCustomEntry}
+          query={query}
+          isImmune={isImmune}
+          onSelect={addChip}
+        />,
         document.body
       )}
 
       {/* Inline duration prompt */}
       {pendingCondition && (
-        <div className="mt-2 p-2 bg-[#f9f8ff] border border-[#e2e8f0] rounded-xl flex items-center gap-2">
-          <span className="text-xs font-bold text-[#8d8db9]">Duration for {pendingCondition}:</span>
-          <input
-            type="number"
-            autoFocus
-            min="1"
-            placeholder="rounds"
-            aria-label={`Duration in rounds for ${pendingCondition}`}
-            value={timerRounds}
-            onChange={e => setTimerRounds(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') confirmPendingTimer();
-              if (e.key === 'Escape') skipPendingTimer();
-            }}
-            className="w-20 bg-white border border-[#e2e8f0] rounded text-center px-2 py-1 text-xs outline-none focus:border-[#2563eb]"
-          />
-          <span className="text-[10px] text-[#8d8db9]/60">(optional)</span>
-          <div className="flex-1" />
-          <button
-            type="button"
-            onClick={confirmPendingTimer}
-            className="px-2 py-1 text-[10px] font-bold uppercase bg-[#2563eb] text-white rounded hover:bg-[#567eff]"
-          >
-            Add
-          </button>
-          <button
-            type="button"
-            onClick={skipPendingTimer}
-            className="px-2 py-1 text-[10px] font-bold uppercase text-[#8d8db9] hover:bg-[#e2e8f0] rounded"
-          >
-            Skip
-          </button>
-        </div>
+        <ConditionDurationPrompt
+          pendingCondition={pendingCondition}
+          timerRounds={timerRounds}
+          onRoundsChange={setTimerRounds}
+          onConfirm={confirmPendingTimer}
+          onSkip={skipPendingTimer}
+        />
       )}
 
       {/* Colour legend — only shown when chips are present */}

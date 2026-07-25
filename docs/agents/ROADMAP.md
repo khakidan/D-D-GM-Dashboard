@@ -14,13 +14,9 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 ### 🟡 Features to Add / Test Coverage Gaps
 
 - **New feature, fully scoped, ready for staged implementation — add "Bonus Actions" as a 4th top-level Stat Block category, and add markdown rendering across ALL 5 categories (Traits/Actions/Reactions/Legendary Actions/Bonus Actions) in the same effort.** Confirmed by direct inspection: description fields currently render via plain `DebouncedTextarea` (edit) and bare `{item.description}` JSX interpolation inside a `<p>` (`NpcStatBlockSection.tsx`, read-only) — no markdown parsing exists anywhere in this chain today (`**bold**`/`*italic*` display as literal characters). Fix: adopt `react-markdown`+`remark-gfm` in `NpcStatBlockSection.tsx`'s display path — this applies uniformly to all 5 categories via one shared change, since they all render through the same component.
-
   **Bonus Actions field shape, decided**: reuse the full `NpcAction` shape (attack bonus/damage/save DC/save type/range/recharge via `NpcCombatActionFields`), not the simpler name+description shape — justified by real 5e examples (bonus-action attacks, save-based bonus actions, recharge-gated bonus-action abilities all need the structured fields). Available on both `Character` and `NPC` entities, matching Traits/Actions/Reactions (unlike Legendary Actions, which stay NPC-only).
-
   **Schema impact, fully verified — no explicit migration needed for existing campaigns**: Characters sheet grows from 30 → 31 columns (new `Bonus_Actions` column at index 30, letter `AE`); NPCs sheet grows from 22 → 23 columns (new `Bonus_Actions` column at index 22, letter `W`). Confirmed safe on both the read side (`padRow()` pads short legacy rows with `undefined` before Zod validation; `stringDefault('[]')` converts that to a safe empty-array fallback at the specific field) and the write side (`updateNpcFullDB`/`updateCharacterDB` both construct a complete, hardcoded-length row array from the full current schema on every write, never reusing whatever length a row happened to be at read time — so any legacy row self-heals to the new length the first time it's saved). **Remember**: when implementing, the new `bonusActions ?? '[]'` entry must be explicitly added to the row-construction arrays in all 4 write functions (`addNpcDB`, `updateNpcFullDB`, and the `Character` equivalents) — easy to forget since adding the column to `NPC_HEADERS`/`CHARACTER_HEADERS`/the type definitions doesn't automatically add the corresponding array entry in these functions.
-
   **Consolidation, to be built as part of this feature, not deferred**: this would otherwise be the 5th near-duplicate `renderXFields`/`NpcListEditor` block across `CharacterCardExpanded.tsx`/`NewPlayerDialog.tsx`/`NpcCard.tsx`/`NpcStatBlockTab.tsx` (compounding the cross-file duplication already flagged below) — build the shared render-prop factory (e.g. `createNpcListRenderers(idPrefix)`) now, with Bonus Actions as the first category built through it, and migrate the existing 4 categories onto it in the same pass rather than duplicating a 5th time and cleaning up later.
-
   **Recommended implementation sequencing**: (1) schema first — types, `sheetSchemas.ts`, `campaigns.ts` provisioning, `combatantBuilder.ts`, all 4 write functions — verified in isolation via `tsc` + Batch 1 + Batch 2 before any UI work; (2) the shared render-prop factory consolidation; (3) Bonus Actions UI wiring across all 4 consumer files using the new factory; (4) markdown rendering in `NpcStatBlockSection.tsx`, applied to all 5 categories at once.
 
 - **TODO — Stat Block should only render in the expanded Combatant Card, not the collapsed view; broader Expanded Combatant Card scan-ability redesign needed.** Confirmed via screenshot: the Stat Block (CR/Speed/Traits/etc.) is currently visible even when a combatant card is collapsed, which it shouldn't be — it's meant to be an expanded-only reference panel. Separately, and likely related, the GM has flagged that the *entire* expanded combatant card layout needs a broader pass to make it easier to scan at a glance during live play (this is a design/UX pass, not a bug fix — the same category of work as the earlier PC Combatant Card Header redesign). Not yet detailed — needs its own scoping conversation covering: which sections should collapse/expand independently, what the "scan at a glance" priority order should be (HP/AC first? conditions? resources?), and whether this reuses the collapsible-sections pattern already built for Traits/Actions/Reactions/Legendary Actions elsewhere in the app.
@@ -57,20 +53,6 @@ that requires a separate `React.memo` + `useCallback` step. **⚠️ Non-negotia
 `AudioLibrary.test.tsx` has only 2 tests; coverage (successful upload, delete-confirmation lifecycle, 
 single-preview enforcement) must be substantially expanded FIRST, verified via Batch 7B-1, before any 
 structural extraction begins.
-
-### Candidate 4 — `src/components/ui/ConditionChips.tsx` (503 lines) — split warranted, test coverage must come first
-
-Mixes floating-portal positioning/scroll/outside-click plumbing (~150 lines) + inline duration-prompt 
-UI (~35 lines) with real D&D 5e rule automation (immunity blocking, exhaustion-6 death, concentration 
-cascade) — the automation orchestration must stay in the coordinator. Proposed: extract 
-`ConditionSearchDropdown.tsx` and `ConditionDurationPrompt.tsx` as pure presentational components — 
-confirmed the dropdown does NOT need the parent's `wrapperRef` passed down; keep `open` state and 
-scroll/outside-click listeners lifted in the parent, pass the dropdown only `isOpen`/`style`/results/
-`onSelect`. **⚠️ Non-negotiable sequencing**: zero dedicated test coverage exists at all — this is the 
-highest-stakes file in the whole audit (exhaustion-death, concentration-breaking automation). Tests 
-must be added FIRST (debounced `onChange`, immunity-blocked rejection, exhaustion-tier replacement, 
-exhaustion-6 death callback, incapacitation breaking concentration, manual "Concentrating" removal 
-cascade, duration-timer confirm/skip), added to Batch 8, verified before any structural change.
 
 ---
 

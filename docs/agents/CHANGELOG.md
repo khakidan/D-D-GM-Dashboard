@@ -2,6 +2,29 @@
 
 ---
 
+## `ConditionChips.tsx` Split — `ConditionSearchDropdown.tsx` and `ConditionDurationPrompt.tsx` Extracted (Completed)
+Closed Candidate 4 from the Round 2 modularity audit. The file was 503 lines, combining floating-portal positioning/scroll/outside-click logic, duration prompt UI, search dropdown markup, and 5e rules automation. We successfully decomposed this file while preserving 100% of its runtime behavior, verified by the existing 13 test cases in Batch 8.
+
+**Staged in 2 steps, per locked designs:**
+
+1. **Stage 2a — `ConditionSearchDropdown.tsx`**:
+   - Created `src/components/ui/ConditionSearchDropdown.tsx` as a pure, presentational component. It has no internal conditional-render gate or portal call; the parent coordinator retains the conditional gate and `createPortal` call, passing the new component as the portal child.
+   - Preserved `id="condition-chips-dropdown"` on the root element of the dropdown to maintain existing scroll-dismiss and outside-click-detection logic.
+   - Standardized selection of conditions, effects, and custom entries to report back through a unified `onSelect(label: string)` callback prop.
+   - Maintained all `onMouseDown={e => { e.preventDefault(); ... }}` patterns on option buttons to prevent the search input from losing focus.
+
+2. **Stage 2b — `ConditionDurationPrompt.tsx`**:
+   - Created `src/components/ui/ConditionDurationPrompt.tsx` as a pure, presentational component.
+   - Implemented an internal `onKeyDown` handler as a pure, unconditional passthrough to the parent's `onConfirm` and `onSkip` callbacks for Enter and Escape keys. This faithful translation avoids any validity gating regressions (since the parent's logic already handles empty/invalid rounds).
+   - Keeps `timerRounds` state lifted in the coordinator, passing it down as a prop and notifying the coordinator via `onRoundsChange` when the input value changes.
+   - Retained all accessibility and layout features verbatim, including specific labels, autoFocus, and helper texts.
+
+**Verification**:
+- `tsc -p tsconfig.build.json --noEmit` built 100% cleanly (0 errors).
+- Batch 8 full run was executed: 7 files, 51 tests passed perfectly. The existing 13 `ConditionChips.test.tsx` tests passed with zero modifications required, proving that observable behavior and automation remained completely unaltered.
+
+---
+
 ## `conditionDefinitions.ts` Split — `conditionMechanicsData.ts` Extracted (Completed)
 Closed the last unimplemented candidate from the Round 2 modularity audit. The file was
 765 lines (`wc -l`), ~65% static `CONDITION_MECHANICS` data and ~35% real branching logic
