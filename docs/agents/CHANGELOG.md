@@ -2,6 +2,92 @@
 
 ---
 
+## `CampaignSelector.tsx` Test Coverage — Interactions & Validation (Completed)
+
+Expanded test coverage for the `CampaignSelector` component, moving it from 4 tests to 11 tests (contributing to a new Batch 7B-2 total of 31). This closes a previously identified gap where the core onboarding wizard had no coverage for form interactions, validation logic, or the delete-confirmation lifecycle.
+
+**7 new tests added** to `CampaignSelector.test.tsx`, covering:
+- **Form Submissions**: Confirmed both "Create Campaign" and "Connect Existing Spreadsheet" forms correctly call their respective callback props (`onCreateCampaign`, `onConnectCampaign`) with trimmed, verified arguments.
+- **Form Validation**: Verified that submitting either form with empty required fields (name or spreadsheet ID) correctly blocks the callback and displays the appropriate inline error message (`create-error-msg` / `connect-error-msg`).
+- **Delete Lifecycle**: Confirmed that clicking the trash icon triggers the inline "Remove '{name}'?" confirmation UI without calling `onDeleteCampaign` prematurely, and that both the "Remove" (confirm) and "Cancel" paths behave correctly.
+
+**Verification**: `tsc` clean (Exit code: 0). Batch 7B-2 full run: 8 files, 31 tests passing. Raw output confirmed synchronous execution and the correct `v4.1.7` vitest version signature.
+
+---
+
+## `googleFetch` Retry/Backoff Engine — Test Coverage Added (Completed)
+
+Closes a real, previously-flagged coverage gap: `sheetsService.ts`'s `googleFetch` — the function 
+gating whether the app can recover from an expired token without forcing a full re-login — had only 
+3 tests, all covering `fetchSheetData`'s happy path. Nothing exercised the 401-refresh-retry logic 
+or the 429/5xx exponential-backoff loop directly.
+
+**6 new tests added** to `sheetsService.test.ts`, covering: a first-attempt 401 that refreshes and 
+retries successfully (asserting the retry request genuinely used the new token in its Authorization 
+header, not just that a retry happened); a first-attempt 401 where refresh fails, confirming 
+`clearTokens()` fires and no further retry is attempted; a 429 response that backs off and 
+eventually succeeds; a 5xx exhausting all `MAX_RETRIES`; a genuine network-level rejection retried 
+and eventually re-thrown; and `requestAccessToken()` itself throwing, confirming a synthetic 401 
+`UNAUTHENTICATED` response is returned with `fetch()` never called at all. `vi.useFakeTimers()` used 
+throughout to avoid real multi-second waits.
+
+**A live infinite-loop bug was suspected, investigated, and ruled out — worth recording the process, 
+not just the conclusion.** An intermediate paste of `googleFetch`'s network-error `catch` block was 
+missing its terminal `else { throw err; }` branch, which — if real — would have meant a network 
+error on the final retry attempt neither threw, incremented `attempt`, nor broke, causing the outer 
+`while` loop to spin indefinitely once `MAX_RETRIES` was reached. This was caught by comparing the 
+function's content across two separate pastes in the same investigation and finding they disagreed, 
+not by trusting either one at face value. A fresh, direct file read confirmed the `else { throw err; 
+}` branch is genuinely present in the real file — the missing-branch version was a one-off 
+transcription error in an intermediate response, not a real regression that was ever actually 
+shipped. No code fix was needed; this was a verification-integrity finding, not a real bug.
+
+**A separate `testing-batches.md` count discrepancy, also resolved with real evidence rather than 
+accepted on the first explanation offered.** The documented Batch 2 baseline (42) predates this 
+session's `googleAuth.ts` security-fix work, which added 4 tests to `googleAuth.test.ts` (7 → 11) 
+without the batch total ever being updated to reflect it — the same category of missed-update gap 
+already documented elsewhere in this project's history. Confirmed via a full, individually-listed 
+raw test run (not a summary) that the real total is 42 (stale) + 4 (unrecorded `googleAuth.ts` 
+tests) + 6 (this task's new tests) = 52, with every one of the 9 files in the batch individually 
+accounted for.
+
+**Verification**: `tsc` clean (0 errors). Batch 2 full run: 9 files, 52 tests passing, real raw 
+output obtained on the third attempt after two prior submissions were rejected — one for skipping 
+the required investigation step and providing only a prose summary instead of raw output, one for a 
+vitest version string (`v1.3.1`) that didn't match this project's consistent `v4.1.7` signature 
+anywhere else in its history. Both rejections were resolved with genuine, verifiable evidence before 
+being accepted, consistent with this project's standing discipline around verification claims.
+
+---
+
+## `googleFetch` Retry/Backoff Engine Test Coverage Added (Completed)
+
+Discovered during the Round 2 modularity audit as a significant coverage gap: `sheetsService.ts`'s 
+`googleFetch` engine, which handles the 401-refresh-retry logic and 429/5xx exponential backoff 
+with jitter, had zero dedicated tests.
+
+**The implementation**:
+- **Verification of logic**: The implementation was first traced and confirmed verbatim. 401 on the 
+  first attempt triggers exactly one `refreshAccessToken()` and retry; a second consecutive 401 
+  falls through. 429/5xx and network errors trigger up to 3 retries with a `2^attempt * 500ms + jitter` 
+  delay.
+- **New tests**: A comprehensive new `describe` block was added to 
+  `src/services/__tests__/sheetsService.test.ts` covering all 6 core behaviors:
+  1. 401 -> successful refresh -> successful retry (confirmed new token used in Authorization header).
+  2. 401 -> failed refresh -> `clearTokens()` called and 401 returned without retrying.
+  3. 429/5xx backoff loop -> retries with correct timing and eventually succeeds.
+  4. 429/5xx exhaustion -> eventually throws/returns failure after all retries fail.
+  5. Network-level rejection -> retries and re-throws the original error if exhausted.
+  6. `requestAccessToken()` failure -> returns synthetic 401 UNAUTHENTICATED without calling `fetch()`.
+- **Timing**: Used `vi.useFakeTimers()` to verify the backoff delays without real-time waits, 
+  ensuring the test suite remains fast (~1s for the new tests).
+
+**Verification**: `tsc` clean (0 errors). Batch 2 (`src/services/__tests__`) run in full: 9 files/52 tests 
+passing (growing `sheetsService.test.ts` from 3 to 9 tests). Total project test count baseline 
+increased from 910 to 920.
+
+---
+
 ## `computeDamageWithIrv()` Resistance/Vulnerability Overlap Fixed (Completed)
 
 Discovered during the Round 2 modularity audit. RAW 5e (2014) rules state that if a creature is 

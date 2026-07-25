@@ -4,18 +4,20 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 910 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+**Current baseline: 928 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
 
 - **Batch 1: 479 → 488.** Breakdown: 479 (baseline) + 7 (Challenge Rating repair tests) + 2 (IRV overlap regression tests) = 488.
+- **Batch 2: 42 → 52.** Breakdown: 42 (baseline) + 6 (sheetsService retry engine tests) + 4 (other missed/new tests confirmed via fresh run) = 52.
 - **Batch 4: 11 tests.** Breakdown: campaigns.test.ts (5), auth.test.ts (3), suiteIntegrity.test.ts (2), health.test.ts (1).
 - **Batch 5A: 69 → 65.** useCombatantCard.test.ts was removed from this batch's file list because useCombatantCard.ts (the hook it tested) was deleted in a prior refactor.
+- **Batch 7B-2: 23 → 31.** Breakdown: 23 (baseline) + 8 (CampaignSelector interactions/validation/delete-lifecycle tests, plus 1 other unrecorded test confirmed via fresh run) = 31.
 
 Run each batch individually. Never chain with `&&`. Never use glob patterns. Never run all tests at once with `npx vitest run`.
 
 | Batch | Description | Test Count |
 |-------|-------------|------------|
 | 1 | `src/lib/__tests__` | 488 |
-| 2 | `src/services/__tests__` | 42 |
+| 2 | `src/services/__tests__` | 52 |
 | 3 | `src/hooks/__tests__` | 62 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 11 |
 | 5A | ActiveEncounterTab hooks (`.test.ts`) | 65 |
@@ -24,15 +26,15 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 6B | `src/components/EncountersTab/__tests__` | 26 |
 | 6C | `src/components/NpcLibraryTab/__tests__` | 24 |
 | 7B-1 | Audio + main dashboard top-level components | 13 |
-| 7B-2 | Other top-level components | 23 |
+| 7B-2 | Other top-level components | 31 |
 | 8 | `src/components/ui/__tests__` | 30 |
 | 9 | `src/components/auth/__tests__` | 16 |
 
 ```bash
-# BATCH 1 — 479 tests
+# BATCH 1 — 488 tests
 npx vitest run src/lib/__tests__
 
-# BATCH 2 — 42 tests
+# BATCH 2 — 52 tests
 npx vitest run src/services/__tests__
 
 # BATCH 3 — 62 tests
@@ -59,7 +61,7 @@ npx vitest run src/components/NpcLibraryTab/__tests__
 # BATCH 7B-1 — 13 tests
 npx vitest run src/components/__tests__/CommandPalette.test.tsx src/components/__tests__/ErrorBoundary.test.tsx src/components/__tests__/GMDashboard.test.tsx src/components/__tests__/GMDashboardSidebar.test.tsx src/components/__tests__/AudioLibrary.test.tsx
 
-# BATCH 7B-2 — 23 tests
+# BATCH 7B-2 — 31 tests
 npx vitest run src/components/__tests__/CampaignSelector.test.tsx src/components/__tests__/GMTabContent.test.tsx src/components/__tests__/PlayerView.test.tsx src/components/__tests__/ThemeContext.test.tsx src/components/__tests__/GMTestingTools.test.tsx src/components/__tests__/SheetConnectionSettings.test.tsx src/components/__tests__/ReferenceDataSeeder.test.tsx src/components/__tests__/SettingsPage.test.tsx
 
 # BATCH 8 — 30 tests
