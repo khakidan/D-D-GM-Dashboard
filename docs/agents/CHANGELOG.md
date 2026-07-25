@@ -2,6 +2,50 @@
 
 ---
 
+## Bonus Actions — Markdown Parsing (Completed)
+
+Implemented Markdown parsing (`react-markdown` + `remark-gfm`) inside `NpcStatBlockSection.tsx` (the read-only component shared by both `PcReferencePanel` and `NpcReferencePanel`) to respect authored markdown formatting (bold, italic, list items) across all 5 stat block categories (Traits, Actions, Reactions, Bonus Actions, Legendary Actions).
+
+**Architectural Improvements & Deliverables**:
+- **Shared `markdownComponents` Configuration**: Rather than duplicating the large object map defining standard structural overrides (like styling standard `<p>`, `<table>`, or list elements) across files, a clean foundational mapping was extracted to `src/components/ui/markdownComponents.tsx`.
+- **`ReferenceDetailDialog.tsx`**: Updated to import and use the new shared `baseMarkdownComponents` map.
+- **`NpcStatBlockSection.tsx`**: Adopted the `baseMarkdownComponents` map to process the `item.description` string with `ReactMarkdown`. To guarantee valid HTML output (avoiding `<p><p>` block-nesting conflicts where `ReactMarkdown` output defaults to producing its own paragraph wrap), the outer container logic was shifted to a plain `div` element, with local, instance-specific overrides passed into `ReactMarkdown`'s prop definitions for spacing adjustments (`leading-snug`, dense margins) unique to the stat block panel's dense visualization constraints.
+- **Mechanical Meta Retention**: The stat block's mechanical subheader, `item.meta` (rendered alongside the title via `formatActionMeta`), was deliberately excluded from parsing, keeping it correctly unformatted and intact.
+
+**Validation & Verification**:
+- **TypeScript build check**: Compiled clean (`npx tsc`).
+- **Test execution**: Real, fresh runs confirmed **100% success rate** for all affected batches:
+  - **Batch 5B**: 51/51 passed (includes `PcReferencePanel.test.tsx` and `NpcReferencePanel.test.tsx`, with a new interaction test written in `PcReferencePanel` asserting on the presence of rendered `<strong>` and `<li>` blocks over plaintext strings).
+  - **Batch 7B-1**: 13/13 passed (inclusive of the implicit tests rendering the updated `ReferenceDetailDialog` components via modal actions).
+- **Documentation**: Updated baseline and batch size table entries in `docs/agents/testing-batches.md`, appended entries to `docs/agents/file-reference.md`, and logged deliverables appropriately here inside `docs/agents/CHANGELOG.md`.
+
+---
+
+## Bonus Actions — Shared Render-Prop Factory + UI Wiring (Completed)
+
+Consolidated identical list-rendering logic and resolved redundant field editors across all four client-facing consumer files (`CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, and `NpcStatBlockTab.tsx`) by introducing a centralized render-prop factory (`npcListFieldRenderers.tsx`), with **Bonus Actions** successfully implemented as the first new category integrated through it.
+
+**Architectural Improvements & Deliverables**:
+- **Shared Factory Component (`src/components/ui/npcListFieldRenderers.tsx`)**: Created a clean factory function `createNpcListRenderers(idPrefix)` that takes a context identifier (e.g., `'new-player'`, `'npc-card'`) and returns a standard set of strongly typed list renderers (`renderTraitFields`, `renderActionFields`, `renderReactionFields`, `renderBonusActionFields`, and `renderLegendaryActionFields`). This fully eliminates byte-identical logic and leverages the robust `NpcSimpleFieldEditor` and `NpcCombatActionFields` layout structures.
+- **`NpcStatBlockTab.tsx` Migration**: Migrated the shared creation-context stat block tab to instantiate the shared renderers. Wired up a 5th `NpcListEditor` block for "Bonus Actions" using the standard `NpcAction` schema shape, and added the requisite props (`bonusActions`, `onBonusActionsChange`).
+- **`NewPlayerDialog.tsx` Migration**: Updated the Character creation flow's Stat Block tab to use the shared factory renderers, parsed the new `bonusActions` field state with a memoized JSON array fallback, and integrated the Bonus Actions list editor.
+- **`CharacterCardExpanded.tsx` Migration**: Migrated the PC expanded details card to use the shared factory renderers and added the new Bonus Actions section matching the interactive list editor pattern.
+- **`NpcCard.tsx` Migration**: Fully migrated the NPC card to use the shared factory renderers. Parsed the newly added `bonusActions` stringified JSON field from the NPC object, added the interactive Bonus Actions list editor, and eliminated over 100 lines of duplicate inline JSX field-rendering logic.
+- **`NpcFormFields.tsx` Synchronization**: Threaded the `bonusActions` form field and its change handler from the parent form down to `NpcStatBlockTab.tsx`, ensuring that any field changes made in creation contexts persist to the underlying payload cleanly.
+- **Reference Panels Implementation (`PcReferencePanel.tsx` & `NpcReferencePanel.tsx`)**: Extended both the PC and NPC read-only encounter reference panels to retrieve, parse, and display Bonus Actions using `NpcStatBlockSection` and `formatActionMeta`. This ensures that any configured Bonus Actions are fully visible to GMs during live combat.
+
+**Validation & Verification**:
+- **TypeScript build check**: Compiled clean via `compile_applet`.
+- **Linter check**: Audited production code cleanly.
+- **Test execution**: Real, fresh, and complete synchronous test runs confirmed **100% success rate** for all affected batches:
+  - **Batch 5B (ActiveEncounterTab component tests)**: 51/51 passed (including new assertions verifying Bonus Actions rendering within both `PcReferencePanel.test.tsx` and `NpcReferencePanel.test.tsx`).
+  - **Batch 6A (PartyTab component/hook tests)**: 60/60 passed.
+  - **Batch 6C (NpcLibraryTab component/hook tests)**: 24/24 passed.
+  - **Batch 8 (Shared UI component tests)**: 51/51 passed.
+- **Documentation**: Updated `docs/agents/file-reference.md`, `docs/agents/CHANGELOG.md`, and pruned the completed task list in `docs/agents/ROADMAP.md` in strict adherence to Hard Rule 12.
+
+---
+
 ## `ConditionChips.tsx` Split — `ConditionSearchDropdown.tsx` and `ConditionDurationPrompt.tsx` Extracted (Completed)
 Closed Candidate 4 from the Round 2 modularity audit. The file was 503 lines, combining floating-portal positioning/scroll/outside-click logic, duration prompt UI, search dropdown markup, and 5e rules automation. We successfully decomposed this file while preserving 100% of its runtime behavior, verified by the existing 13 test cases in Batch 8.
 
@@ -3678,26 +3722,3 @@ Started from a user report that a PC at 0 HP was being skipped entirely instead 
 Verified across all 3 stages: TypeScript clean, Batch 1 (19 files/449 tests), Batch 3 (11 files/44 tests), Batch 5A (7 files/48 tests), and Batch 5B (11 files/26 tests) all matching established baselines with real raw output, every diff checked directly against the real files.
 
 ---
-
-## Bonus Actions — Shared Render-Prop Factory + UI Wiring (Completed)
-
-Consolidated identical list-rendering logic and resolved redundant field editors across all four client-facing consumer files (`CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, and `NpcStatBlockTab.tsx`) by introducing a centralized render-prop factory (`npcListFieldRenderers.tsx`), with **Bonus Actions** successfully implemented as the first new category integrated through it.
-
-**Architectural Improvements & Deliverables**:
-- **Shared Factory Component (`src/components/ui/npcListFieldRenderers.tsx`)**: Created a clean factory function `createNpcListRenderers(idPrefix)` that takes a context identifier (e.g., `'new-player'`, `'npc-card'`) and returns a standard set of strongly typed list renderers (`renderTraitFields`, `renderActionFields`, `renderReactionFields`, `renderBonusActionFields`, and `renderLegendaryActionFields`). This fully eliminates byte-identical logic and leverages the robust `NpcSimpleFieldEditor` and `NpcCombatActionFields` layout structures.
-- **`NpcStatBlockTab.tsx` Migration**: Migrated the shared creation-context stat block tab to instantiate the shared renderers. Wired up a 5th `NpcListEditor` block for "Bonus Actions" using the standard `NpcAction` schema shape, and added the requisite props (`bonusActions`, `onBonusActionsChange`).
-- **`NewPlayerDialog.tsx` Migration**: Updated the Character creation flow's Stat Block tab to use the shared factory renderers, parsed the new `bonusActions` field state with a memoized JSON array fallback, and integrated the Bonus Actions list editor.
-- **`CharacterCardExpanded.tsx` Migration**: Migrated the PC expanded details card to use the shared factory renderers and added the new Bonus Actions section matching the interactive list editor pattern.
-- **`NpcCard.tsx` Migration**: Fully migrated the NPC card to use the shared factory renderers. Parsed the newly added `bonusActions` stringified JSON field from the NPC object, added the interactive Bonus Actions list editor, and eliminated over 100 lines of duplicate inline JSX field-rendering logic.
-- **`NpcFormFields.tsx` Synchronization**: Threaded the `bonusActions` form field and its change handler from the parent form down to `NpcStatBlockTab.tsx`, ensuring that any field changes made in creation contexts persist to the underlying payload cleanly.
-- **Reference Panels Implementation (`PcReferencePanel.tsx` & `NpcReferencePanel.tsx`)**: Extended both the PC and NPC read-only encounter reference panels to retrieve, parse, and display Bonus Actions using `NpcStatBlockSection` and `formatActionMeta`. This ensures that any configured Bonus Actions are fully visible to GMs during live combat.
-
-**Validation & Verification**:
-- **TypeScript build check**: Compiled clean via `compile_applet`.
-- **Linter check**: Audited production code cleanly.
-- **Test execution**: Real, fresh, and complete synchronous test runs confirmed **100% success rate** for all affected batches:
-  - **Batch 5B (ActiveEncounterTab component tests)**: 50/50 passed (including new assertions verifying Bonus Actions rendering within both `PcReferencePanel.test.tsx` and `NpcReferencePanel.test.tsx`).
-  - **Batch 6A (PartyTab component/hook tests)**: 60/60 passed.
-  - **Batch 6C (NpcLibraryTab component/hook tests)**: 24/24 passed.
-  - **Batch 8 (Shared UI component tests)**: 51/51 passed.
-- **Documentation**: Updated `docs/agents/file-reference.md`, `docs/agents/CHANGELOG.md`, and pruned the completed task list in `docs/agents/ROADMAP.md` in strict adherence to Hard Rule 12.

@@ -92,4 +92,26 @@ describe('PcReferencePanel', () => {
     expect(screen.queryByText('Common, Elvish')).not.toBeInTheDocument();
     expect(screen.queryByText('Wing Attack')).not.toBeInTheDocument();
   });
+
+  it('renders markdown in descriptions', () => {
+    const pcWithMarkdown = makeCombatant({
+      type: 'pc',
+      traits: JSON.stringify([{ 
+        name: 'Fancy Formatted Trait', 
+        description: 'This is **bold** and *italic*.\n\n- Item 1\n- Item 2' 
+      }]),
+    });
+
+    render(<PcReferencePanel combatant={pcWithMarkdown} />);
+    fireEvent.click(screen.getByRole('button', { name: /▶ Stat Block/ }));
+
+    // The text should be present, but strong and em tags should exist
+    expect(screen.getByText('bold').tagName).toBe('STRONG');
+    expect(screen.getByText('italic').tagName).toBe('EM');
+    
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0]).toHaveTextContent('Item 1');
+    expect(items[1]).toHaveTextContent('Item 2');
+  });
 });

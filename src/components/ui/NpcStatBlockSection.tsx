@@ -1,6 +1,9 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { NpcAction, NpcLegendaryAction } from '../../types';
 import { SectionHeader } from './SectionHeader';
+import { baseMarkdownComponents } from './markdownComponents';
 
 export function formatActionMeta(action: NpcAction | NpcLegendaryAction): string {
   const parts: string[] = [];
@@ -73,9 +76,31 @@ export const NpcStatBlockSection: React.FC<NpcStatBlockSectionProps> = ({ title,
                 </span>
               )}
             </div>
-            <p className="text-sm text-[#0f172a] leading-snug whitespace-pre-wrap mt-0.5">
-              {item.description}
-            </p>
+            <div className="mt-0.5">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  ...baseMarkdownComponents,
+                  p: ({ children }: any) => (
+                    <p className="text-sm text-[#0f172a] leading-snug whitespace-pre-wrap mb-2 last:mb-0">
+                      {children}
+                    </p>
+                  ),
+                  ul: ({ children }: any) => (
+                    <ul className="list-disc pl-5 mb-2 space-y-1 text-[#0f172a] text-sm font-normal">
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }: any) => (
+                    <ol className="list-decimal pl-5 mb-2 space-y-1 text-[#0f172a] text-sm font-normal">
+                      {children}
+                    </ol>
+                  ),
+                }}
+              >
+                {item.description}
+              </ReactMarkdown>
+            </div>
           </div>
         ))}
       </div>
