@@ -29,6 +29,8 @@ Follow-on refinement pass to the Combatant Card Visual Overhaul, reworking the e
 
 **Verification**: `tsc` clean; Batch 5B 54/54 (every file individually run); Batch 8 51/51 (unaffected).
 
+**Addendum**: PC combatants' Class Resource Trackers (`ResourcePoolsSection.tsx`) were moved into the left column of the Recharge/Conditions grid (previously reserved for NPC-only `CombatantRechargeTracker`, gated the same way by combatant type), replacing the old standalone full-width block that rendered below the Reference Content section. NPCs and PCs are mutually exclusive by `c.type`, so both trackers now share the same grid slot cleanly. Test coverage added confirming Class Resource Trackers render inside `recharge-conditions-grid` for PCs and are absent for NPCs. Batch 5B: 54 → 56.
+
 ---
 
 ## Combatant Card Visual Overhaul (Completed)

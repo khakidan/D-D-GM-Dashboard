@@ -266,6 +266,13 @@ export function CombatantCardExpanded({
               isSyncing={isSyncing}
             />
           )}
+          {c.type === 'pc' && pcCharacter && (
+            <ResourcePoolsSection
+              character={pcCharacter}
+              isSyncing={isSyncing}
+              onUpdate={(updates) => handleResourcePoolUpdate(c, updates)}
+            />
+          )}
         </div>
         <div>
           <label className="block text-xs font-bold uppercase tracking-widest text-[#8d8db9] mb-2">Conditions</label>
@@ -360,15 +367,6 @@ export function CombatantCardExpanded({
             />
           )}
         </div>
-      )}
-
-      {/* PCs sub-components */}
-      {c.type === 'pc' && pcCharacter && (
-        <ResourcePoolsSection
-          character={pcCharacter}
-          isSyncing={isSyncing}
-          onUpdate={(updates) => handleResourcePoolUpdate(c, updates)}
-        />
       )}
 
       {/* Display active condition timers as pill badges */}

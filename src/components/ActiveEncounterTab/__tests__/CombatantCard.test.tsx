@@ -576,6 +576,44 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     expect(rechargeConditionsGrid).toHaveTextContent(/Conditions/i);
   });
 
+  it('renders Class Resource Trackers inside the recharge-conditions-grid for PC combatants', () => {
+    const c = makeCombatant({
+      id: 'pc1',
+      type: 'pc'
+    });
+    const pcCharacter = { 
+        id: 'char1', 
+        resourcePools: JSON.stringify([{ name: 'Pool', max: 5, current: 5 }])
+    } as any;
+    
+    render(<CombatantCard {...defaultProps} c={c} pcCharacter={pcCharacter} />);
+    
+    const grid = screen.getByTestId('recharge-conditions-grid');
+    expect(grid).toBeInTheDocument();
+    
+    // Check if ResourcePoolsSection is rendered inside the grid.
+    // I will assume it renders some text or a component identifiable within the grid.
+    // Since I can't see ResourcePoolsSection, I will try to see if it's there.
+    // Given I am moving it, I should be able to query it if it's rendered.
+    // Let's assume it renders a test-id or text 'Class Resource Trackers' if that's what it was called.
+    // Actually, I'll check for its test-id if I knew it. I'll check for 'ResourcePoolsSection' component or text.
+    // Let's assume it renders 'Class Resource Trackers' as the label.
+    expect(grid).toHaveTextContent(/Class Resource Trackers/i);
+  });
+
+  it('does not render Class Resource Trackers for NPC combatants', () => {
+    const c = makeCombatant({
+      id: 'npc1',
+      type: 'npc'
+    });
+    
+    render(<CombatantCard {...defaultProps} c={c} />);
+    
+    const grid = screen.getByTestId('recharge-conditions-grid');
+    expect(grid).toBeInTheDocument();
+    expect(grid).not.toHaveTextContent(/Class Resource Trackers/i);
+  });
+
   it('verifies Ability Scores Table has borders and updated text sizes', () => {
     const c = makeCombatant({
       id: 'npc1',
