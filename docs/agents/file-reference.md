@@ -116,7 +116,10 @@ Shared test data factories used across many test files. These are not tests them
 - `AudioPanel.tsx` — `M` key modal with **Ambient**, **Soundboard**, and **Library** tabs.
 - `AmbientPlayer.tsx` — Mood presets, track list, and volume.
 - `Soundboard.tsx` — 3×4 configurable sound effect grid, campaign-scoped layout.
-- `AudioLibrary.tsx` — Tabbed audio file manager with drag-and-drop and mood assignment.
+- `AudioLibrary.tsx` — Tabbed audio file manager, decomposed into modular components; orchestrates uploads, single-preview and single-popover state, and ConfirmationDialog-based delete flows.
+- `AudioLibraryDropzone.tsx` — Presentational drag-and-drop component for uploading audio files.
+- `MoodAssignmentPopover.tsx` — Popover component to assign and unassign ambient tracks to atmospheric moods.
+- `AudioFileRow.tsx` — Individual audio file row component; displays metadata, play/pause controls, mood badge, and delete button, composing `MoodAssignmentPopover`.
 - `SettingsPage.tsx` — Settings page layout with `SheetConnectionSettings` full width, Auth + Backup in a two-column grid (the Backup card itself wrapped in `SettingsPanel`), then `ReferenceDataSeeder` and `GMTestingTools` each full width.
 - `DamageOverlay.tsx`
 - `DeathOverlay.tsx`

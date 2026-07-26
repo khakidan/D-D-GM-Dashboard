@@ -4,13 +4,14 @@ Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 bat
 
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 986 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+**Current baseline: 993 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
 
 - **Batch 1: 488 → 490.** Breakdown: 488 (baseline) + 2 (bonusActions round-trip coverage) = 490.
 - **Batch 2: 52 → 56.** Breakdown: 52 (baseline) + 4 (bonusActions round-trip coverage for add/update characters and npcs) = 56.
 - **Batch 4: 11 tests.** Breakdown: campaigns.test.ts (5), auth.test.ts (3), suiteIntegrity.test.ts (2), health.test.ts (1).
 - **Batch 5A: 65 tests.** Breakdown: useBatchActions (11), useCombatSync (30), useCombatantExpanded (3), useEncounterPresetLoader (5), useHealthChange (8), useSelectionMode (3), useCombatantMutations (5) = 65.
-- **Batch 5B: 51 → 54.** Breakdown: 51 (baseline) + 3 (new regression tests for IRV width, trait font-weight, and Passive/Senses/Languages order) = 54.
+- **Batch 5B: 54 → 56.** Breakdown: 54 (baseline) + 2 (PC resource pools and NPC exclusion verification tests) = 56.
+- **Batch 7B-1: 13 → 18.** Breakdown: 13 (baseline) + 5 (new individual file deletion confirmation, reset-all-moods, clearing, and upload tests in AudioLibrary) = 18.
 - **Batch 7B-2: 23 → 31.** Breakdown: 23 (baseline) + 8 (CampaignSelector interactions/validation/delete-lifecycle tests, plus 1 other unrecorded test confirmed via fresh run) = 31.
 - **Batch 8: 51.** Not touched by this change — see docs/agents/testing-batches.md for the current baseline.
 - **Batch 9: 16.** Not touched by this change — see docs/agents/testing-batches.md for the current baseline.
@@ -24,11 +25,11 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 3 | `src/hooks/__tests__` | 62 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 11 |
 | 5A | ActiveEncounterTab hooks (`.test.ts`) | 65 |
-| 5B | ActiveEncounterTab components (`.test.tsx`) | 54 |
+| 5B | ActiveEncounterTab components (`.test.tsx`) | 56 |
 | 6A | `src/components/PartyTab/__tests__` | 60 |
 | 6B | `src/components/EncountersTab/__tests__` | 26 |
 | 6C | `src/components/NpcLibraryTab/__tests__` | 24 |
-| 7B-1 | Audio + main dashboard top-level components | 13 |
+| 7B-1 | Audio + main dashboard top-level components | 18 |
 | 7B-2 | Other top-level components | 31 |
 | 8 | `src/components/ui/__tests__` | 51 |
 | 9 | `src/components/auth/__tests__` | 16 |

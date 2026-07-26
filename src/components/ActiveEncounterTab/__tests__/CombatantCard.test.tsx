@@ -583,7 +583,7 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     });
     const pcCharacter = { 
         id: 'char1', 
-        resourcePools: JSON.stringify([{ name: 'Pool', max: 5, current: 5 }])
+        resourcePools: JSON.stringify([{ name: 'Pool', max: 5, current: 5, reset: 'short' }])
     } as any;
     
     render(<CombatantCard {...defaultProps} c={c} pcCharacter={pcCharacter} />);

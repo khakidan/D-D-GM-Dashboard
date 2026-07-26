@@ -2,6 +2,42 @@
 
 ---
 
+## AudioLibrary.tsx Refactor — Codebase Modularity Audit Round 2, Candidate 3 (Completed)
+
+Split the 546-line `AudioLibrary.tsx` into 4 files along the 5 responsibility clusters identified in the original audit, with test coverage expanded first per this project's non-negotiable sequencing rule (structural extraction is only safe once the behavior being preserved is actually pinned down by tests).
+
+**Real bug fixed along the way**: individual audio file deletion had no confirmation step at all — clicking the trash icon fired `removeFile()` immediately, with no recovery, unlike every other destructive action in this app (`NpcCard.tsx`, `EncounterCard.tsx`, `CombatantCardExpanded.tsx`'s Remove Combatant, `CharacterCardExpanded.tsx`'s Delete Player), all of which use `ConfirmationDialog.tsx`. Fixed to match: deletion now opens a `ConfirmationDialog` naming the specific file before the cascading remove (including the soundboard-layout cleanup and `storage` event dispatch) fires.
+
+**Test coverage** (`AudioLibrary.test.tsx`, Batch 7B-1: 13 → 18): expanded from 2 tests (only covering the uploading-state add/remove lifecycle) to 7, adding real coverage for:
+- Successful upload as a seam test (asserts `addFiles` receives the exact `File` and category, not just "was called") and rendering of already-stored files.
+- The new individual-delete confirmation lifecycle, including the cascading soundboard-layout localStorage sync and `storage` event dispatch.
+- The existing clear-all and reset-mood-assignments inline-banner confirmation lifecycles (previously untested).
+- Single-preview enforcement (play/pause preemption across rows, toggle-off on re-click) via mocked `HTMLMediaElement`/`URL` APIs.
+
+**Structural extraction** — 3 new files, `AudioLibrary.tsx` now the pure orchestrator:
+- **`AudioLibraryDropzone.tsx`** — presentational drag-and-drop upload zone. All drag/drop state and handlers stay in `AudioLibrary.tsx`; this component only renders based on props.
+- **`MoodAssignmentPopover.tsx`** — the mood-assignment popover's inner content (assign/unassign buttons, "currently: X" lookups). `activePickerFileId` (single-popover-open enforcement) stays lifted in `AudioLibrary.tsx`, since only one popover can be open across all rows at once.
+- **`AudioFileRow.tsx`** — one file row (preview button, mood badge + popover composition, name/size, delete button). `previewingFileId`/`previewAudioRef`/`previewTimerRef` (single-preview-at-a-time enforcement) stay lifted in `AudioLibrary.tsx` for the same reason — a per-row component can't own state that must be exclusive across all rows.
+
+`AudioLibrary.tsx` retains: upload/drag-and-drop logic, single-preview and single-popover state, the cascading delete handler, the `ConfirmationDialog`-based delete flow, and the clear-all/reset-moods inline confirmation banners.
+
+Extracted incrementally (one component per stage) with `tsc` and the full Batch 7B-1 suite re-verified after each stage — all 18 tests passed unmodified through every extraction, confirming zero behavioral regression.
+
+**Verification**: `tsc` clean at every stage; Batch 7B-1 18/18 passing throughout, unmodified since Stage 1.
+
+---
+
+## Codebase Modularity Audit Round 2 — Candidate 1 (CommandPalette.tsx): decided not to pursue
+
+After investigation (see the Round 2 audit entry above), Candidate 1's original
+premise did not hold up — the file's real issue is ~25 repetitive `Command.Item`
+JSX blocks, not tangled dispatch logic, and only 3 functions were genuinely
+extractable. With no active bug, no test coverage gap, and modest payoff either
+way, this candidate is closed as decided-not-to-pursue rather than left open
+indefinitely. No code changes were made to CommandPalette.tsx.
+
+---
+
 ## Combatant Card Expanded Layout Refinements (Completed)
 
 Follow-on refinement pass to the Combatant Card Visual Overhaul, reworking the expanded panel's internal layout into a denser, more traditional stat-block arrangement based on iterative GM feedback, and fixing two real rendering bugs surfaced along the way.

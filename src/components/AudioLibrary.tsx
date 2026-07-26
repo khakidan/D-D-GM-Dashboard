@@ -1,13 +1,16 @@
 // src/components/AudioLibrary.tsx
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Play, Pause, Trash2, X, Music, Volume2, HelpCircle, Loader2 } from 'lucide-react';
+import { Upload, Trash2, X, Music, Volume2, HelpCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { StoredAudioFile } from '../lib/audioFileStore';
-import { STORAGE_KEYS, TIMERS, MOODS, MoodId, campaignKey } from '../lib/constants';
+import { STORAGE_KEYS, TIMERS, MoodId, campaignKey } from '../lib/constants';
 import { SoundboardSlot } from './Soundboard';
 import { cn } from '../lib/utils';
 import { IconButton } from './ui/IconButton';
+import { ConfirmationDialog } from './ui/ConfirmationDialog';
+import { AudioLibraryDropzone } from './AudioLibraryDropzone';
+import { AudioFileRow } from './AudioFileRow';
 
 interface AudioLibraryProps {
   storedFiles: StoredAudioFile[];
@@ -48,6 +51,7 @@ export function AudioLibrary({
   // Confirmation states
   const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
   const [showResetMoodsConfirm, setShowResetMoodsConfirm] = useState<boolean>(false);
+  const [pendingDeleteFile, setPendingDeleteFile] = useState<StoredAudioFile | null>(null);
 
   // Drag over styling state
   const [dragOverCategory, setDragOverCategory] = useState<'ambient' | 'effect' | null>(null);
@@ -184,6 +188,9 @@ export function AudioLibrary({
     
     try {
       await addFiles(audioFiles, category);
+    } catch (err) {
+      console.error('[Audio Library] Upload failed:', err);
+      toast.error(`Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setUploadingFiles(prev => prev.filter(t => !uploadTasks.find(u => u.id === t.id)));
     }
@@ -233,118 +240,6 @@ export function AudioLibrary({
   const handleClearConfirm = async () => {
     await clearAllFiles(activeSubTab);
     setShowClearConfirm(false);
-  };
-
-  const renderFileRow = (file: StoredAudioFile) => {
-    const currentMood = getMoodForTrack(file.id);
-    const moodObj = currentMood ? MOODS.find((m) => m.id === currentMood) : null;
-
-    return (
-      <div
-        key={file.id}
-        className="group flex flex-row items-center p-2 bg-[#f9f8ff]/50 border border-stone-200/40 rounded-lg text-xs w-full"
-      >
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => handlePlayPreview(file)}
-            className={`w-6 h-6 flex items-center justify-center rounded-full border shrink-0 ${
-              previewingFileId === file.id
-                ? 'bg-[#2563eb]/10 text-[#2563eb] border-[#2563eb]/30'
-                : 'bg-white border-stone-200 text-stone-500 hover:text-stone-700'
-            }`}
-            title="Preview 3s"
-          >
-            {previewingFileId === file.id ? (
-              <Pause className="w-2.5 h-2.5 fill-current" />
-            ) : (
-              <Play className="w-2.5 h-2.5 fill-current ml-0.5" />
-            )}
-          </button>
-
-          {/* Mood Selector Trigger/Badge Button */}
-          {activeSubTab === 'ambient' && (
-            <div className="relative shrink-0 mr-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActivePickerFileId(activePickerFileId === file.id ? null : file.id);
-                }}
-                className={`w-6 h-6 flex items-center justify-center rounded-md border text-xs transition-colors shrink-0 ${
-                  currentMood
-                    ? 'bg-[#f9f8ff] border-[#e2e8f0] text-stone-700 opacity-100'
-                    : 'bg-stone-50/50 border-stone-200/50 text-stone-400 opacity-60 group-hover:opacity-100'
-                } hover:border-[#2563eb] hover:bg-[#f9f8ff]/50 cursor-pointer`}
-                title={currentMood ? `Mood: ${moodObj?.label}` : 'Assign Mood'}
-              >
-                {currentMood ? moodObj?.emoji : '➕'}
-              </button>
-
-              {activePickerFileId === file.id && (
-                <div
-                  className="absolute left-0 top-7 z-50 bg-white border border-stone-250 rounded-lg shadow-lg p-2.5 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-100 min-w-[220px]"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <p className="font-bold text-[10px] text-stone-500 uppercase tracking-widest pl-1 mb-1">Assign to mood</p>
-                  {MOODS.map((m) => {
-                    const assignedTrackId = assignments[m.id];
-                    const assignedTrack = assignedTrackId ? ambientTracks.find(f => f.id === assignedTrackId) : null;
-                    const truncName = assignedTrack ? (assignedTrack.name.length > 15 ? assignedTrack.name.substring(0, 12) + '...' : assignedTrack.name) : 'none';
-                    return (
-                      <button
-                        key={m.id}
-                        onClick={() => {
-                          assignTrackToMood(file.id, m.id);
-                          setActivePickerFileId(null);
-                        }}
-                        className="w-full flex items-center justify-between px-2 py-1.5 rounded hover:bg-stone-100 cursor-pointer text-xs"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span>{m.emoji}</span>
-                          <span className="font-sans font-medium">{m.label}</span>
-                        </div>
-                        <span className="text-[10px] text-stone-400 font-sans italic">currently: {truncName}</span>
-                      </button>
-                    )
-                  })}
-                  {currentMood && (
-                    <button
-                      onClick={() => {
-                        unassignTrack(file.id);
-                        setActivePickerFileId(null);
-                      }}
-                      className="w-full mt-1 flex items-center gap-2 px-2 py-1.5 rounded hover:bg-red-50 text-red-600 cursor-pointer text-xs font-medium"
-                      title="Remove Assignment"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                      Remove assignment
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="flex-grow min-w-0 px-2 overflow-hidden">
-          <p className="font-sans font-medium text-stone-700 leading-tight break-words" title={file.name}>
-            {file.name}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 shrink-0 ml-2">
-          <p className="text-[9.5px] font-mono text-stone-400 mt-0.5 whitespace-nowrap text-right min-w-[40px]">
-            {(file.blob.size / 1024).toFixed(1)} KB
-          </p>
-          <IconButton
-            icon={<Trash2 className="w-3.5 h-3.5" />}
-            intent="destructive"
-            onClick={() => handleRemoveFile(file.id)}
-            aria-label="Delete File"
-            title="Delete File"
-          />
-        </div>
-      </div>
-    );
   };
 
   const currentFiles = activeSubTab === 'ambient' ? ambientTracks : effectFiles;
@@ -434,35 +329,16 @@ export function AudioLibrary({
       {/* Active Tab Content */}
       <div className="flex flex-col h-full min-w-0" id={`library-${activeSubTab}-section`}>
         {/* Upload Dropzone */}
-        <div
-          id={`dropzone-${activeSubTab}`}
+        <AudioLibraryDropzone
+          category={activeSubTab}
+          isDragOver={dragOverCategory === activeSubTab}
           onDragOver={(e) => handleDragOver(e, activeSubTab)}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, activeSubTab)}
           onClick={() => triggerFileInput(activeSubTab)}
-          className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer transition-all h-24 mb-4 shrink-0 ${
-            dragOverCategory === activeSubTab
-              ? 'bg-[#f9f8ff]/5 border-[#2563eb] scale-[0.98]'
-              : 'bg-[#f9f8ff]/40 border-stone-200 hover:border-stone-350 hover:bg-stone-50/20'
-          }`}
-        >
-          <input
-            type="file"
-            ref={activeSubTab === 'ambient' ? ambientInputRef : effectInputRef}
-            accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/ogg;codecs=vorbis,audio/mp4,audio/x-m4a,.mp3,.wav,.ogg,.m4a"
-            onChange={(e) => handleFileInputChange(e, activeSubTab)}
-            className="hidden"
-            multiple
-            aria-label="Add audio files"
-          />
-          <Upload className="w-5 h-5 text-stone-400 mb-1" />
-          <span className="text-[10px] font-sans font-bold text-[#8d8db9] uppercase tracking-wider">
-            + Add Files
-          </span>
-          <span className="text-[9px] text-stone-400 mt-0.5 font-sans">
-             MP3 · WAV · OGG · M4A
-          </span>
-        </div>
+          inputRef={activeSubTab === 'ambient' ? ambientInputRef : effectInputRef}
+          onFileInputChange={(e) => handleFileInputChange(e, activeSubTab)}
+        />
 
         {/* Stored files list */}
         <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-1.5 pb-8" id={`list-${activeSubTab}`}>
@@ -500,7 +376,29 @@ export function AudioLibrary({
                   </div>
                 </div>
               ))}
-              {currentFiles.map((file) => renderFileRow(file))}
+              {currentFiles.map((file) => (
+                <AudioFileRow
+                  key={file.id}
+                  file={file}
+                  isPreviewing={previewingFileId === file.id}
+                  onPlayPreview={handlePlayPreview}
+                  onRequestDelete={setPendingDeleteFile}
+                  showMoodPicker={activeSubTab === 'ambient'}
+                  currentMood={getMoodForTrack(file.id)}
+                  moodPickerOpen={activePickerFileId === file.id}
+                  onToggleMoodPicker={(fileId) => setActivePickerFileId(activePickerFileId === fileId ? null : fileId)}
+                  onAssignMood={(fileId, moodId) => {
+                    assignTrackToMood(fileId, moodId);
+                    setActivePickerFileId(null);
+                  }}
+                  onUnassignMood={(fileId) => {
+                    unassignTrack(fileId);
+                    setActivePickerFileId(null);
+                  }}
+                  assignments={assignments}
+                  ambientTracks={ambientTracks}
+                />
+              ))}
             </>
           )}
         </div>
@@ -509,7 +407,9 @@ export function AudioLibrary({
         <div className="shrink-0 pt-4 border-t border-stone-200/50 flex items-center justify-end mt-auto">
           {!showResetMoodsConfirm ? (
             <button
-              onClick={() => setShowResetMoodsConfirm(true)}
+              onClick={() => {
+                setShowResetMoodsConfirm(true);
+              }}
               className="text-[10px] uppercase tracking-wider font-bold text-stone-400 hover:text-red-600 transition-colors font-sans"
             >
               Reset mood assignments
@@ -540,6 +440,23 @@ export function AudioLibrary({
           )}
         </div>
       </div>
+
+      <ConfirmationDialog
+        isOpen={pendingDeleteFile !== null}
+        title="Delete File?"
+        description={
+          pendingDeleteFile
+            ? `This will permanently remove "${pendingDeleteFile.name}" from your audio library. This cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete"
+        onConfirm={async () => {
+          if (pendingDeleteFile) {
+            await handleRemoveFile(pendingDeleteFile.id);
+          }
+        }}
+        onClose={() => setPendingDeleteFile(null)}
+      />
     </div>
   );
 }

@@ -19,33 +19,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 ---
 
-## Refactor Candidates — Codebase Modularity Audit (Round 2)
-
-The full audit (every file individually re-verified, including everything confirmed correctly-not-flagged) is documented in `CHANGELOG.md`. The 4 genuine candidates below are still open/unimplemented.
-
-### Candidate 1 — `src/components/CommandPalette.tsx` (607 lines) — scope corrected, not yet decided whether worth doing
-
-Original "command dispatch layer" premise didn't hold up (see `CHANGELOG.md`). Only 3 functions 
-(`testDeathAnimation`/`testDamageAnimation`/`testHealAnimation`) are genuinely extractable; everything 
-else is trivial inline dispatch next to its own menu item. The real problem is repetitive JSX 
-markup (~25 near-identical `Command.Item` blocks), not tangled logic. A markup-deduplication refactor 
-(a small render-helper or data-driven `.map()`) would be a different, smaller-scoped fix than 
-originally proposed — not yet decided if it's worth doing given the modest real payoff either way.
-
-### Candidate 3 — `src/components/AudioLibrary.tsx` (546 lines) — split warranted, test coverage must come first
-
-5 genuine responsibility clusters (upload/drag-drop, playback preview, mood-assignment popover, 
-cascading delete/localStorage sync, tab-switching). Proposed split into `MoodAssignmentPopover.tsx`, 
-`AudioFileRow.tsx` (does NOT own preview state — `previewingFileId`/`previewAudioRef`/
-`previewTimerRef` must stay lifted in the parent for the single-preview-at-a-time guarantee), and 
-`AudioLibraryDropzone.tsx`. Extracting `AudioFileRow.tsx` does NOT automatically prevent re-renders — 
-that requires a separate `React.memo` + `useCallback` step. **⚠️ Non-negotiable sequencing**: 
-`AudioLibrary.test.tsx` has only 2 tests; coverage (successful upload, delete-confirmation lifecycle, 
-single-preview enforcement) must be substantially expanded FIRST, verified via Batch 7B-1, before any 
-structural extraction begins.
-
----
-
 ## Working Discipline — Lessons Baked Into This Project (read before starting any new work)
 
 1. **Never accept a "tests passed" or "verified" claim without literal, pasted, raw terminal output.**
