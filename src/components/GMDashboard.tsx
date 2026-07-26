@@ -16,6 +16,7 @@ import { useAudioEngine } from '../hooks/useAudioEngine';
 import { useMoodPresets } from '../hooks/useMoodPresets';
 import { GMDashboardDialogs } from './GMDashboardDialogs';
 import { GlobalControls } from './GlobalControls';
+import { ScrollToTop } from './ScrollToTop';
 import { Campaign } from '../hooks/useCampaign';
 
 export interface GMDashboardProps {
@@ -110,7 +111,7 @@ export function GMDashboard({ campaign, onCloseCampaign }: GMDashboardProps = {}
         onCloseCampaign={handleBackToCampaigns}
       />
 
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <main id="gm-main-content" className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <header className="h-16 lg:h-20 shrink-0 border-b border-[#e2e8f0] px-4 lg:px-8 flex items-center justify-between bg-white/80 lg:bg-white/50 backdrop-blur-md sticky top-0 z-10 transition-all">
           <div className="flex-1 max-w-lg mr-4 group flex items-center gap-2">
             <div>
@@ -147,6 +148,8 @@ export function GMDashboard({ campaign, onCloseCampaign }: GMDashboardProps = {}
         setIsAudioPanelOpen={setIsAudioPanelOpen}
         isAmbientPlaying={audioEngine.isAmbientPlaying}
       />
+
+      <ScrollToTop containerId="gm-main-content" />
 
       <GMDashboardDialogs
         campaignId={campaignId}

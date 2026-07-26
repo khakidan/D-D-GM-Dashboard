@@ -17,6 +17,55 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 - **`NpcCard.tsx`'s Legendary Actions tests don't directly assert name-field editing** — only initial render, cost-editing, and add/remove are directly tested. Low priority; the underlying wiring was separately confirmed correct by direct code inspection.
 
+- Look into having the Attack bonus for PC's and NPC's be automated based on their ability score and proficiency bonus.
+- Look at calculating the damage bonus based on if they have proficiency with the weapon.
+  - For D&D 5e (2014 and 2024):
+    * Attack bonus = Ability modifier + Proficiency bonus (if you’re proficient with the weapon or spell)
+      * Melee weapons usually use Strength.
+      * Finesse weapons can use Strength or Dexterity.
+      * Ranged weapons usually use Dexterity.
+      * Spell attacks use your spellcasting ability.
+    * Damage bonus = Ability modifier
+      * Add the same ability modifier used for the attack.
+      * Do not add your proficiency bonus to damage.
+      * Some class features, spells, or magic weapons can add extra damage.
+    * Example:
+      * Strength 16 (+3), proficiency bonus +2, using a longsword you’re proficient with:
+        * Attack: +5 (+3 Strength +2 proficiency)
+        * Damage: 1d8 +3 slashing 
+
+- Look into automating the SAVING throw scores based on the definition of the action/reaction/etc..
+  - Save DC = 8 + Proficiency Bonus + Relevant Ability Modifier(s)
+
+- The Reactions section needs to have the ability to add a tracker to it that would allow me to keep track of reactions that can only be used a certain number of times.
+  - We should also change the logic of the resource trackers so that it can account for things like only usable a certain number of times per day.
+
+- Add a scroll to the top feature on all the pages
+
+- Add the ability to collapse individual actions, reactions, bonus actions, etc... so that it doesn't become hard to see
+
+- Reactions should probably have the same fields as Actions, Bonus Actions, etc..
+
+- We should add the CR rating to the collapsed header for NPCs on the NPC Library page, it should go next to the HP and AC area. We should also add a filter by CR rating, like how we have for damage resistances, immunities, and vulnerabilities.
+
+- If the NPC library doesn't have a paging system, we should add one so that we don't have to load all of the NPCs in the library (unless we want to). Maybe the default should be 10, but it could also go to 25, 50, 100, and all / page??
+
+- NPCs who have legendary actions and resistances should be added to the collapsed view for NPC library. It should be in the same line as the Spell Casting SAVE DC and Spell Attack.
+
+### 🟡 UI Refactor
+
+- The buttons for `+ Add Trait`, `+ Add Action`, `+ Add Reaction`, `+ Add Bonus Action`, and `+Add Legendary Action` are rendered like they are using the button component. They are very tiny and hard to accurately click. We should investigate how they were implemented and fix them.
+
+- The description fields for the Traits, Actions, Reactions, Legenary Actions, and Bonus Actions don't have much height to them. They scroll properly, but they become hard to see what you have typed.
+
+- Clicking on the Delete Icon for the Traits, Actions, Reactions, Legenary Actions, and Bonus Actions sections has no confirmation before the item is actually deleted. 
+
+- Fix the legendary actions layout so that it doesn't push the cost field down lower than the Action name field. Maybe but put a name label above the name field?
+
+- We should rework the way the NPC and PC cards display and edit the AC, Max HP, Temp HP, Level/CR and ability scores. Maybe model it after the way we refactored the Combatant card.
+
+- Change the look of an open card (PC, NPC, Combatant) so that it's easier to know when one is collapsed compared to expanded.
+
 ---
 
 ## Working Discipline — Lessons Baked Into This Project (read before starting any new work)
