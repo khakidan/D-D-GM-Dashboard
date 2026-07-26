@@ -54,16 +54,18 @@ export const StatBlockSkills: React.FC<StatBlockSkillsProps> = ({
         <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">
           Skills
         </span>
-        <IconButton
-          icon={skillsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          onClick={() => setSkillsExpanded(!skillsExpanded)}
-          id="skills-expand-btn"
-          aria-label={skillsExpanded ? "Collapse skills" : "Expand skills"}
-        />
+        {!readOnly && (
+          <IconButton
+            icon={skillsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            onClick={() => setSkillsExpanded(!skillsExpanded)}
+            id="skills-expand-btn"
+            aria-label={skillsExpanded ? "Collapse skills" : "Expand skills"}
+          />
+        )}
       </div>
 
       {/* COLLAPSED View */}
-      {!skillsExpanded && (
+      {(readOnly || !skillsExpanded) && (
         <div className="space-y-1" id="skills-collapsed-list">
           {!hasProficientSkills ? (
             <div className="text-xs text-stone-500 italic" id="no-skills-msg">
@@ -102,7 +104,7 @@ export const StatBlockSkills: React.FC<StatBlockSkillsProps> = ({
       )}
 
       {/* EXPANDED View */}
-      {skillsExpanded && (
+      {!readOnly && skillsExpanded && (
         <div className="space-y-3" id="skills-expanded-grouped">
           {abilitiesInOrder
             .filter((ability) => skillsByAbility[ability].length > 0)

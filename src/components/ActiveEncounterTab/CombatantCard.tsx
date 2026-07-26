@@ -8,8 +8,6 @@ import { CombatantCardHeader } from './CombatantCardHeader';
 import { CombatantCardExpanded } from './CombatantCardExpanded';
 import { ResourcePool, serializeResourcePools } from '../../lib/resourcePools';
 import { CardShell } from '../ui/CardShell';
-import { NpcReferencePanel } from './NpcReferencePanel';
-import { PcReferencePanel } from './PcReferencePanel';
 import { ExpandableContent } from '../ui/ExpandableContent';
 
 export interface CombatantCardProps {
@@ -146,18 +144,6 @@ export const CombatantCard = React.memo(function CombatantCard({
         isSelectable={isSelectable}
         isSyncing={isSyncing}
       />
-
-      {c.type === 'npc' && (
-        <div className="px-6 pb-3">
-          <NpcReferencePanel combatant={c} />
-        </div>
-      )}
-
-      {c.type === 'pc' && pcCharacter?.gmControlled && (
-        <div className="px-6 pb-3">
-          <PcReferencePanel combatant={c} />
-        </div>
-      )}
 
       <ExpandableContent isExpanded={isExpanded}>
         <CombatantCardExpanded

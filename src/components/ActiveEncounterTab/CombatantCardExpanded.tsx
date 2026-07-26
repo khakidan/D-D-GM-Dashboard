@@ -6,9 +6,19 @@ import { ConditionChips } from '../ui/ConditionChips';
 import { CombatantRechargeTracker } from './CombatantRechargeTracker';
 import { CombatantLegendaryTracker } from './CombatantLegendaryTracker';
 import { ResourcePoolsSection } from '../ui/ResourcePoolsSection';
-import { StatBlock } from '../ui/StatBlock';
 import { StatTile } from '../ui/StatTile';
-import { parseAbilityScores, parseProficiencies } from '../../lib/abilityScores';
+import { 
+  parseAbilityScores, 
+  parseProficiencies, 
+  proficiencyBonusFromLevel,
+  AbilityName,
+  SkillName
+} from '../../lib/abilityScores';
+import { StatBlockScoresTable } from '../ui/StatBlockScoresTable';
+import { StatBlockSaves } from '../ui/StatBlockSaves';
+import { StatBlockPassive } from '../ui/StatBlockPassive';
+import { StatBlockSkills } from '../ui/StatBlockSkills';
+import { NpcStatBlockSection, formatActionMeta } from '../ui/NpcStatBlockSection';
 import { getEffectiveResistances } from '../../lib/combatLogic';
 import { CombatMechanicsSummary } from './CombatMechanicsSummary';
 import { CombatantIrvDisplay } from './CombatantIrvDisplay';
@@ -69,79 +79,184 @@ export function CombatantCardExpanded({
   const conditionList = parseCommaSeparatedList(c.conditions, { toLowerCase: true });
   const mechanicalSummary = buildConditionSummary(conditionList);
 
+  const abilityScores = npcModel 
+    ? parseAbilityScores(npcModel.abilityScores) 
+    : pcCharacter 
+      ? parseAbilityScores(pcCharacter.abilityScores) 
+      : parseAbilityScores('{}');
+      
+  const proficiencies = npcModel
+    ? parseProficiencies(npcModel.proficiencies)
+    : pcCharacter
+      ? parseProficiencies(pcCharacter.proficiencies)
+      : parseProficiencies('{}');
+      
+  const effectiveProfBonus = pcCharacter?.level
+    ? (proficiencies.proficiencyBonus > 0 ? proficiencies.proficiencyBonus : proficiencyBonusFromLevel(pcCharacter.level))
+    : proficiencies.proficiencyBonus;
+
+  const traits = React.useMemo(() => {
+    try {
+      return JSON.parse(c.traits || '[]') as any[];
+    } catch {
+      return [];
+    }
+  }, [c.traits]);
+
+  const actions = React.useMemo(() => {
+    try {
+      return JSON.parse(c.actions || '[]') as any[];
+    } catch {
+      return [];
+    }
+  }, [c.actions]);
+
+  const bonusActions = React.useMemo(() => {
+    try {
+      return JSON.parse(c.bonusActions || '[]') as any[];
+    } catch {
+      return [];
+    }
+  }, [c.bonusActions]);
+
+  const reactions = React.useMemo(() => {
+    try {
+      return JSON.parse(c.reactions || '[]') as any[];
+    } catch {
+      return [];
+    }
+  }, [c.reactions]);
+
+  const legendaryActions = React.useMemo(() => {
+    try {
+      return JSON.parse(c.legendaryActionsList || '[]') as any[];
+    } catch {
+      return [];
+    }
+  }, [c.legendaryActionsList]);
+
+  const showReferenceContent = c.type === 'npc' || pcCharacter?.gmControlled;
+
   return (
-    <div className="px-6 pb-6 pt-2 bg-white space-y-5">
+    <div className="px-6 pb-6 pt-2 bg-white space-y-5" id={`combatant-expanded-${c.id}`}>
       {c.notes && (
         <p className="text-sm text-[#8d8db9] opacity-60 italic">{c.notes}</p>
       )}
 
-      {pcCharacter && (
-        <StatBlock
-          abilityScores={parseAbilityScores(pcCharacter.abilityScores)}
-          proficiencies={parseProficiencies(pcCharacter.proficiencies)}
-          characterLevel={pcCharacter.level}
-          readOnly={true}
-        />
-      )}
-
-      {npcModel && (
-        <StatBlock
-          abilityScores={parseAbilityScores(npcModel.abilityScores)}
-          proficiencies={parseProficiencies(npcModel.proficiencies)}
-          readOnly={true}
-        />
-      )}
-
-      <div id={`combatant-stat-grid-${c.id}`} className="flex gap-4">
-        <CombatantIrvDisplay
-          resistances={getEffectiveResistances(c)}
-          immunities={c.immunities || ''}
-          vulnerabilities={c.vulnerabilities || ''}
-        />
-
-        {/* Right column: HP stats */}
-        <div className="w-[40%] flex flex-col gap-3">
-          <StatTile label="Temp HP">
+      {/* 1. Compact Stats Line */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 py-2 border-b border-[#e2e8f0]">
+        {c.type === 'npc' && c.speed && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Speed</span>
+            <span className="text-sm font-bold text-slate-700">{c.speed}</span>
+          </div>
+        )}
+        {c.type === 'npc' && c.challengeRating && (
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">CR</span>
+            <span className="text-sm font-bold text-slate-700">{c.challengeRating}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Prof</span>
+          <span className="text-sm font-bold text-slate-700">+{effectiveProfBonus}</span>
+        </div>
+        
+        {/* HP Stats in the same line */}
+        <div className="flex items-center gap-3 ml-auto">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Temp</span>
             <input
               type="number"
               value={c.tempHp || ''}
               onChange={e => onUpdateCombatant({ tempHp: e.target.value ? parseInt(e.target.value) : 0 })}
               placeholder="0"
               disabled={isSyncing}
-              aria-label="Temp HP"
-              className="w-full bg-transparent text-center font-bold text-blue-600 text-base disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 rounded"
+              className="w-12 bg-[#f9f8ff] border border-[#e2e8f0] text-center font-bold text-[#2563eb] text-sm rounded focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
             />
-          </StatTile>
-          <StatTile label="Max HP">
-            {c.tempHpMax && c.tempHpMax > 0 ? (
-              <span 
-                className="font-bold text-base text-[#2563eb] cursor-help" 
-                title={`Temp max (original: ${c.maxHp})`}
-              >
-                {c.tempHpMax}
-              </span>
-            ) : (
-              <span className="font-bold text-base text-[#0f172a]">{c.maxHp}</span>
-            )}
-          </StatTile>
-          {c.type === 'npc' && (c.currentHp < c.maxHp || (c.tempHp || 0) > 0) && (
-            <button
-              onClick={() => onUpdateCombatant({ currentHp: c.maxHp, tempHp: 0 })}
-              disabled={isSyncing}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-[#f9f8ff]/80 hover:bg-white text-[10px] font-bold uppercase tracking-widest text-[#8d8db9] hover:text-[#2563eb] rounded-full border border-[#e2e8f0] hover:border-[#2563eb] transition-all disabled:opacity-50"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Reset HP
-            </button>
-          )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Max</span>
+            <div className="flex items-center gap-2">
+              {c.tempHpMax && c.tempHpMax > 0 ? (
+                <span className="font-bold text-sm text-[#2563eb]" title={`Temp max (original: ${c.maxHp})`}>
+                  {c.tempHpMax}
+                </span>
+              ) : (
+                <span className="font-bold text-sm text-slate-900">{c.maxHp}</span>
+              )}
+              {c.type === 'npc' && (c.currentHp < c.maxHp || (c.tempHp || 0) > 0) && (
+                <button
+                  onClick={() => onUpdateCombatant({ currentHp: c.maxHp, tempHp: 0 })}
+                  disabled={isSyncing}
+                  title="Reset HP"
+                  className="p-1 text-[#8d8db9] hover:text-[#2563eb] transition-colors"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      <CombatMechanicsSummary mechanicalSummary={mechanicalSummary} />
+      {/* 2. Ability Scores Table */}
+      <StatBlockScoresTable abilityScores={abilityScores} />
 
-      {/* NPCs sub-components */}
+      {/* 3, 4, 5. Saves, Passives, Skills */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        <StatBlockSaves
+          abilityScores={abilityScores}
+          savingThrows={proficiencies.savingThrows}
+          effectiveProfBonus={effectiveProfBonus}
+          readOnly={true}
+          onToggle={() => {}}
+        />
+        <StatBlockPassive
+          abilityScores={abilityScores}
+          proficiencies={proficiencies}
+          effectiveProfBonus={effectiveProfBonus}
+          readOnly={true}
+          onPassiveBonusChange={() => {}}
+        />
+      </div>
+
+      {/* Utility/Flavor stats: Senses and Languages */}
       {c.type === 'npc' && (
-        <>
+        <div className="flex flex-wrap gap-x-6 gap-y-2 py-1">
+          {c.senses && c.senses.trim() !== '' && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Senses</span>
+              <span className="text-sm font-bold text-slate-700">{c.senses}</span>
+            </div>
+          )}
+          {c.languages && c.languages.trim() !== '' && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Languages</span>
+              <span className="text-sm font-bold text-slate-700">{c.languages}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      <StatBlockSkills
+        abilityScores={abilityScores}
+        skills={proficiencies.skills}
+        jackOfAllTrades={proficiencies.jackOfAllTrades}
+        effectiveProfBonus={effectiveProfBonus}
+        readOnly={true}
+        onSkillCycle={() => {}}
+        onJackOfAllTradesToggle={() => {}}
+      />
+
+      {/* 6. IRV and Recharge Row */}
+      <div className={`grid grid-cols-1 gap-4 ${c.type === 'npc' && c.rechargeAbilities && c.rechargeAbilities.length > 0 ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
+        <CombatantIrvDisplay
+          resistances={getEffectiveResistances(c)}
+          immunities={c.immunities || ''}
+          vulnerabilities={c.vulnerabilities || ''}
+        />
+        {c.type === 'npc' && c.rechargeAbilities && c.rechargeAbilities.length > 0 && (
           <CombatantRechargeTracker
             rechargeAbilities={c.rechargeAbilities}
             onMarkSpent={onMarkSpent}
@@ -150,17 +265,82 @@ export function CombatantCardExpanded({
             recentRechargeRolls={recentRechargeRolls}
             isSyncing={isSyncing}
           />
-          <CombatantLegendaryTracker
-            legendaryActions={c.legendaryActions}
-            legendaryResistances={c.legendaryResistances}
-            onSpendAction={onSpendAction}
-            onSpendResistance={onSpendResistance}
-            onRestoreActions={onRestoreActions}
-            onRestoreResistances={onRestoreResistances}
-            combatantId={c.id}
-            isSyncing={isSyncing}
-          />
-        </>
+        )}
+      </div>
+
+      <CombatMechanicsSummary mechanicalSummary={mechanicalSummary} />
+
+      {/* 7. Reference Content: Traits, Actions, etc. */}
+      {showReferenceContent && (
+        <div className="space-y-4 pt-2">
+          {traits.length > 0 && (
+            <NpcStatBlockSection
+              title="Traits"
+              items={traits.map(t => ({
+                name: t.name,
+                description: t.description,
+              }))}
+            />
+          )}
+
+          {actions.length > 0 && (
+            <NpcStatBlockSection
+              title="Actions"
+              items={actions.map(a => ({
+                name: a.name,
+                description: a.description,
+                meta: formatActionMeta(a),
+              }))}
+            />
+          )}
+
+          {bonusActions.length > 0 && (
+            <NpcStatBlockSection
+              title="Bonus Actions"
+              items={bonusActions.map(ba => ({
+                name: ba.name,
+                description: ba.description,
+                meta: formatActionMeta(ba),
+              }))}
+            />
+          )}
+
+          {reactions.length > 0 && (
+            <NpcStatBlockSection
+              title="Reactions"
+              items={reactions.map(r => ({
+                name: r.name,
+                description: r.description,
+              }))}
+            />
+          )}
+
+          {/* 8. Legendary Section */}
+          {c.type === 'npc' && (c.legendaryActions || c.legendaryResistances) && (
+            <CombatantLegendaryTracker
+              legendaryActions={c.legendaryActions}
+              legendaryResistances={c.legendaryResistances}
+              onSpendAction={onSpendAction}
+              onSpendResistance={onSpendResistance}
+              onRestoreActions={onRestoreActions}
+              onRestoreResistances={onRestoreResistances}
+              combatantId={c.id}
+              isSyncing={isSyncing}
+            />
+          )}
+
+          {c.type === 'npc' && legendaryActions.length > 0 && (
+            <NpcStatBlockSection
+              title="Legendary Actions"
+              items={legendaryActions.map(la => ({
+                name: la.cost && la.cost > 1
+                  ? `${la.name} (Costs ${la.cost})`
+                  : la.name,
+                description: la.description,
+              }))}
+            />
+          )}
+        </div>
       )}
 
       {/* PCs sub-components */}

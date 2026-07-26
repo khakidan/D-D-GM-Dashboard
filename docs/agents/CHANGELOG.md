@@ -2,6 +2,26 @@
 
 ---
 
+## Combatant Card Visual Overhaul (Completed)
+
+Merged the two previously separate expandable panels on a combatant card into a single, unified expanded view that follows a traditional D&D 5e stat-block reading flow. This eliminates the "double-expand" friction (where GMs had to open both the card and a separate "Stat Block" toggle) and resolves a long-standing bug where the reference panel toggle rendered even in the collapsed card view.
+
+**Architectural Improvements & Deliverables**:
+- **Unified Expanded Layout**: Redesigned `CombatantCardExpanded.tsx` to host all combatant data and reference material. The standalone `NpcReferencePanel.tsx` and `PcReferencePanel.tsx` components were deleted entirely.
+- **`StatBlockScoresTable.tsx`**: Implemented a new, read-only horizontal `<table>` for ability scores and modifiers, providing a compact and familiar visual anchor at the top of the stat block.
+- **Reflowed Content Order**: Reorganized the vertical flow to match D&D conventions: Compact Stats (Speed/CR/Prof) → Ability Scores → Saves & Passives → Senses & Languages (NPC-only) → Skills → IRV & Recharge (side-by-side grid) → Traits/Actions/Reactions/Legendary Actions.
+- **Side-by-Side Trackers**: Updated `CombatantLegendaryTracker.tsx` and the IRV/Recharge row to use a 2-column grid layout, significantly reducing vertical scroll depth.
+- **Pure Prop-Driven Design**: Maintained strict architectural boundaries by ensuring the expanded panel remains purely prop-driven, receiving all data and mutation handlers from the `ActiveEncounterTab` coordinator.
+
+**Validation & Verification**:
+- **TypeScript build check**: Compiled clean (`npx tsc -p tsconfig.build.json --noEmit`).
+- **Test execution**: Real, fresh runs confirmed **100% success rate** for all affected batches:
+  - **Batch 5B (ActiveEncounterTab Components)**: 50/50 passed (net change from -6 deleted reference panel tests and +5 new coverage for merged components and the scores table).
+  - **Batch 5A/Batch 8**: Verified unchanged and passing.
+- **Fixture Fix**: Corrected a bug in `CombatantCard.test.tsx` where a recharge ability fixture used `isSpent` instead of the correct `isCharged` field name.
+
+---
+
 ## Bonus Actions — Markdown Parsing (Completed)
 
 Implemented Markdown parsing (`react-markdown` + `remark-gfm`) inside `NpcStatBlockSection.tsx` (the read-only component shared by both `PcReferencePanel` and `NpcReferencePanel`) to respect authored markdown formatting (bold, italic, list items) across all 5 stat block categories (Traits, Actions, Reactions, Bonus Actions, Legendary Actions).

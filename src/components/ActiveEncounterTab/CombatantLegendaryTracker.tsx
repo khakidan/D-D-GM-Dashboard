@@ -28,7 +28,7 @@ export function CombatantLegendaryTracker({
   }
 
   return (
-    <>
+    <div className="grid grid-cols-2 gap-4">
       {/* Legendary Resistances Section */}
       {legendaryResistances && (
         <div className="bg-[#f9f8ff]/30 p-4 rounded-xl border border-[#e2e8f0] space-y-3" id={`legendary-resistances-sec-${combatantId}`}>
@@ -120,6 +120,6 @@ export function CombatantLegendaryTracker({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

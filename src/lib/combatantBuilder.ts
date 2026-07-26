@@ -98,24 +98,33 @@ export function buildSingleNpcCombatant(
         rechargeOn: number;
         isCharged: boolean;
       }> = [];
-      try {
-        const parsedActions = JSON.parse(
-          npcTemplate.actions || '[]'
-        ) as Array<{ name: string; recharge?: string }>;
-        for (const action of parsedActions) {
-          const rechargeOn = parseRechargeOn(action.recharge);
-          if (rechargeOn !== null) {
-            const isCharged = (options.rechargeState && options.rechargeState[action.name] !== undefined)
-              ? options.rechargeState[action.name]
-              : true;
-            derived.push({
-              name: action.name,
-              rechargeOn,
-              isCharged,
-            });
-          }
+
+      const parseSafe = (json: string | undefined) => {
+        try {
+          return JSON.parse(json || '[]') as Array<{ name: string; recharge?: string }>;
+        } catch {
+          return [];
         }
-      } catch {}
+      };
+
+      const allItems = [
+        ...parseSafe(npcTemplate.actions),
+        ...parseSafe(npcTemplate.bonusActions)
+      ];
+
+      for (const item of allItems) {
+        const rechargeOn = parseRechargeOn(item.recharge);
+        if (rechargeOn !== null) {
+          const isCharged = (options.rechargeState && options.rechargeState[item.name] !== undefined)
+            ? options.rechargeState[item.name]
+            : true;
+          derived.push({
+            name: item.name,
+            rechargeOn,
+            isCharged,
+          });
+        }
+      }
       return derived.length > 0 ? derived : undefined;
     })(),
     abilityScores: npcTemplate.abilityScores,

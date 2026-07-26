@@ -500,6 +500,29 @@ describe('buildSingleNpcCombatant', () => {
     expect(combatant.initiative).toBe(15);
     expect(combatant.tempAcModifier).toBe(2);
   });
+
+  it('derives rechargeAbilities from both actions and bonusActions JSON', () => {
+    const npcWithBonusRecharge = {
+      ...baseNpc,
+      actions: JSON.stringify([{ name: 'Action Recharge', recharge: '5-6' }]),
+      bonusActions: JSON.stringify([{ name: 'Bonus Recharge', recharge: '6' }])
+    };
+    const combatant = buildSingleNpcCombatant(npcWithBonusRecharge, baseOptions);
+    expect(combatant.rechargeAbilities).toHaveLength(2);
+    expect(combatant.rechargeAbilities!.some(ra => ra.name === 'Action Recharge')).toBe(true);
+    expect(combatant.rechargeAbilities!.some(ra => ra.name === 'Bonus Recharge')).toBe(true);
+  });
+
+  it('handles malformed bonusActions JSON without wiping out valid actions recharge', () => {
+    const npcWithMalformedBonus = {
+      ...baseNpc,
+      actions: JSON.stringify([{ name: 'Valid Action', recharge: '5-6' }]),
+      bonusActions: 'invalid json string'
+    };
+    const combatant = buildSingleNpcCombatant(npcWithMalformedBonus, baseOptions);
+    expect(combatant.rechargeAbilities).toHaveLength(1);
+    expect(combatant.rechargeAbilities![0].name).toBe('Valid Action');
+  });
 });
 
 describe('buildCombatantsFromState stable PC handling', () => {

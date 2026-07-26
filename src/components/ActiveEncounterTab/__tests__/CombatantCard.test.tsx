@@ -384,11 +384,11 @@ describe('CombatantCard', () => {
     spy.mockRestore();
   });
 });
-describe('CombatantCard - PcReferencePanel conditional render', () => {
+describe('CombatantCard - Expanded content gating and layout', () => {
   afterEach(() => cleanup());
   const onUpdateCombatant = vi.fn();
   const defaultProps = {
-    isExpanded: false,
+    isExpanded: true, // Tests in this block assume expanded state
     damageInput: '',
     healInput: '',
     currentRound: 1,
@@ -411,14 +411,12 @@ describe('CombatantCard - PcReferencePanel conditional render', () => {
     handleExhaustionDeath: vi.fn()
   };
 
-  it('renders PcReferencePanel for a PC combatant when gmControlled is true and content exists', () => {
+  it('renders reference content (traits) for a PC combatant when gmControlled is true', () => {
     const c = makeCombatant({
       id: 'pc1',
       type: 'pc',
       name: 'GM PC',
       traits: JSON.stringify([{ name: 'Test Trait', description: 'Test Description' }]),
-      actions: '',
-      reactions: ''
     });
     
     const props = {
@@ -429,17 +427,13 @@ describe('CombatantCard - PcReferencePanel conditional render', () => {
     
     render(<CombatantCard {...props} />);
     
-    // Check that PcReferencePanel toggle is rendered
-    const toggleButton = screen.getByRole('button', { name: /▶ Stat Block/i });
-    expect(toggleButton).toBeInTheDocument();
-    
-    // Interact to reveal content
-    fireEvent.click(toggleButton);
+    // Content should be visible directly in expanded panel, no toggle button anymore
+    expect(screen.queryByRole('button', { name: /▶ Stat Block/i })).not.toBeInTheDocument();
     expect(screen.getByText('Test Trait')).toBeInTheDocument();
     expect(screen.getByText('Test Description')).toBeInTheDocument();
   });
 
-  it('does not render PcReferencePanel for a PC combatant when gmControlled is false', () => {
+  it('does not render reference content (traits) for a PC combatant when gmControlled is false', () => {
     const c = makeCombatant({
       id: 'pc1',
       type: 'pc',
@@ -455,29 +449,117 @@ describe('CombatantCard - PcReferencePanel conditional render', () => {
     
     render(<CombatantCard {...props} />);
     
-    expect(screen.queryByRole('button', { name: /▶ Stat Block/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId('pc-reference-panel')).not.toBeInTheDocument();
+    expect(screen.queryByText('Test Trait')).not.toBeInTheDocument();
   });
 
-  it('never renders PcReferencePanel for an NPC combatant', () => {
-    // Note: NPCs don't have gmControlled or pcCharacter anyway, but we should make sure it doesn't show up.
-    // They do have NpcReferencePanel if they have traits though, so let's differentiate by text or testid if NpcReferencePanel also has the same toggle text.
-    // NpcReferencePanel's toggle is also "▶ Stat Block" / "▼ Stat Block".
-    // We will check for data-testid="pc-reference-panel" which only exists on PcReferencePanel.
+  it('renders compact stats line and ability scores for an NPC', () => {
     const c = makeCombatant({
       id: 'npc1',
       type: 'npc',
       name: 'Goblin',
+      speed: '30 ft.',
+      challengeRating: '1/4',
       traits: JSON.stringify([{ name: 'Nimble Escape', description: 'Can disengage' }])
     });
     
     const props = {
       ...defaultProps,
-      c
+      c,
+      npcModel: { id: 'npc_gob', name: 'Goblin', abilityScores: JSON.stringify({ STR: 8, DEX: 14, CON: 10, INT: 10, WIS: 8, CHA: 8 }), proficiencies: '{}' } as any
     };
     
     render(<CombatantCard {...props} />);
     
-    expect(screen.queryByTestId('pc-reference-panel')).not.toBeInTheDocument();
+    // Stats line
+    expect(screen.getByText('Speed')).toBeInTheDocument();
+    expect(screen.getByText('30 ft.')).toBeInTheDocument();
+    expect(screen.getByText('CR')).toBeInTheDocument();
+    expect(screen.getByText('1/4')).toBeInTheDocument();
+    
+    // Ability table (using StatBlockScoresTable)
+    expect(screen.getAllByText('14').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('(+2)').length).toBeGreaterThan(0); // DEX 14
+    expect(screen.getAllByText('8').length).toBeGreaterThan(0); // STR/WIS/CHA 8
+    expect(screen.getAllByText('(-1)').length).toBeGreaterThan(0); // 8 mod
+    
+    // Traits
+    expect(screen.getByText('Nimble Escape')).toBeInTheDocument();
+  });
+
+  it('renders legendary section with side-by-side trackers and descriptive list', () => {
+    const c = makeCombatant({
+      id: 'boss1',
+      type: 'npc',
+      name: 'Dragon',
+      legendaryActions: { max: 3, remaining: 3 },
+      legendaryResistances: { max: 3, remaining: 3 },
+      legendaryActionsList: JSON.stringify([{ name: 'Wing Attack', description: 'Blasts wind', cost: 2 }])
+    });
+    
+    render(<CombatantCard {...defaultProps} c={c} />);
+    
+    // Side-by-side trackers (checking for their labels)
+    // Note: Legendary Actions is both the label for the tracker and the section title.
+    // We check for the descriptive content to be sure.
+    expect(screen.getByText('Wing Attack (Costs 2)')).toBeInTheDocument();
+    expect(screen.getByText('Blasts wind')).toBeInTheDocument();
+    expect(screen.getByText('Legendary Resistances')).toBeInTheDocument();
+  });
+
+  it('does not leak NPC-only fields (CR, Speed, Senses, Languages, Legendary) to a PC expanded display', () => {
+    const c = makeCombatant({
+      id: 'pc1',
+      type: 'pc',
+      name: 'Player',
+      speed: '30 ft.', // PC might have speed, but we check gating
+      challengeRating: '5',
+      senses: 'Darkvision 60ft',
+      languages: 'Common, Elvish',
+      legendaryActions: { max: 3, remaining: 3 }
+    });
+    
+    render(<CombatantCard {...defaultProps} c={c} />);
+    
+    expect(screen.queryByText('CR')).not.toBeInTheDocument();
+    expect(screen.queryByText('Senses')).not.toBeInTheDocument();
+    expect(screen.queryByText('Languages')).not.toBeInTheDocument();
+    expect(screen.queryByText('Legendary Actions')).not.toBeInTheDocument();
+    expect(screen.queryByText('Legendary Resistances')).not.toBeInTheDocument();
+  });
+
+  it('renders StatBlockSkills without an expand/collapse toggle in read-only mode', () => {
+    const c = makeCombatant({ id: 'pc1', type: 'pc' });
+    render(<CombatantCard {...defaultProps} c={c} />);
+    
+    expect(screen.queryByRole('button', { name: /Expand skills/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Collapse skills/i })).not.toBeInTheDocument();
+  });
+
+  it('renders IRV display full-width when recharge tracker is absent', () => {
+    const c = makeCombatant({
+      id: 'pc1',
+      type: 'pc',
+      resistances: 'Fire'
+    });
+    
+    const { container } = render(<CombatantCard {...defaultProps} c={c} />);
+    
+    // Check for the grid container class
+    const irvRow = container.querySelector('.grid.grid-cols-1.gap-4.md\\:grid-cols-1');
+    expect(irvRow).toBeInTheDocument();
+  });
+
+  it('renders IRV display in a 2-column grid when recharge tracker is present', () => {
+    const c = makeCombatant({
+      id: 'npc1',
+      type: 'npc',
+      resistances: 'Fire',
+      rechargeAbilities: [{ name: 'Fire Breath', rechargeOn: 6, isCharged: false }]
+    });
+    
+    const { container } = render(<CombatantCard {...defaultProps} c={c} />);
+    
+    const irvRow = container.querySelector('.grid.grid-cols-1.gap-4.md\\:grid-cols-2');
+    expect(irvRow).toBeInTheDocument();
   });
 });
