@@ -56,14 +56,14 @@ describe('CombatantCard', () => {
     const onHealthSubmit = vi.fn();
     render(<CombatantCard {...defaultProps} damageInput="10" onHealthSubmit={onHealthSubmit} />);
     fireEvent.click(screen.getByRole('button', { name: /DMG/i }));
-    expect(onHealthSubmit).toHaveBeenCalledWith(true, expect.any(Object));
+    expect(onHealthSubmit).toHaveBeenCalledWith(true, null);
   });
 
   it('clicking HEAL button calls onHealthSubmit with isDamage: false', () => {
     const onHealthSubmit = vi.fn();
     render(<CombatantCard {...defaultProps} healInput="5" onHealthSubmit={onHealthSubmit} />);
     fireEvent.click(screen.getByRole('button', { name: /HEAL/i }));
-    expect(onHealthSubmit).toHaveBeenCalledWith(false, expect.any(Object));
+    expect(onHealthSubmit).toHaveBeenCalledWith(false, null);
   });
 
   it('renders a ghost "+" button when tempHp is 0 or undefined', () => {
@@ -542,16 +542,14 @@ describe('CombatantCard - Expanded content gating and layout', () => {
       resistances: 'Fire'
     });
     
-    const { container } = render(<CombatantCard {...defaultProps} c={c} />);
+    render(<CombatantCard {...defaultProps} c={c} />);
     
     // IRV should be present
     expect(screen.getByText(/RESISTANCES/i)).toBeInTheDocument();
     expect(screen.getByText('Fire')).toBeInTheDocument();
     
     // Specifically check for the grid containing both Skills (which has 'Skills' text) and IRV
-    const grids = container.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-2.gap-x-8.gap-y-4');
-    // Grid 1 is Saves/Passive, Grid 2 is Skills/IRV
-    const skillsIrvGrid = grids[1];
+    const skillsIrvGrid = screen.getByTestId('skills-irv-grid');
     expect(skillsIrvGrid).toBeInTheDocument();
     expect(skillsIrvGrid).toHaveTextContent(/Skills/i);
     expect(skillsIrvGrid).toHaveTextContent(/Resistances/i);
@@ -564,7 +562,7 @@ describe('CombatantCard - Expanded content gating and layout', () => {
       rechargeAbilities: [{ name: 'Stink', rechargeOn: 6, isCharged: true }]
     });
     
-    const { container } = render(<CombatantCard {...defaultProps} c={c} />);
+    render(<CombatantCard {...defaultProps} c={c} />);
     
     // Use getAllByText if it appears multiple times (e.g. in a toast or summary), but we want to confirm it's in the card
     const stinkElements = screen.getAllByText('Stink');
@@ -572,8 +570,7 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     expect(screen.getByText('Conditions')).toBeInTheDocument();
     
     // Grid 3 is Recharge/Conditions
-    const grids = container.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-2.gap-x-8.gap-y-4');
-    const rechargeConditionsGrid = grids[2];
+    const rechargeConditionsGrid = screen.getByTestId('recharge-conditions-grid');
     expect(rechargeConditionsGrid).toBeInTheDocument();
     expect(rechargeConditionsGrid).toHaveTextContent(/Stink/i);
     expect(rechargeConditionsGrid).toHaveTextContent(/Conditions/i);
@@ -659,11 +656,10 @@ describe('CombatantCard - Expanded content gating and layout', () => {
       languages: 'Common, Goblin'
     });
     
-    const { container } = render(<CombatantCard {...defaultProps} c={c} />);
+    render(<CombatantCard {...defaultProps} c={c} />);
     
     // Find the right column of the first grid (Saves | Passive+Senses+Languages)
-    const grids = container.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-2.gap-x-8.gap-y-4');
-    const firstGrid = grids[0];
+    const firstGrid = screen.getByTestId('saves-passive-grid');
     const rightCol = firstGrid.children[1]; // second child is the right column
     
     expect(rightCol).toBeInTheDocument();

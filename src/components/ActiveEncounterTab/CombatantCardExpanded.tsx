@@ -204,7 +204,7 @@ export function CombatantCardExpanded({
       <StatBlockScoresTable abilityScores={abilityScores} />
 
       {/* 3. Grid: Saves | Passive+Senses+Languages */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+      <div data-testid="saves-passive-grid" className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <StatBlockSaves
           abilityScores={abilityScores}
           savingThrows={proficiencies.savingThrows}
@@ -236,7 +236,7 @@ export function CombatantCardExpanded({
       </div>
 
       {/* 4. Grid: Skills | IRV */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+      <div data-testid="skills-irv-grid" className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <StatBlockSkills
           abilityScores={abilityScores}
           skills={proficiencies.skills}
@@ -254,7 +254,7 @@ export function CombatantCardExpanded({
       </div>
 
       {/* 5. Grid: Recharge | Conditions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+      <div data-testid="recharge-conditions-grid" className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <div>
           {c.type === 'npc' && c.rechargeAbilities && c.rechargeAbilities.length > 0 && (
             <CombatantRechargeTracker

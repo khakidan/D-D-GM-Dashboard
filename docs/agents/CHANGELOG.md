@@ -2,6 +2,35 @@
 
 ---
 
+## Combatant Card Expanded Layout Refinements (Completed)
+
+Follow-on refinement pass to the Combatant Card Visual Overhaul, reworking the expanded panel's internal layout into a denser, more traditional stat-block arrangement based on iterative GM feedback, and fixing two real rendering bugs surfaced along the way.
+
+**Layout changes**:
+- **Ability Scores Table** (`StatBlockScoresTable.tsx`): increased text sizes throughout (labels, scores, modifiers), added a full outer border plus dividers between every column, and gave the header row a distinct background tint to separate it visually from the data row.
+- **New 2-column grid — Saving Throws | Passive+Senses+Languages**: Saving Throws sits alone in the left column; Passive (reformatted from its old inline "Passive Perception: X · Passive Insight: Y..." string to a `PASSIVE` label + value line matching the Senses/Languages style), Senses, and Languages now stack together in the right column.
+- **New 2-column grid — Skills | IRV**: Skills keeps its existing per-row rendering; Resistances/Immunities/Vulnerabilities (`CombatantIrvDisplay.tsx`) moves up to pair with it.
+- **New 2-column grid — Recharge Abilities | Conditions**: Recharge Abilities moves down from its old pairing with IRV to pair with Conditions instead; both fill their full column width.
+
+**Bugs fixed along the way**:
+- **`CombatantIrvDisplay.tsx` had a literal `w-[60%]` on its root element**, preventing it from ever filling its grid column regardless of layout context — confirmed via live devtools inspection, not just code reading. Changed to `w-full`.
+- **`NpcStatBlockSection.tsx`'s local `p` override for markdown descriptions was missing `font-normal`**, causing Traits/Actions/Bonus Actions/Reactions/Legendary Actions body text to render heavier than list-item text elsewhere in the same block. Added `font-normal` to match.
+
+**Test coverage added to `CombatantCard.test.tsx`** (Batch 5B: 51 → 54):
+- Ability score table border/text-size assertions.
+- IRV width regression pin (queries by `data-testid="combatant-irv-display"`, asserts `w-[60%]` is absent) — sanity-checked to actually fail when the bug is reintroduced.
+- Font-weight regression pin for markdown paragraph text.
+- Passive/Senses/Languages stacking-order assertion (with existence guards to prevent a vacuous pass) — sanity-checked to actually fail when order is broken.
+- Grid-section queries for all three new grids, using `data-testid` (`saves-passive-grid`, `skills-irv-grid`, `recharge-conditions-grid`) rather than fragile positional DOM queries.
+
+**Testing-philosophy cleanup**: replaced a shallow `expect.any(Object)` call assertion on `onHealthSubmit`'s damage-type argument with the verified real value (`null`, confirmed against `CombatantHealthControls.tsx`'s actual default state).
+
+**Explicitly unchanged**: `StatBlock.tsx`/`StatBlockScores.tsx` (still used for editable ability scores elsewhere — `NpcCard.tsx`, `CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcAbilitiesTab.tsx`), all NPC/PC and `gmControlled` gating logic, and everything below the Legendary Actions section (Conditions input, condition timer pills, Remove Combatant footer).
+
+**Verification**: `tsc` clean; Batch 5B 54/54 (every file individually run); Batch 8 51/51 (unaffected).
+
+---
+
 ## Combatant Card Visual Overhaul (Completed)
 
 Merged the two previously separate expandable panels on a combatant card into a single, unified expanded view that follows a traditional D&D 5e stat-block reading flow. This eliminates the "double-expand" friction (where GMs had to open both the card and a separate "Stat Block" toggle) and resolves a long-standing bug where the reference panel toggle rendered even in the collapsed card view.
