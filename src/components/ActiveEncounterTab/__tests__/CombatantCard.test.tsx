@@ -535,7 +535,7 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     expect(screen.queryByRole('button', { name: /Collapse skills/i })).not.toBeInTheDocument();
   });
 
-  it('renders IRV display full-width when recharge tracker is absent', () => {
+  it('renders IRV display within the fixed 2-column Skills/IRV grid', () => {
     const c = makeCombatant({
       id: 'pc1',
       type: 'pc',
@@ -544,22 +544,142 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     
     const { container } = render(<CombatantCard {...defaultProps} c={c} />);
     
-    // Check for the grid container class
-    const irvRow = container.querySelector('.grid.grid-cols-1.gap-4.md\\:grid-cols-1');
-    expect(irvRow).toBeInTheDocument();
+    // IRV should be present
+    expect(screen.getByText(/RESISTANCES/i)).toBeInTheDocument();
+    expect(screen.getByText('Fire')).toBeInTheDocument();
+    
+    // Specifically check for the grid containing both Skills (which has 'Skills' text) and IRV
+    const grids = container.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-2.gap-x-8.gap-y-4');
+    // Grid 1 is Saves/Passive, Grid 2 is Skills/IRV
+    const skillsIrvGrid = grids[1];
+    expect(skillsIrvGrid).toBeInTheDocument();
+    expect(skillsIrvGrid).toHaveTextContent(/Skills/i);
+    expect(skillsIrvGrid).toHaveTextContent(/Resistances/i);
   });
 
-  it('renders IRV display in a 2-column grid when recharge tracker is present', () => {
+  it('renders Recharge and Conditions within the fixed 2-column grid', () => {
     const c = makeCombatant({
       id: 'npc1',
       type: 'npc',
-      resistances: 'Fire',
-      rechargeAbilities: [{ name: 'Fire Breath', rechargeOn: 6, isCharged: false }]
+      rechargeAbilities: [{ name: 'Stink', rechargeOn: 6, isCharged: true }]
     });
     
     const { container } = render(<CombatantCard {...defaultProps} c={c} />);
     
-    const irvRow = container.querySelector('.grid.grid-cols-1.gap-4.md\\:grid-cols-2');
-    expect(irvRow).toBeInTheDocument();
+    // Use getAllByText if it appears multiple times (e.g. in a toast or summary), but we want to confirm it's in the card
+    const stinkElements = screen.getAllByText('Stink');
+    expect(stinkElements.length).toBeGreaterThan(0);
+    expect(screen.getByText('Conditions')).toBeInTheDocument();
+    
+    // Grid 3 is Recharge/Conditions
+    const grids = container.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-2.gap-x-8.gap-y-4');
+    const rechargeConditionsGrid = grids[2];
+    expect(rechargeConditionsGrid).toBeInTheDocument();
+    expect(rechargeConditionsGrid).toHaveTextContent(/Stink/i);
+    expect(rechargeConditionsGrid).toHaveTextContent(/Conditions/i);
+  });
+
+  it('verifies Ability Scores Table has borders and updated text sizes', () => {
+    const c = makeCombatant({
+      id: 'npc1',
+      type: 'npc',
+      abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 })
+    });
+    const props = {
+      ...defaultProps,
+      c,
+      npcModel: { id: 'npc_gob', name: 'Goblin', abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }), proficiencies: '{}' } as any
+    };
+    const { container } = render(<CombatantCard {...props} />);
+    
+    // Wrapper div with border
+    const tableWrapper = container.querySelector('div.border.border-\\[\\#e2e8f0\\].rounded-xl');
+    expect(tableWrapper).toBeInTheDocument();
+    
+    // Header row with background
+    const headerRow = container.querySelector('thead tr.bg-\\[\\#f9f8ff\\]');
+    expect(headerRow).toBeInTheDocument();
+    
+    // Headers with text-xs and borders
+    const th = container.querySelector('th');
+    expect(th).toHaveClass('text-center');
+    expect(th).toHaveClass('border-r');
+    expect(th?.querySelector('div')).toHaveClass('text-xs');
+    
+    // Value with text-lg
+    const tdValue = container.querySelector('td div.text-lg');
+    expect(tdValue).toBeInTheDocument();
+    expect(tdValue).toHaveClass('font-bold');
+    
+    // Modifier with text-sm
+    const tdMod = container.querySelector('td div.text-sm');
+    expect(tdMod).toBeInTheDocument();
+    expect(tdMod).toHaveClass('font-medium');
+  });
+
+  it('verifies IRV display does not have width constraints (regression for w-[60%])', () => {
+    const c = makeCombatant({
+      id: 'npc1',
+      type: 'npc',
+      resistances: 'Fire, Cold'
+    });
+    
+    const { container } = render(<CombatantCard {...defaultProps} c={c} />);
+    
+    // Query by data-testid as specified in testing-philosophy requirements for regression pins
+    const irvContainer = screen.getByTestId('combatant-irv-display');
+    
+    expect(irvContainer).toBeInTheDocument();
+    // Assert it does NOT contain the old bug class w-[60%]
+    expect(irvContainer.className).not.toContain('w-[60%]');
+  });
+
+  it('verifies NPC traits use font-normal for markdown descriptions (regression for font-bold)', () => {
+    const c = makeCombatant({
+      id: 'npc1',
+      type: 'npc',
+      traits: JSON.stringify([{ name: 'Keen Sight', description: 'The goblin has advantage on Wisdom (Perception) checks.' }])
+    });
+    
+    // We need to render in a state where reference content is visible
+    const { container } = render(<CombatantCard {...defaultProps} c={c} />);
+    
+    // Find the trait description paragraph
+    const description = screen.getByText(/The goblin has advantage/i);
+    expect(description.tagName).toBe('P');
+    // Assert it has font-normal directly
+    expect(description).toHaveClass('font-normal');
+  });
+
+  it('verifies correct ordering of Passive, Senses, and Languages in the right grid column', () => {
+    const c = makeCombatant({
+      id: 'npc1',
+      type: 'npc',
+      senses: 'Darkvision 60ft',
+      languages: 'Common, Goblin'
+    });
+    
+    const { container } = render(<CombatantCard {...defaultProps} c={c} />);
+    
+    // Find the right column of the first grid (Saves | Passive+Senses+Languages)
+    const grids = container.querySelectorAll('.grid.grid-cols-1.md\\:grid-cols-2.gap-x-8.gap-y-4');
+    const firstGrid = grids[0];
+    const rightCol = firstGrid.children[1]; // second child is the right column
+    
+    expect(rightCol).toBeInTheDocument();
+    
+    // Check text content order
+    const text = rightCol.textContent || '';
+    const passivePos = text.indexOf('PASSIVE'); // All-caps per StatBlockPassive
+    const sensesPos = text.indexOf('SENSES');
+    const languagesPos = text.indexOf('LANGUAGES');
+    
+    // Existence assertions before ordering check (must be non-negative)
+    expect(passivePos).toBeGreaterThanOrEqual(0);
+    expect(sensesPos).toBeGreaterThanOrEqual(0);
+    expect(languagesPos).toBeGreaterThanOrEqual(0);
+    
+    expect(passivePos).toBeLessThan(sensesPos);
+    expect(sensesPos).toBeLessThan(languagesPos);
   });
 });

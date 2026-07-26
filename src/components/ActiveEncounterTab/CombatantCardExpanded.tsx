@@ -76,20 +76,20 @@ export function CombatantCardExpanded({
   handleExhaustionDeath,
 }: CombatantCardExpandedProps) {
   const [isConfirmOpen, setIsConfirmOpen] = React.useState(false);
-  const conditionList = parseCommaSeparatedList(c.conditions, { toLowerCase: true });
+  const conditionList = parseCommaSeparatedList(c.conditions || '', { toLowerCase: true });
   const mechanicalSummary = buildConditionSummary(conditionList);
 
   const abilityScores = npcModel 
     ? parseAbilityScores(npcModel.abilityScores) 
     : pcCharacter 
-      ? parseAbilityScores(pcCharacter.abilityScores) 
-      : parseAbilityScores('{}');
+    ? parseAbilityScores(pcCharacter.abilityScores) 
+    : parseAbilityScores('{}');
       
   const proficiencies = npcModel
     ? parseProficiencies(npcModel.proficiencies)
     : pcCharacter
-      ? parseProficiencies(pcCharacter.proficiencies)
-      : parseProficiencies('{}');
+    ? parseProficiencies(pcCharacter.proficiencies)
+    : parseProficiencies('{}');
       
   const effectiveProfBonus = pcCharacter?.level
     ? (proficiencies.proficiencyBonus > 0 ? proficiencies.proficiencyBonus : proficiencyBonusFromLevel(pcCharacter.level))
@@ -203,7 +203,7 @@ export function CombatantCardExpanded({
       {/* 2. Ability Scores Table */}
       <StatBlockScoresTable abilityScores={abilityScores} />
 
-      {/* 3, 4, 5. Saves, Passives, Skills */}
+      {/* 3. Grid: Saves | Passive+Senses+Languages */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
         <StatBlockSaves
           abilityScores={abilityScores}
@@ -212,60 +212,79 @@ export function CombatantCardExpanded({
           readOnly={true}
           onToggle={() => {}}
         />
-        <StatBlockPassive
-          abilityScores={abilityScores}
-          proficiencies={proficiencies}
-          effectiveProfBonus={effectiveProfBonus}
-          readOnly={true}
-          onPassiveBonusChange={() => {}}
-        />
-      </div>
-
-      {/* Utility/Flavor stats: Senses and Languages */}
-      {c.type === 'npc' && (
-        <div className="flex flex-wrap gap-x-6 gap-y-2 py-1">
-          {c.senses && c.senses.trim() !== '' && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Senses</span>
+        <div className="flex flex-col gap-2">
+          <StatBlockPassive
+            abilityScores={abilityScores}
+            proficiencies={proficiencies}
+            effectiveProfBonus={effectiveProfBonus}
+            readOnly={true}
+            onPassiveBonusChange={() => {}}
+          />
+          {c.type === 'npc' && c.senses && c.senses.trim() !== '' && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9] whitespace-nowrap">SENSES</span>
               <span className="text-sm font-bold text-slate-700">{c.senses}</span>
             </div>
           )}
-          {c.languages && c.languages.trim() !== '' && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Languages</span>
+          {c.type === 'npc' && c.languages && c.languages.trim() !== '' && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9] whitespace-nowrap">LANGUAGES</span>
               <span className="text-sm font-bold text-slate-700">{c.languages}</span>
             </div>
           )}
         </div>
-      )}
+      </div>
 
-      <StatBlockSkills
-        abilityScores={abilityScores}
-        skills={proficiencies.skills}
-        jackOfAllTrades={proficiencies.jackOfAllTrades}
-        effectiveProfBonus={effectiveProfBonus}
-        readOnly={true}
-        onSkillCycle={() => {}}
-        onJackOfAllTradesToggle={() => {}}
-      />
-
-      {/* 6. IRV and Recharge Row */}
-      <div className={`grid grid-cols-1 gap-4 ${c.type === 'npc' && c.rechargeAbilities && c.rechargeAbilities.length > 0 ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
+      {/* 4. Grid: Skills | IRV */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        <StatBlockSkills
+          abilityScores={abilityScores}
+          skills={proficiencies.skills}
+          jackOfAllTrades={proficiencies.jackOfAllTrades}
+          effectiveProfBonus={effectiveProfBonus}
+          readOnly={true}
+          onSkillCycle={() => {}}
+          onJackOfAllTradesToggle={() => {}}
+        />
         <CombatantIrvDisplay
           resistances={getEffectiveResistances(c)}
           immunities={c.immunities || ''}
           vulnerabilities={c.vulnerabilities || ''}
         />
-        {c.type === 'npc' && c.rechargeAbilities && c.rechargeAbilities.length > 0 && (
-          <CombatantRechargeTracker
-            rechargeAbilities={c.rechargeAbilities}
-            onMarkSpent={onMarkSpent}
-            onRollRecharge={onRollRecharge}
-            combatantId={c.id}
-            recentRechargeRolls={recentRechargeRolls}
-            isSyncing={isSyncing}
+      </div>
+
+      {/* 5. Grid: Recharge | Conditions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+        <div>
+          {c.type === 'npc' && c.rechargeAbilities && c.rechargeAbilities.length > 0 && (
+            <CombatantRechargeTracker
+              rechargeAbilities={c.rechargeAbilities}
+              onMarkSpent={onMarkSpent}
+              onRollRecharge={onRollRecharge}
+              combatantId={c.id}
+              recentRechargeRolls={recentRechargeRolls}
+              isSyncing={isSyncing}
+            />
+          )}
+        </div>
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-widest text-[#8d8db9] mb-2">Conditions</label>
+          <ConditionChips
+            value={c.conditions || ''}
+            onChange={val => onUpdateCombatant({ conditions: val })}
+            immunities={c.immunities || ''}
+            disabled={isSyncing}
+            onAddWithTimer={(condName, rounds) => handleConditionWithTimer(c, condName, rounds, currentRound, onUpdateCombatant)}
+            currentRound={currentRound}
+            onConcentrationEffectAdded={(effectName) => {
+              if (onConcentrationPrompt) {
+                onConcentrationPrompt(effectName, c.name);
+              }
+            }}
+            onConditionAdded={(label) => handleConditionAdded(c, label)}
+            onExhaustionDeath={() => handleExhaustionDeath(c)}
           />
-        )}
+        </div>
       </div>
 
       <CombatMechanicsSummary mechanicalSummary={mechanicalSummary} />
@@ -351,25 +370,6 @@ export function CombatantCardExpanded({
           onUpdate={(updates) => handleResourcePoolUpdate(c, updates)}
         />
       )}
-
-      <div>
-        <label className="block text-xs font-bold uppercase tracking-widest text-[#8d8db9] mb-2">Conditions</label>
-        <ConditionChips
-          value={c.conditions || ''}
-          onChange={val => onUpdateCombatant({ conditions: val })}
-          immunities={c.immunities || ''}
-          disabled={isSyncing}
-          onAddWithTimer={(condName, rounds) => handleConditionWithTimer(c, condName, rounds, currentRound, onUpdateCombatant)}
-          currentRound={currentRound}
-          onConcentrationEffectAdded={(effectName) => {
-            if (onConcentrationPrompt) {
-              onConcentrationPrompt(effectName, c.name);
-            }
-          }}
-          onConditionAdded={(label) => handleConditionAdded(c, label)}
-          onExhaustionDeath={() => handleExhaustionDeath(c)}
-        />
-      </div>
 
       {/* Display active condition timers as pill badges */}
       {c.conditionTimers && Object.keys(c.conditionTimers).length > 0 && (

@@ -10,9 +10,10 @@ This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CH
 - **Batch 2: 52 → 56.** Breakdown: 52 (baseline) + 4 (bonusActions round-trip coverage for add/update characters and npcs) = 56.
 - **Batch 4: 11 tests.** Breakdown: campaigns.test.ts (5), auth.test.ts (3), suiteIntegrity.test.ts (2), health.test.ts (1).
 - **Batch 5A: 65 tests.** Breakdown: useBatchActions (11), useCombatSync (30), useCombatantExpanded (3), useEncounterPresetLoader (5), useHealthChange (8), useSelectionMode (3), useCombatantMutations (5) = 65.
-- **Batch 5B: 51 → 50.** Breakdown: 51 (baseline) - 6 (deleted Npc/PcReferencePanel tests) + 5 (new CombatantCard gating, layout, and StatBlockSkills tests) = 50.
+- **Batch 5B: 51 → 54.** Breakdown: 51 (baseline) + 3 (new regression tests for IRV width, trait font-weight, and Passive/Senses/Languages order) = 54.
 - **Batch 7B-2: 23 → 31.** Breakdown: 23 (baseline) + 8 (CampaignSelector interactions/validation/delete-lifecycle tests, plus 1 other unrecorded test confirmed via fresh run) = 31.
-- **Batch 8: 30 → 51.** Breakdown: 30 (baseline) + 8 (ResourcePoolsSection unit, interaction, and regression tests) + 13 (ConditionChips Stage 2a/2b tests) = 51.
+- **Batch 8: 51.** Not touched by this change — see docs/agents/testing-batches.md for the current baseline.
+- **Batch 9: 16.** Not touched by this change — see docs/agents/testing-batches.md for the current baseline.
 
 Run each batch individually. Never chain with `&&`. Never use glob patterns. Never run all tests at once with `npx vitest run`.
 
@@ -23,7 +24,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 3 | `src/hooks/__tests__` | 62 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 11 |
 | 5A | ActiveEncounterTab hooks (`.test.ts`) | 65 |
-| 5B | ActiveEncounterTab components (`.test.tsx`) | 50 |
+| 5B | ActiveEncounterTab components (`.test.tsx`) | 54 |
 | 6A | `src/components/PartyTab/__tests__` | 60 |
 | 6B | `src/components/EncountersTab/__tests__` | 26 |
 | 6C | `src/components/NpcLibraryTab/__tests__` | 24 |
@@ -48,7 +49,7 @@ npx vitest run src/server/__tests__ src/__tests__
 # BATCH 5A — 65 tests
 npx vitest run src/components/ActiveEncounterTab/__tests__/useBatchActions.test.ts src/components/ActiveEncounterTab/__tests__/useCombatSync.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantExpanded.test.ts src/components/ActiveEncounterTab/__tests__/useEncounterPresetLoader.test.ts src/components/ActiveEncounterTab/__tests__/useHealthChange.test.ts src/components/ActiveEncounterTab/__tests__/useSelectionMode.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantMutations.test.ts
 
-# BATCH 5B — 50 tests
+# BATCH 5B — 54 tests
 npx vitest run src/components/ActiveEncounterTab/__tests__/AddNpcCollision.test.tsx src/components/ActiveEncounterTab/__tests__/CasterAttributionDialog.test.tsx src/components/ActiveEncounterTab/__tests__/CombatHeader.test.tsx src/components/ActiveEncounterTab/__tests__/AddCombatantDialog.test.tsx src/components/ActiveEncounterTab/__tests__/CombatantCard.test.tsx src/components/ActiveEncounterTab/__tests__/KeyboardShortcuts.test.tsx src/components/ActiveEncounterTab/__tests__/MultiTargetActionPanel.test.tsx src/components/ActiveEncounterTab/__tests__/ShortcutCheatSheet.test.tsx src/components/ActiveEncounterTab/__tests__/combatStarted.test.tsx src/components/ActiveEncounterTab/__tests__/index.test.tsx src/components/ActiveEncounterTab/__tests__/useCinematicVideo.test.tsx src/components/ActiveEncounterTab/__tests__/RechargeToastContent.test.tsx
 
 # BATCH 6A — 60 tests

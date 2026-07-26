@@ -48,7 +48,7 @@ export interface CombatantIrvDisplayProps {
 
 export function CombatantIrvDisplay({ resistances, immunities, vulnerabilities }: CombatantIrvDisplayProps) {
   return (
-    <div className="w-[60%] space-y-4 bg-[#f9f8ff]/30 p-4 rounded-xl border border-[#e2e8f0]">
+    <div data-testid="combatant-irv-display" className="w-full space-y-4 bg-[#f9f8ff]/30 p-4 rounded-xl border border-[#e2e8f0]">
       <ReadOnlyIrvDisplay label="Resistances" items={resistances} theme="resistances" />
       <ReadOnlyIrvDisplay label="Immunities" items={immunities} theme="immunities" />
       <ReadOnlyIrvDisplay label="Vulnerabilities" items={vulnerabilities} theme="vulnerabilities" />

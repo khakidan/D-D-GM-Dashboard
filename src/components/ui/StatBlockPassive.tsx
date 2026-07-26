@@ -29,13 +29,14 @@ export const StatBlockPassive: React.FC<StatBlockPassiveProps> = ({
   const passiveInvestigation = getPassiveScore(abilityScores, effectiveProfsObj, 'investigation');
 
   return (
-    <div className="py-1 border-t border-b border-stone-700/50 space-y-1.5" id="passive-scores-section">
-      <div className="text-sm text-stone-700 font-medium leading-relaxed" id="passive-scores-text">
-        Passive Perception: <span className="font-semibold text-stone-900">{passivePerception}</span>
-        <span className="text-stone-500 px-1.5">·</span>
-        Passive Insight: <span className="font-semibold text-stone-900">{passiveInsight}</span>
-        <span className="text-stone-500 px-1.5">·</span>
-        Passive Investigation: <span className="font-semibold text-stone-900">{passiveInvestigation}</span>
+    <div className="space-y-1" id="passive-scores-section">
+      <div className="flex items-center gap-2" id="passive-scores-text">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9] whitespace-nowrap">
+          PASSIVE
+        </span>
+        <span className="text-sm font-bold text-slate-700">
+          Perception: {passivePerception} · Insight: {passiveInsight} · Investigation: {passiveInvestigation}
+        </span>
       </div>
 
       {!readOnly && (

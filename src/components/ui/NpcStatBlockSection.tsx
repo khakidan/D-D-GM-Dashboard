@@ -82,7 +82,7 @@ export const NpcStatBlockSection: React.FC<NpcStatBlockSectionProps> = ({ title,
                 components={{
                   ...baseMarkdownComponents,
                   p: ({ children }: any) => (
-                    <p className="text-sm text-[#0f172a] leading-snug whitespace-pre-wrap mb-2 last:mb-0">
+                    <p className="text-sm text-[#0f172a] leading-snug whitespace-pre-wrap mb-2 last:mb-0 font-normal">
                       {children}
                     </p>
                   ),
