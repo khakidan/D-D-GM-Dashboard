@@ -75,12 +75,22 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
     }
   }, [character.bonusActions]);
 
+  const parsedAbilityScores = 
+    parseAbilityScores(character.abilityScores);
+  const parsedProficiencies = 
+    parseProficiencies(character.proficiencies);
+
   const {
     renderTraitFields,
     renderActionFields,
     renderReactionFields,
     renderBonusActionFields,
-  } = React.useMemo(() => createNpcListRenderers('char-card', true), []);
+  } = React.useMemo(() => createNpcListRenderers(
+    'char-card',
+    parsedAbilityScores,
+    proficiencyBonusFromLevel(character.level),
+    true
+  ), [parsedAbilityScores, character.level]);
 
   const handleConditionAdded = (label: string) => {
     const resourceName = getResourceForEffect(label);
@@ -102,11 +112,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
       toast.warning(`${matchedPool.name} is already depleted.`);
     }
   };
-
-  const parsedAbilityScores = 
-    parseAbilityScores(character.abilityScores);
-  const parsedProficiencies = 
-    parseProficiencies(character.proficiencies);
 
   return (
     <div className="p-6 flex flex-col font-sans gap-5 bg-white">

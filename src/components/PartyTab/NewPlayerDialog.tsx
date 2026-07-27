@@ -112,7 +112,12 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
     renderActionFields,
     renderReactionFields,
     renderBonusActionFields,
-  } = React.useMemo(() => createNpcListRenderers('new-player', true), []);
+  } = React.useMemo(() => createNpcListRenderers(
+    'new-player', 
+    formData.abilityScores, 
+    proficiencyBonusFromLevel(formData.level), 
+    true
+  ), [formData.abilityScores, formData.level]);
 
   const poolsCustomized = useRef(false);
 

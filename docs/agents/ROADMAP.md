@@ -10,6 +10,7 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 ### 🔴 Bugs to Fix
 
 - Back to Encounters button doesn't seem to be using the Button component.
+- The 3x / day, or 3x per CHA mod was implemented weird. Need to completely redo it. See UI to confirm and scope out better.
 
 ### 🟡 Features to Add / Test Coverage Gaps
 
@@ -29,9 +30,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
       * Strength 16 (+3), proficiency bonus +2, using a longsword you’re proficient with:
         * Attack: +5 (+3 Strength +2 proficiency)
         * Damage: 1d8 +3 slashing 
-
-- Look into automating the SAVING throw scores based on the definition of the action/reaction/etc..
-  - Save DC = 8 + Proficiency Bonus + Relevant Ability Modifier(s)
 
 ### 🟡 UI Refactor
 

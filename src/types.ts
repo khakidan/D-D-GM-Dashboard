@@ -1,5 +1,6 @@
 import { DAMAGE_TYPE_OPTIONS } from './lib/irvOptions';
 import { ActionType } from './lib/combatLog';
+import { AbilityName } from './lib/abilityFundamentals';
 
 export type CombatantType = 'pc' | 'npc';
 
@@ -53,6 +54,7 @@ export interface NpcAction {
   damage?: string;
   saveDC?: number;
   saveType?: string;
+  dcAbilities?: AbilityName[];
   range?: string;
   recharge?: string;
   _key?: string;
@@ -68,6 +70,7 @@ export interface NpcReaction {
   damage?: string;
   saveDC?: number;
   saveType?: string;
+  dcAbilities?: AbilityName[];
   range?: string;
   recharge?: string;
   _key?: string;
@@ -84,6 +87,7 @@ export interface NpcLegendaryAction {
   damage?: string;
   saveDC?: number;
   saveType?: string;
+  dcAbilities?: AbilityName[];
   _key?: string;
 }
 

@@ -1,5 +1,8 @@
 import React from 'react';
 import { DebouncedTextarea } from './DebouncedTextarea';
+import { AbilityName } from '../../lib/abilityFundamentals';
+import { AbilityScores, calculateModifier } from '../../lib/abilityScores';
+import { AbilitySelectChips } from './AbilitySelectChips';
 
 export interface NpcCombatActionFieldsProps {
   idPrefix: string;
@@ -20,6 +23,12 @@ export interface NpcCombatActionFieldsProps {
   description: string;
   onDescriptionChange: (description: string) => void;
   descriptionRows: number;
+  
+  // New props for DC Automation
+  abilityScores: AbilityScores;
+  proficiencyBonus: number;
+  dcAbilities?: AbilityName[];
+  onDcAbilitiesChange?: (val: AbilityName[]) => void;
 
   // Typed props
   recharge?: string;
@@ -54,6 +63,11 @@ export function NpcCombatActionFields({
   description,
   onDescriptionChange,
   descriptionRows,
+  
+  abilityScores,
+  proficiencyBonus,
+  dcAbilities,
+  onDcAbilitiesChange,
 
   recharge,
   onRechargeChange,
@@ -68,6 +82,17 @@ export function NpcCombatActionFields({
   onUsesResetChange,
 }: NpcCombatActionFieldsProps) {
   const inputClass = "w-full bg-white border border-[#e2e8f0] rounded-xl outline-none transition-all font-serif italic text-sm py-1 px-2 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]";
+  
+  const handleAutoFillDC = () => {
+    if (!dcAbilities || dcAbilities.length === 0) return;
+    
+    const modifierSum = dcAbilities.reduce((sum, ability) => {
+      return sum + calculateModifier(abilityScores[ability]);
+    }, 0);
+    
+    const newDC = 8 + proficiencyBonus + modifierSum;
+    onSaveDCChange(newDC);
+  };
 
   return (
     <div className="space-y-2">
@@ -146,17 +171,30 @@ export function NpcCombatActionFields({
         </div>
         <div>
           <label htmlFor={`${idPrefix}-dc`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC</label>
-          <input
-            id={`${idPrefix}-dc`}
-            type="number"
-            value={saveDC !== undefined ? saveDC : ''}
-            onChange={e => {
-              const val = e.target.value;
-              onSaveDCChange(val !== '' ? parseInt(val) : undefined);
-            }}
-            className={inputClass}
-            placeholder="DC"
-          />
+          <div className="flex gap-1">
+            <input
+              id={`${idPrefix}-dc`}
+              type="number"
+              value={saveDC !== undefined ? saveDC : ''}
+              onChange={e => {
+                const val = e.target.value;
+                onSaveDCChange(val !== '' ? parseInt(val) : undefined);
+              }}
+              className={inputClass}
+              placeholder="DC"
+            />
+            {onDcAbilitiesChange && (
+              <button
+                type="button"
+                onClick={handleAutoFillDC}
+                disabled={!dcAbilities || dcAbilities.length === 0}
+                className="px-2 bg-[#f9f8ff] border border-[#e2e8f0] rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50"
+                aria-label="Auto-fill DC"
+              >
+                Auto
+              </button>
+            )}
+          </div>
         </div>
         <div>
           <label htmlFor={`${idPrefix}-save`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Save</label>
@@ -170,6 +208,13 @@ export function NpcCombatActionFields({
           />
         </div>
       </div>
+      
+      {onDcAbilitiesChange && (
+        <div>
+          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC Basis</label>
+          <AbilitySelectChips selected={dcAbilities || []} onChange={onDcAbilitiesChange} />
+        </div>
+      )}
 
       {showUsageTracking && onMaxUsesChange !== undefined && onUsesResetChange !== undefined && (
         <div className="grid grid-cols-2 gap-2" data-testid="pc-usage-tracking-fields">

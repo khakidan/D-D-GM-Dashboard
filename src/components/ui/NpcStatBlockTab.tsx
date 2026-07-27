@@ -6,8 +6,9 @@ import type {
   NpcTrait, 
   NpcAction, 
   NpcReaction, 
-  NpcLegendaryAction 
+  NpcLegendaryAction
 } from '../../types';
+import { AbilityScores } from '../../lib/abilityScores';
 
 interface NpcStatBlockTabProps {
   traits: NpcTrait[];
@@ -15,6 +16,8 @@ interface NpcStatBlockTabProps {
   reactions: NpcReaction[];
   bonusActions: NpcAction[];
   legendaryActionsList: NpcLegendaryAction[];
+  abilityScores: AbilityScores;
+  profBonus: number;
   onTraitsChange: (updated: NpcTrait[]) => void;
   onActionsChange: (updated: NpcAction[]) => void;
   onReactionsChange: (updated: NpcReaction[]) => void;
@@ -29,6 +32,8 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
   reactions,
   bonusActions,
   legendaryActionsList,
+  abilityScores,
+  profBonus,
   onTraitsChange,
   onActionsChange,
   onReactionsChange,
@@ -42,7 +47,7 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
     renderReactionFields,
     renderBonusActionFields,
     renderLegendaryActionFields,
-  } = React.useMemo(() => createNpcListRenderers('npc-tab'), []);
+  } = React.useMemo(() => createNpcListRenderers('npc-tab', abilityScores, profBonus, false), [abilityScores, profBonus]);
 
   return (
     <div className={cn("space-y-4", compact && "space-y-2")} id="npc-statblock-tab">

@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { NpcCombatActionFields } from '../NpcCombatActionFields';
+import { DEFAULT_ABILITY_SCORES } from '../../../lib/abilityScores';
 import '@testing-library/jest-dom/vitest';
 
 describe('NpcCombatActionFields Component', () => {
@@ -32,6 +33,8 @@ describe('NpcCombatActionFields Component', () => {
         description="Scratches the target."
         onDescriptionChange={onDescriptionChange}
         descriptionRows={3}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
@@ -87,6 +90,8 @@ describe('NpcCombatActionFields Component', () => {
         onRechargeChange={onRechargeChange}
         rangeValue="15 ft. cone"
         onRangeValueChange={onRangeValueChange}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
@@ -130,6 +135,8 @@ describe('NpcCombatActionFields Component', () => {
         descriptionRows={2}
         cost={2}
         onCostChange={onCostChange}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
@@ -163,6 +170,8 @@ describe('NpcCombatActionFields Component', () => {
         description=""
         onDescriptionChange={vi.fn()}
         descriptionRows={2}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
@@ -199,6 +208,8 @@ describe('NpcCombatActionFields Component', () => {
         descriptionRows={2}
         cost={2}
         onCostChange={onCostChange}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
@@ -230,6 +241,8 @@ describe('NpcCombatActionFields Component', () => {
         descriptionRows={2}
         secondaryField={<div>Custom Secondary</div>}
         range={<div>Custom Range Node</div>}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
@@ -263,6 +276,8 @@ describe('NpcCombatActionFields Component', () => {
         onMaxUsesChange={onMaxUsesChange}
         usesReset="short"
         onUsesResetChange={onUsesResetChange}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
@@ -313,6 +328,8 @@ describe('NpcCombatActionFields Component', () => {
         onMaxUsesChange={vi.fn()}
         usesReset="short"
         onUsesResetChange={vi.fn()}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
@@ -342,9 +359,74 @@ describe('NpcCombatActionFields Component', () => {
         onMaxUsesChange={vi.fn()}
         usesReset="short"
         onUsesResetChange={vi.fn()}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
       />
     );
 
     expect(screen.queryByTestId('pc-usage-tracking-fields')).not.toBeInTheDocument();
+  });
+  
+  it('automates DC calculation for multiple abilities', () => {
+    const onSaveDCChange = vi.fn();
+    const customScores = { ...DEFAULT_ABILITY_SCORES, STR: 18, CHA: 16 }; // Mod +4, +3
+    const prof = 4;
+
+    render(
+      <NpcCombatActionFields
+        idPrefix="test-dc-auto"
+        name="Breath"
+        onNameChange={vi.fn()}
+        namePlaceholder="Action name"
+        attackBonus={undefined}
+        onAttackBonusChange={vi.fn()}
+        damage={undefined}
+        onDamageChange={vi.fn()}
+        saveDC={12}
+        onSaveDCChange={onSaveDCChange}
+        saveType="Str"
+        onSaveTypeChange={vi.fn()}
+        description=""
+        onDescriptionChange={vi.fn()}
+        descriptionRows={2}
+        abilityScores={customScores}
+        proficiencyBonus={prof}
+        dcAbilities={['STR', 'CHA']}
+        onDcAbilitiesChange={vi.fn()}
+      />
+    );
+
+    // DC should be 8 + 4 (prof) + 4 (STR mod) + 3 (CHA mod) = 19
+    const autoButton = screen.getByLabelText('Auto-fill DC');
+    fireEvent.click(autoButton);
+    expect(onSaveDCChange).toHaveBeenCalledWith(19);
+  });
+  
+  it('disables auto-fill button when dcAbilities is empty', () => {
+    render(
+      <NpcCombatActionFields
+        idPrefix="test-dc-disabled"
+        name="Breath"
+        onNameChange={vi.fn()}
+        namePlaceholder="Action name"
+        attackBonus={undefined}
+        onAttackBonusChange={vi.fn()}
+        damage={undefined}
+        onDamageChange={vi.fn()}
+        saveDC={12}
+        onSaveDCChange={vi.fn()}
+        saveType="Str"
+        onSaveTypeChange={vi.fn()}
+        description=""
+        onDescriptionChange={vi.fn()}
+        descriptionRows={2}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
+        dcAbilities={[]}
+        onDcAbilitiesChange={vi.fn()}
+      />
+    );
+    
+    expect(screen.getByLabelText('Auto-fill DC')).toBeDisabled();
   });
 });

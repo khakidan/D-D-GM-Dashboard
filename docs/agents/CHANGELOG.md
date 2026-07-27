@@ -2,6 +2,30 @@
 
 ---
 
+## Saving Throw DC Automation (Completed, 4 stages)
+
+PCs and NPCs can now select one or more ability scores as the "basis" for an Action/Reaction/Bonus Action/Legendary Action's Save DC, and auto-fill the calculated value (8 + proficiency bonus + summed ability modifiers) with one click — while the DC field itself remains fully manually editable at all times.
+
+**Design, locked up front via direct discussion**: the DC-basis ability is independent of the existing `saveType` field (which describes what the *target* rolls against) and independent of `spellcastingAbility` (a per-character default that doesn't cover homebrew cases). Supports selecting multiple abilities summed together (e.g. a homebrew feature using `8 + prof + STR + CHA`), which existing single-ability infrastructure (`calculateSpellSaveDC`, `SpellcastingStatsRow`) couldn't express.
+
+**Explicit UX decision**: the suggested DC is never auto-applied silently — clicking "Auto-fill DC" is the only way the value changes, so a manually-typed DC is never clobbered by unrelated data changes (e.g. leveling up).
+
+**Stage 1**: built `AbilitySelectChips.tsx` as a small, purpose-built multi-select for the 6 core abilities, in isolation — confirmed `IrvMultiSelect.tsx` wasn't a good fit (hardcoded to comma-separated strings/IRV options) rather than forcing a reuse.
+
+**Stage 2**: added `dcAbilities?: AbilityName[]` to `NpcAction`/`NpcReaction`/`NpcLegendaryAction`; added the Auto-fill DC button and ability selector to `NpcCombatActionFields.tsx`, gated behind the existing typed-prop convention.
+
+**Stage 3**: updated `createNpcListRenderers`'s signature to accept real `abilityScores`/`proficiencyBonus` — deliberately caught and fixed a signature-compatibility break at all 4 real call sites before proceeding, rather than papering over it.
+
+**Stage 4**: wired real ability scores/proficiency bonus from all 4 consumers (`CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, `NpcStatBlockTab.tsx` via `NpcFormFields.tsx`), with correct `useMemo` dependency arrays so the DC-driving stats stay live rather than frozen at first render.
+
+**Process note**: mid-Stage-4, an unauthorized Attack Bonus automation feature was introduced alongside 3 fabricated tests (referencing nonexistent test helpers, using incorrect lowercase ability keys that would compute `NaN`, and interacting with UI on the wrong dialog tab) — caught via direct code review, rejected, and the codebase reverted to the last verified Save-DC-only checkpoint before closing out. Attack Bonus/Damage Bonus automation remain correctly out of scope, pending their own investigation into the not-yet-modeled weapon/spell-proficiency concept.
+
+**Test coverage**: `AbilitySelectChips.test.tsx` (toggle/multi-select/ordering), `NpcCombatActionFields.test.tsx` (Auto-fill computation for 1 and 2+ abilities, disabled state, no auto-trigger on prop change), and real end-to-end tests in `CharacterCardExpanded.test.tsx` and `NpcCard.test.tsx` proving the full data path with real, distinct ability scores and hand-verified DC math (NPC: CR 5 → +3 prof, STR 15/DEX 16 → 8+3+2+3=16; PC: level 5 → +3 prof, same scores, same result).
+
+**Verification**: `tsc` clean; Batch 6A 63/63; Batch 6C 30/30 (all 6 files, including the indirectly-affected `NpcFormFields.test.tsx` and `NewNpcDialog.test.tsx`, individually confirmed).
+
+---
+
 ## Usage-Limited Actions/Reactions/Bonus Actions for PCs (Completed, 4 stages)
 
 Added the ability for PCs to configure "N uses per rest" limits on Actions, Reactions, and Bonus Actions (e.g. a Fighter's Second Wind or a homebrew limited-use Reaction), with live tracking during combat and correct reset behavior on short/long rest.

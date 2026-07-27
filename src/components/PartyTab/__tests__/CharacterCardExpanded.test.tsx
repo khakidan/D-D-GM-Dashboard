@@ -174,4 +174,36 @@ describe('CharacterCardExpanded', () => {
     const updatedActionsReset = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
     expect(updatedActionsReset[0].usesReset).toBe('short');
   });
+
+  it('calculates saving throw DC with multiple dcAbilities in PC context', () => {
+    const onUpdateMock = vi.fn();
+    const mockAbilityScores = { STR: 15, DEX: 16, CON: 10, INT: 10, WIS: 10, CHA: 10 };
+    const pcCharacter = {
+      ...defaultCharacter,
+      gmControlled: true,
+      abilityScores: JSON.stringify(mockAbilityScores),
+      level: 5, // +3 prof
+      actions: JSON.stringify([{ 
+        name: 'Breath', 
+        description: 'Fire!', 
+        dcAbilities: ['STR', 'DEX'] // DC = 8 + 3 + (2) + (3) = 16
+      }]),
+    };
+
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={pcCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // Click Auto-fill
+    const autoFillBtn = screen.getByRole('button', { name: /auto-fill dc/i });
+    fireEvent.click(autoFillBtn);
+
+    expect(onUpdateMock).toHaveBeenCalledTimes(1);
+    const updatedActions = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
+    expect(updatedActions[0].saveDC).toBe(16);
+  });
 });

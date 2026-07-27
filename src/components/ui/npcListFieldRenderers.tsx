@@ -1,6 +1,7 @@
 import React from 'react';
 import { NpcSimpleFieldEditor } from './NpcSimpleFieldEditor';
 import { NpcCombatActionFields } from './NpcCombatActionFields';
+import { DEFAULT_ABILITY_SCORES, AbilityScores } from '../../lib/abilityScores';
 import type { 
   NpcTrait, 
   NpcAction, 
@@ -8,7 +9,7 @@ import type {
   NpcLegendaryAction 
 } from '../../types';
 
-export function createNpcListRenderers(idPrefix: string, isPcContext: boolean = false) {
+export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityScores, proficiencyBonus: number, isPcContext: boolean = false) {
   return {
     renderTraitFields: (item: NpcTrait, index: number, onChange: (updated: NpcTrait) => void) => (
       <NpcSimpleFieldEditor
@@ -47,6 +48,10 @@ export function createNpcListRenderers(idPrefix: string, isPcContext: boolean = 
         onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
         usesReset={item.usesReset}
         onUsesResetChange={val => onChange({ ...item, usesReset: val })}
+        abilityScores={abilityScores}
+        proficiencyBonus={proficiencyBonus}
+        dcAbilities={item.dcAbilities}
+        onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
       />
     ),
 
@@ -77,6 +82,10 @@ export function createNpcListRenderers(idPrefix: string, isPcContext: boolean = 
         onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
         usesReset={item.usesReset}
         onUsesResetChange={val => onChange({ ...item, usesReset: val })}
+        abilityScores={abilityScores}
+        proficiencyBonus={proficiencyBonus}
+        dcAbilities={item.dcAbilities}
+        onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
       />
     ),
 
@@ -107,6 +116,10 @@ export function createNpcListRenderers(idPrefix: string, isPcContext: boolean = 
         onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
         usesReset={item.usesReset}
         onUsesResetChange={val => onChange({ ...item, usesReset: val })}
+        abilityScores={abilityScores}
+        proficiencyBonus={proficiencyBonus}
+        dcAbilities={item.dcAbilities}
+        onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
       />
     ),
 
@@ -130,6 +143,8 @@ export function createNpcListRenderers(idPrefix: string, isPcContext: boolean = 
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
         descriptionRows={4}
+        abilityScores={abilityScores}
+        proficiencyBonus={proficiencyBonus}
       />
     ),
   };

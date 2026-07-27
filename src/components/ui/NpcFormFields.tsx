@@ -16,6 +16,7 @@ import {
   serializeProficiencies,
   DEFAULT_ABILITY_SCORES,
   DEFAULT_PROFICIENCIES,
+  proficiencyBonusFromCR,
 } from '../../lib/abilityScores';
 import { useNpcCrAutomation } from '../../hooks/useNpcCrAutomation';
 import type { NpcTrait, NpcAction, NpcReaction, NpcLegendaryAction } from '../../types';
@@ -242,6 +243,8 @@ export function NpcFormFields({ data, onChange, errors = {}, compact = false }: 
           reactions={reactions}
           bonusActions={bonusActions}
           legendaryActionsList={legendaryActionsList}
+          abilityScores={parsedAbilityScores}
+          profBonus={proficiencyBonusFromCR(data.challengeRating)}
           onTraitsChange={handleTraitsChange}
           onActionsChange={handleActionsChange}
           onReactionsChange={handleReactionsChange}

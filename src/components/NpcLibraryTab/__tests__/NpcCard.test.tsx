@@ -3,6 +3,7 @@ import React from 'react';
 import { render, fireEvent, cleanup, screen } from '@testing-library/react';
 import { NpcCard } from '../NpcCard';
 import { NPC } from '../../../types';
+import { AbilityScores, proficiencyBonusFromCR } from '../../../lib/abilityScores';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 describe('NpcCard', () => {
@@ -258,6 +259,52 @@ describe('NpcCard', () => {
     const parsedLegendaryAfterRemove = JSON.parse(updatedNpcUpdates.legendaryActionsList || '[]');
     // 2 items initially after addition, we removed 1, so 1 should remain
     expect(parsedLegendaryAfterRemove.length).toBe(1);
+  });
+
+  it('calculates saving throw DC with multiple dcAbilities in NPC context', () => {
+    const mockNpc: NPC = {
+      id: 'npc-dc',
+      name: 'Test Boss',
+      ac: 15,
+      maxHp: 100,
+      notes: '',
+      abilityScores: JSON.stringify({ STR: 15, DEX: 16, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+      proficiencies: JSON.stringify({}),
+      speed: '30ft.',
+      senses: '',
+      languages: '',
+      challengeRating: '5', // +3 prof bonus
+      traits: '[]',
+      actions: JSON.stringify([{ 
+        name: 'Breath', 
+        description: 'Fire!', 
+        dcAbilities: ['STR', 'DEX'] // DC = 8 + 3 + (2) + (3) = 16
+      }]),
+      reactions: '[]',
+      legendaryActionsList: '[]',
+    };
+
+    let updatedNpcUpdates: any = null;
+    const onUpdate = (updates: Partial<NPC>) => { updatedNpcUpdates = updates; };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // Click Auto-fill
+    const autoFillBtn = screen.getByRole('button', { name: /auto-fill dc/i });
+    fireEvent.click(autoFillBtn);
+
+    expect(updatedNpcUpdates).not.toBeNull();
+    const parsedActions = JSON.parse(updatedNpcUpdates.actions || '[]');
+    expect(parsedActions[0].saveDC).toBe(16);
   });
 
   const mockNpcForMemoTests: NPC = {
