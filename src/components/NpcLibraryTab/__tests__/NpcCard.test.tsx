@@ -93,14 +93,16 @@ describe('NpcCard', () => {
       legendaryActionsList: '[]',
     };
 
+    let currentNpc = { ...mockNpc };
     let updatedNpcUpdates: any = null;
     const onUpdate = (updates: Partial<NPC>) => {
       updatedNpcUpdates = updates;
+      currentNpc = { ...currentNpc, ...updates };
     };
 
-    render(
+    const { rerender } = render(
       <NpcCard
-        npc={mockNpc}
+        npc={currentNpc}
         isSyncing={false}
         isExpanded={true}
         onToggleExpand={vi.fn()}
@@ -130,12 +132,33 @@ describe('NpcCard', () => {
     const parsedActionsAfterAdd = JSON.parse(updatedNpcUpdates.actions || '[]');
     expect(parsedActionsAfterAdd.length).toBe(2);
 
+    // Re-render so the DOM reflects the 2 actions before we try to remove one
+    rerender(
+      <NpcCard
+        npc={currentNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
     // Click Remove Action
     const removeBtns = screen.getAllByRole('button', { name: /Remove Action/i });
     fireEvent.click(removeBtns[0]);
+    
+    // Assert ConfirmationDialog appears and onChange is not yet called with removal
+    expect(screen.getByText('Delete Action?')).toBeInTheDocument();
+    
+    // Click Confirm
+    const confirmBtn = screen.getByRole('button', { name: 'Delete' });
+    fireEvent.click(confirmBtn);
+
     expect(updatedNpcUpdates).not.toBeNull();
     const parsedActionsAfterRemove = JSON.parse(updatedNpcUpdates.actions || '[]');
-    expect(parsedActionsAfterRemove.length).toBe(0);
+    // 2 items initially after addition, we removed 1, so 1 should remain
+    expect(parsedActionsAfterRemove.length).toBe(1);
   });
 
   it('supports adding, editing, and deleting legendary actions inside NpcCard', () => {
@@ -163,14 +186,16 @@ describe('NpcCard', () => {
       ]),
     };
 
+    let currentNpc = { ...mockNpc };
     let updatedNpcUpdates: any = null;
     const onUpdate = (updates: Partial<NPC>) => {
       updatedNpcUpdates = updates;
+      currentNpc = { ...currentNpc, ...updates };
     };
 
-    render(
+    const { rerender } = render(
       <NpcCard
-        npc={mockNpc}
+        npc={currentNpc}
         isSyncing={false}
         isExpanded={true}
         onToggleExpand={vi.fn()}
@@ -200,12 +225,33 @@ describe('NpcCard', () => {
     const parsedLegendaryAfterAdd = JSON.parse(updatedNpcUpdates.legendaryActionsList || '[]');
     expect(parsedLegendaryAfterAdd.length).toBe(2);
 
+    // Re-render so the DOM reflects the 2 actions before we try to remove one
+    rerender(
+      <NpcCard
+        npc={currentNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
     // Click Remove Legendary Action
     const removeBtns = screen.getAllByRole('button', { name: /Remove Legendary Action/i });
     fireEvent.click(removeBtns[0]);
+    
+    // Assert ConfirmationDialog appears and onChange is not yet called with removal
+    expect(screen.getByText('Delete Legendary Action?')).toBeInTheDocument();
+    
+    // Click Confirm
+    const confirmBtn = screen.getByRole('button', { name: 'Delete' });
+    fireEvent.click(confirmBtn);
+
     expect(updatedNpcUpdates).not.toBeNull();
     const parsedLegendaryAfterRemove = JSON.parse(updatedNpcUpdates.legendaryActionsList || '[]');
-    expect(parsedLegendaryAfterRemove.length).toBe(0);
+    // 2 items initially after addition, we removed 1, so 1 should remain
+    expect(parsedLegendaryAfterRemove.length).toBe(1);
   });
 
   const mockNpcForMemoTests: NPC = {

@@ -2,6 +2,26 @@
 
 ---
 
+## Delete Confirmation for NPC/PC List Editors (Completed)
+
+Added a confirmation step before deleting any Trait, Action, Reaction, Bonus Action, or Legendary Action entry, closing the last of the destructive-action safety gaps found this session (following the same fix pattern already applied to `AudioLibrary.tsx`'s individual file deletion).
+
+**Real diagnosis**: `NpcListEditor.tsx` (the single shared list editor behind all 5 list types, used across 4 consumers — `CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, `NpcStatBlockTab.tsx`) called `handleRemoveItem` immediately on click, with no confirmation, unlike every other destructive action in this app.
+
+**Fix**: added `pendingDeleteIndex` local state; the delete `IconButton` now sets this instead of removing directly. A single `ConfirmationDialog` instance (not one per row) renders when `pendingDeleteIndex !== null`, with:
+- Title: `Delete {singularTitle}?` (e.g. "Delete Trait?").
+- Description referencing the item's real name when non-empty (`This will permanently remove "X". This cannot be undone.`), falling back to generic wording (`This will permanently remove this trait...`) when the name is empty/whitespace-only, avoiding an awkward `Delete "Untitled"?`-style message.
+- Confirm calls the existing removal logic; cancel/close discards with no mutation.
+
+**Test coverage**:
+- `NpcListEditor.test.tsx` (Batch 8: 51 → 53): 2 new tests directly at the component level — full confirm/cancel lifecycle (dialog appears, `onChange` not called until confirmed, correct item removed on confirm) and the empty-name fallback wording.
+- `NpcCard.test.tsx` and `NpcFormFields.test.tsx` (Batch 6C, unchanged count — existing tests updated in place): both files' action/legendary-action delete assertions updated to click-then-confirm instead of asserting immediate removal.
+- **Bonus find during the update**: `NpcCard.test.tsx`'s action/legendary-action tests had a latent bug predating this session — they never called `rerender()` after an "Add" mutation, so a subsequent "Remove" click operated on stale, pre-add DOM state, producing a mathematically impossible assertion (`2 − 1 = 0`). Fixed by tracking updates in a `currentNpc` variable and re-rendering before the delete interaction, correcting the math to `2 − 1 = 1`.
+
+**Verification**: `tsc` clean; Batch 8 53/53; Batch 6C 24/24 (all individually run).
+
+---
+
 ## "+ Add X" Button Hit-Target Fix (Completed)
 
 Fixed the shared "+ Add Trait/Action/Reaction/Bonus Action/Legendary Action" button (`NpcListEditor.tsx`, used across 4 consumers: `CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, `NpcStatBlockTab.tsx`) being too small to reliably click.

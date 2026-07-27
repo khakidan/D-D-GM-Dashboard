@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { IconButton } from './IconButton';
 import { Button } from './Button';
+import { ConfirmationDialog } from './ConfirmationDialog';
 import { generateUuid } from '../../lib/uuid';
 import { CardHeaderChevron } from './CardHeaderChevron';
 
@@ -27,6 +28,7 @@ export function NpcListEditor<T extends { name: string; _key?: string }>({
   defaultExpanded,
 }: NpcListEditorProps<T>) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [pendingDeleteIndex, setPendingDeleteIndex] = useState<number | null>(null);
   const singularTitle = title.endsWith('s') ? title.slice(0, -1) : title;
 
   const handleAddItem = (e?: React.MouseEvent) => {
@@ -86,7 +88,7 @@ export function NpcListEditor<T extends { name: string; _key?: string }>({
               <IconButton
                 icon={<Trash2 className="w-4 h-4" />}
                 intent="destructive"
-                onClick={() => handleRemoveItem(index)}
+                onClick={() => setPendingDeleteIndex(index)}
                 aria-label={`Remove ${singularTitle}`}
                 className="absolute top-2 right-2"
               />
@@ -98,6 +100,24 @@ export function NpcListEditor<T extends { name: string; _key?: string }>({
             </div>
           ))}
         </div>
+      )}
+
+      {pendingDeleteIndex !== null && items[pendingDeleteIndex] && (
+        <ConfirmationDialog
+          isOpen={true}
+          title={`Delete ${singularTitle}?`}
+          description={
+            items[pendingDeleteIndex].name.trim()
+              ? `This will permanently remove "${items[pendingDeleteIndex].name}". This cannot be undone.`
+              : `This will permanently remove this ${singularTitle.toLowerCase()}. This cannot be undone.`
+          }
+          confirmLabel="Delete"
+          onConfirm={() => {
+            handleRemoveItem(pendingDeleteIndex);
+            setPendingDeleteIndex(null);
+          }}
+          onClose={() => setPendingDeleteIndex(null)}
+        />
       )}
     </div>
   );

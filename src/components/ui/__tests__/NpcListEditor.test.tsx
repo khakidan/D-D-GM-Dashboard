@@ -6,6 +6,7 @@ import { NpcListEditor } from '../NpcListEditor';
 
 interface TestItem {
   id: string;
+  name: string;
   value: string;
 }
 
@@ -24,9 +25,9 @@ describe('NpcListEditor', () => {
     render(
       <NpcListEditor<TestItem>
         title="Test Section"
-        items={[{ id: '1', value: 'Item 1' }]}
+        items={[{ id: '1', name: 'Item 1', value: 'Item 1' }]}
         defaultExpanded={true}
-        emptyItem={{ id: '', value: '' }}
+        emptyItem={{ id: '', name: '', value: '' }}
         renderFields={renderFields}
         onChange={vi.fn()}
       />
@@ -48,9 +49,9 @@ describe('NpcListEditor', () => {
     render(
       <NpcListEditor<TestItem>
         title="Test Section"
-        items={[{ id: '1', value: 'Item 1' }]}
+        items={[{ id: '1', name: 'Item 1', value: 'Item 1' }]}
         defaultExpanded={false}
-        emptyItem={{ id: '', value: '' }}
+        emptyItem={{ id: '', name: '', value: '' }}
         renderFields={renderFields}
         onChange={vi.fn()}
       />
@@ -73,7 +74,7 @@ describe('NpcListEditor', () => {
         title="Test Section"
         items={[]}
         defaultExpanded={true}
-        emptyItem={{ id: 'new', value: 'new' }}
+        emptyItem={{ id: 'new', name: '', value: 'new' }}
         renderFields={renderFields}
         onChange={onChange}
       />
@@ -90,5 +91,69 @@ describe('NpcListEditor', () => {
 
     // Section should STILL be expanded (if stopPropagation failed, the header click would trigger and collapse it)
     expect(screen.getByText(/Add\s+Test Section/i)).toBeInTheDocument();
+  });
+
+  it('Case D: supports delete confirmation lifecycle', () => {
+    const onChange = vi.fn();
+    render(
+      <NpcListEditor<TestItem>
+        title="Test Section"
+        items={[
+          { id: '1', name: 'Item 1', value: 'Value 1' },
+          { id: '2', name: 'Item 2', value: 'Value 2' }
+        ]}
+        defaultExpanded={true}
+        emptyItem={{ id: 'new', name: '', value: 'new' }}
+        renderFields={renderFields}
+        onChange={onChange}
+      />
+    );
+
+    const removeBtns = screen.getAllByRole('button', { name: /Remove Test Section/i });
+    
+    // Click delete on the first item
+    fireEvent.click(removeBtns[0]);
+    
+    // Dialog should appear, but onChange should not be called yet
+    expect(screen.getByText('Delete Test Section?')).toBeInTheDocument();
+    expect(screen.getByText('This will permanently remove "Item 1". This cannot be undone.')).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+
+    // Click Cancel
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    
+    // Dialog should be gone, onChange still not called
+    expect(screen.queryByText('Delete Test Section?')).not.toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+
+    // Click delete again
+    fireEvent.click(removeBtns[0]);
+    
+    // Click Confirm
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    // onChange should now be called with the item removed
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith([{ id: '2', name: 'Item 2', value: 'Value 2' }]);
+    expect(screen.queryByText('Delete Test Section?')).not.toBeInTheDocument();
+  });
+
+  it('Case E: delete confirmation uses generic wording when name is empty or whitespace', () => {
+    const onChange = vi.fn();
+    render(
+      <NpcListEditor<TestItem>
+        title="Test Section"
+        items={[{ id: '1', name: '   ', value: 'Value 1' }]}
+        defaultExpanded={true}
+        emptyItem={{ id: 'new', name: '', value: 'new' }}
+        renderFields={renderFields}
+        onChange={onChange}
+      />
+    );
+
+    const removeBtns = screen.getAllByRole('button', { name: /Remove Test Section/i });
+    fireEvent.click(removeBtns[0]);
+    
+    expect(screen.getByText('This will permanently remove this test section. This cannot be undone.')).toBeInTheDocument();
   });
 });

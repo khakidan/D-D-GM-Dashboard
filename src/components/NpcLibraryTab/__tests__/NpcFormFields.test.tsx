@@ -88,6 +88,16 @@ describe('NpcFormFields', () => {
     const removeBtns = screen.getAllByRole('button', { name: /Remove Action/i });
     // Click the first one to remove the first action
     fireEvent.click(removeBtns[0]);
+    
+    // Assert ConfirmationDialog appears
+    expect(screen.getByText('Delete Action?')).toBeInTheDocument();
+    
+    // Clear previous onChange calls to ensure we verify the dialog's confirm action
+    onChange.mockClear();
+
+    // Click Confirm
+    const confirmBtn = screen.getByRole('button', { name: 'Delete' });
+    fireEvent.click(confirmBtn);
 
     expect(onChange).toHaveBeenCalled();
     const parsedActionsAfterRemove = JSON.parse(currentData.actions || '[]');
@@ -149,6 +159,16 @@ describe('NpcFormFields', () => {
     rerender(<NpcFormFields data={currentData} onChange={onChange} />);
     const removeBtns = screen.getAllByRole('button', { name: /Remove Legendary Action/i });
     fireEvent.click(removeBtns[0]);
+    
+    // Assert ConfirmationDialog appears
+    expect(screen.getByText('Delete Legendary Action?')).toBeInTheDocument();
+    
+    // Clear previous onChange calls to ensure we verify the dialog's confirm action
+    onChange.mockClear();
+    
+    // Click Confirm
+    const confirmBtn = screen.getByRole('button', { name: 'Delete' });
+    fireEvent.click(confirmBtn);
 
     expect(onChange).toHaveBeenCalled();
     const parsedLegendaryAfterRemove = JSON.parse(currentData.legendaryActionsList || '[]');
