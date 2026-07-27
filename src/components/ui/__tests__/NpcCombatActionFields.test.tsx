@@ -17,6 +17,7 @@ describe('NpcCombatActionFields Component', () => {
 
     render(
       <NpcCombatActionFields
+        idPrefix="test"
         name="Claw"
         onNameChange={onNameChange}
         namePlaceholder="Action name"
@@ -35,6 +36,7 @@ describe('NpcCombatActionFields Component', () => {
     );
 
     // Verify name field rendering
+    expect(screen.getByText('Name')).toBeInTheDocument();
     const nameInput = screen.getByPlaceholderText('Action name');
     expect(nameInput).toHaveValue('Claw');
     fireEvent.change(nameInput, { target: { value: 'Bite' } });
@@ -66,6 +68,7 @@ describe('NpcCombatActionFields Component', () => {
 
     render(
       <NpcCombatActionFields
+        idPrefix="test-action"
         name="Fire Breath"
         onNameChange={vi.fn()}
         namePlaceholder="Action name"
@@ -87,7 +90,8 @@ describe('NpcCombatActionFields Component', () => {
       />
     );
 
-    // Recharge field (no label)
+    // Recharge field (with label)
+    expect(screen.getByText('Recharge')).toBeInTheDocument();
     const rechargeInput = screen.getByPlaceholderText('e.g. Recharge 5–6');
     expect(rechargeInput).toHaveValue('Recharge 5–6');
     fireEvent.change(rechargeInput, { target: { value: 'Recharge 6' } });
@@ -109,6 +113,7 @@ describe('NpcCombatActionFields Component', () => {
 
     render(
       <NpcCombatActionFields
+        idPrefix="test-legendary"
         name="Tail Sweep"
         onNameChange={vi.fn()}
         namePlaceholder="Action name"
@@ -143,6 +148,7 @@ describe('NpcCombatActionFields Component', () => {
 
     render(
       <NpcCombatActionFields
+        idPrefix="test-numeric"
         name="Claw"
         onNameChange={vi.fn()}
         namePlaceholder="Action name"
@@ -176,6 +182,7 @@ describe('NpcCombatActionFields Component', () => {
 
     render(
       <NpcCombatActionFields
+        idPrefix="test-cost-fallback"
         name="Bite"
         onNameChange={vi.fn()}
         namePlaceholder="Action name"
@@ -206,6 +213,7 @@ describe('NpcCombatActionFields Component', () => {
   it('renders custom secondaryField and range elements when provided and no typed props are set', () => {
     render(
       <NpcCombatActionFields
+        idPrefix="test-custom"
         name="Claw"
         onNameChange={vi.fn()}
         namePlaceholder="Action name"

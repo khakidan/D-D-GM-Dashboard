@@ -52,8 +52,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 ### 🟡 UI Refactor
 
-- Fix the legendary actions layout so that it doesn't push the cost field down lower than the Action name field. Maybe but put a name label above the name field?
-
 - We should rework the way the NPC and PC cards display and edit the AC, Max HP, Temp HP, Level/CR and ability scores. Maybe model it after the way we refactored the Combatant card.
 
 - Change the look of an open card (PC, NPC, Combatant) so that it's easier to know when one is collapsed compared to expanded.

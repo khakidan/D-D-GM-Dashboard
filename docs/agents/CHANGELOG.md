@@ -2,6 +2,20 @@
 
 ---
 
+## Legendary Actions Layout Push-Down Fix (Completed)
+
+Fixed the Legendary Actions "Cost" field rendering lower than the Action Name field in the same row, caused by asymmetric label usage within `NpcCombatActionFields.tsx` (the shared component behind Actions, Bonus Actions, and Legendary Actions).
+
+**Root cause**: the top `grid-cols-3` row's Name column was a bare `<input>` with no label, while the Cost column (Legendary Actions only) wrapped its input in a labeled `<div>`. The label's height pushed Cost's input down relative to Name's. Actions/Bonus Actions' Recharge field happened to avoid this only because it also lacked a label — an inconsistency, not a working design.
+
+**Fix**: standardized all three fields (Name, Recharge, Cost) to the same label-above-input structure, matching Cost's existing label styling exactly. This both fixes the misalignment for every combination and adds a "Name" label that was arguably missing all along. Labels correctly wired via `htmlFor`/`id` using the existing `idPrefix`-based ID pattern already established for Atk/Dmg/DC/Save fields.
+
+**Test coverage**: `NpcCombatActionFields.test.tsx` updated to assert the new "Name" and "Recharge" labels render correctly (existing "Cost" label assertion unchanged). Caught and corrected an unrelated pre-existing gap in the same pass: several render calls in this test file were missing the required `idPrefix` prop — invisible to `tsc` since `tsconfig.build.json` excludes test files from the build check — fixed by adding `idPrefix` to every render call.
+
+**Verification**: `tsc` clean; Batch 8 53/53; Batch 6C 24/24 (all individually run, no consumer regressions).
+
+---
+
 ## Description Field Height Fix (Completed)
 
 Fixed description fields for Traits, Actions, Reactions, Bonus Actions, and Legendary Actions being too short to comfortably view typed content (fixed 2–3 row height, no auto-grow, manual resize explicitly disabled — content beyond the visible area just triggered an internal scrollbar).

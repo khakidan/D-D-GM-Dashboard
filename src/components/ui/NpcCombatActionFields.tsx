@@ -63,7 +63,9 @@ export function NpcCombatActionFields({
     <div className="space-y-2">
       <div className="grid grid-cols-3 gap-2">
         <div className="col-span-2">
+          <label htmlFor={`${idPrefix}-name`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Name</label>
           <input
+            id={`${idPrefix}-name`}
             type="text"
             value={name}
             onChange={e => onNameChange(e.target.value)}
@@ -74,14 +76,18 @@ export function NpcCombatActionFields({
         </div>
         <div>
           {onRechargeChange !== undefined ? (
-            <input
-              type="text"
-              value={recharge || ''}
-              onChange={e => onRechargeChange(e.target.value || undefined)}
-              className={inputClass}
-              placeholder="e.g. Recharge 5–6"
-              aria-label="Recharge condition"
-            />
+            <div>
+              <label htmlFor={`${idPrefix}-recharge`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Recharge</label>
+              <input
+                id={`${idPrefix}-recharge`}
+                type="text"
+                value={recharge || ''}
+                onChange={e => onRechargeChange(e.target.value || undefined)}
+                className={inputClass}
+                placeholder="e.g. Recharge 5–6"
+                aria-label="Recharge condition"
+              />
+            </div>
           ) : onCostChange !== undefined ? (
             <div>
               <label htmlFor={`${idPrefix}-cost`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Cost</label>
