@@ -132,4 +132,46 @@ describe('CharacterCardExpanded', () => {
     expect(updatedTraits[0]).toEqual({ name: 'Spellcasting', description: 'Can cast spells' });
     expect(updatedTraits[1]).toEqual(expect.objectContaining({ name: '', description: '' }));
   });
+
+  it('renders and allows editing Max Uses and Reset for Actions in GM-controlled PC context', () => {
+    const onUpdateMock = vi.fn();
+    const gmCharacter = {
+      ...defaultCharacter,
+      gmControlled: true,
+      actions: JSON.stringify([{ name: 'Divine Smite', description: 'Deals radiant dmg', maxUses: 3, usesReset: 'long' }]),
+    };
+
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={gmCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // Verify Action list is visible
+    expect(screen.getByRole('heading', { name: /^actions$/i })).toBeInTheDocument();
+    
+    // Verify Max Uses input is visible and has the correct value
+    const maxUsesInput = screen.getByLabelText('Max Uses');
+    expect(maxUsesInput).toHaveValue(3);
+
+    // Edit Max Uses and verify callback
+    fireEvent.change(maxUsesInput, { target: { value: '5' } });
+    expect(onUpdateMock).toHaveBeenCalledTimes(1);
+    const updatedActionsMax = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
+    expect(updatedActionsMax[0].maxUses).toBe(5);
+
+    onUpdateMock.mockClear();
+
+    // Verify Reset select is visible and has the correct value
+    const resetSelect = screen.getByLabelText('Reset');
+    expect(resetSelect).toHaveValue('long');
+
+    // Edit Reset select and verify callback
+    fireEvent.change(resetSelect, { target: { value: 'short' } });
+    expect(onUpdateMock).toHaveBeenCalledTimes(1);
+    const updatedActionsReset = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
+    expect(updatedActionsReset[0].usesReset).toBe('short');
+  });
 });

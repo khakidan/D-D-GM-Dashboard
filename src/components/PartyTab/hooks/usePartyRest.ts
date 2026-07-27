@@ -11,6 +11,7 @@ import {
   resetResourcesOnShortRest, 
   resetResourcesOnLongRest 
 } from '../../../lib/resourcePools';
+import { resetActionUsages } from '../../../lib/actionUsages';
 
 import { withDefaultCombatState } from './partyStateHelpers';
 
@@ -30,6 +31,19 @@ function calculateLongRestUpdates(character: Character): Partial<Character> {
     deathSavesSuccesses: 0,
     resourcePools: serializedPools,
   };
+
+  const updatedActions = resetActionUsages(character.actions, 'long');
+  if (updatedActions !== character.actions && !(updatedActions === '[]' && !character.actions)) {
+    updates.actions = updatedActions;
+  }
+  const updatedReactions = resetActionUsages(character.reactions, 'long');
+  if (updatedReactions !== character.reactions && !(updatedReactions === '[]' && !character.reactions)) {
+    updates.reactions = updatedReactions;
+  }
+  const updatedBonusActions = resetActionUsages(character.bonusActions, 'long');
+  if (updatedBonusActions !== character.bonusActions && !(updatedBonusActions === '[]' && !character.bonusActions)) {
+    updates.bonusActions = updatedBonusActions;
+  }
 
   if (remaining !== character.conditions) {
     updates.conditions = remaining;
@@ -62,11 +76,27 @@ function calculateShortRestUpdates(
   const updatedPools = resetResourcesOnShortRest(currentPools);
   const serializedPools = serializeResourcePools(updatedPools);
 
-  return {
+  const updates: Partial<Character> = {
     currentHp: newHp,
     hitDiceUsed: newHitDiceUsed,
     resourcePools: serializedPools,
   };
+
+  const updatedActions = resetActionUsages(character.actions, 'short');
+  // Only update if the string changed and we aren't just coercing an empty/undefined field to '[]'
+  if (updatedActions !== character.actions && !(updatedActions === '[]' && !character.actions)) {
+    updates.actions = updatedActions;
+  }
+  const updatedReactions = resetActionUsages(character.reactions, 'short');
+  if (updatedReactions !== character.reactions && !(updatedReactions === '[]' && !character.reactions)) {
+    updates.reactions = updatedReactions;
+  }
+  const updatedBonusActions = resetActionUsages(character.bonusActions, 'short');
+  if (updatedBonusActions !== character.bonusActions && !(updatedBonusActions === '[]' && !character.bonusActions)) {
+    updates.bonusActions = updatedBonusActions;
+  }
+
+  return updates;
 }
 
 export function usePartyRest(setGlobalError: (error: string | null) => void) {

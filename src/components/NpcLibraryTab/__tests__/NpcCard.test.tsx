@@ -451,4 +451,31 @@ describe('NpcCard', () => {
     // SpellcastingStatsRow should NOT be rendered (spellcastingAbility is undefined)
     expect(screen.queryByText(/Spell Save DC/i)).not.toBeInTheDocument();
   });
+
+  it('does NOT render Max Uses or Reset fields when adding/editing Actions in NPC context', () => {
+    const mockNpc: NPC = {
+      ...mockNpcForMemoTests,
+      id: 'npc-no-tracking',
+      actions: JSON.stringify([{ name: 'Bite', description: 'Sharp teeth.' }]),
+    };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // Assert Action "Bite" is rendered
+    expect(screen.getByDisplayValue('Bite')).toBeInTheDocument();
+
+    // Explicit negative assertions: Max Uses and Reset fields must NOT be present
+    expect(screen.queryByTestId('pc-usage-tracking-fields')).not.toBeInTheDocument();
+    expect(screen.queryByText('Max Uses')).not.toBeInTheDocument();
+    expect(screen.queryByText('Reset')).not.toBeInTheDocument();
+  });
 });

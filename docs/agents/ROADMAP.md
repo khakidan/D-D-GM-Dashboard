@@ -9,7 +9,7 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 ### 🔴 Bugs to Fix
 
-- None at present.
+- Back to Encounters button doesn't seem to be using the Button component.
 
 ### 🟡 Features to Add / Test Coverage Gaps
 
@@ -32,9 +32,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 - Look into automating the SAVING throw scores based on the definition of the action/reaction/etc..
   - Save DC = 8 + Proficiency Bonus + Relevant Ability Modifier(s)
-
-- The Reactions section needs to have the ability to add a tracker to it that would allow me to keep track of reactions that can only be used a certain number of times.
-  - We should also change the logic of the resource trackers so that it can account for things like only usable a certain number of times per day.
 
 ### 🟡 UI Refactor
 

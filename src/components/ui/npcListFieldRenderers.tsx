@@ -8,7 +8,7 @@ import type {
   NpcLegendaryAction 
 } from '../../types';
 
-export function createNpcListRenderers(idPrefix: string) {
+export function createNpcListRenderers(idPrefix: string, isPcContext: boolean = false) {
   return {
     renderTraitFields: (item: NpcTrait, index: number, onChange: (updated: NpcTrait) => void) => (
       <NpcSimpleFieldEditor
@@ -42,6 +42,11 @@ export function createNpcListRenderers(idPrefix: string) {
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
         descriptionRows={5}
+        showUsageTracking={isPcContext}
+        maxUses={item.maxUses}
+        onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
+        usesReset={item.usesReset}
+        onUsesResetChange={val => onChange({ ...item, usesReset: val })}
       />
     ),
 
@@ -67,6 +72,11 @@ export function createNpcListRenderers(idPrefix: string) {
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
         descriptionRows={5}
+        showUsageTracking={isPcContext}
+        maxUses={item.maxUses}
+        onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
+        usesReset={item.usesReset}
+        onUsesResetChange={val => onChange({ ...item, usesReset: val })}
       />
     ),
 
@@ -92,6 +102,11 @@ export function createNpcListRenderers(idPrefix: string) {
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
         descriptionRows={5}
+        showUsageTracking={isPcContext}
+        maxUses={item.maxUses}
+        onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
+        usesReset={item.usesReset}
+        onUsesResetChange={val => onChange({ ...item, usesReset: val })}
       />
     ),
 

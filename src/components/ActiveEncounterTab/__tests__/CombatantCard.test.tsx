@@ -738,5 +738,61 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     
     expect(passivePos).toBeLessThan(sensesPos);
     expect(sensesPos).toBeLessThan(languagesPos);
+
+  });
+
+  it('shows ActionUsageTracker only for PC combatants', () => {
+    const maxUsesAction = JSON.stringify([{ _key: 'act-1', name: 'Power Strike', maxUses: 3, currentUses: 3 }]);
+
+    const pcWithAction = { id: "char1", actions: maxUsesAction };
+    const pcCombatant = {
+      id: 'pc-1',
+      characterId: 'char-1',
+      name: 'Player',
+      initiative: 10,
+      type: 'pc' as const,
+      currentHp: 20,
+      maxHp: 20,
+      tempHp: 0,
+      tempHpMax: 0
+    };
+
+    const npcWithAction = {
+      id: "npc-model-1",
+      actions: maxUsesAction
+    };
+    const npcCombatant = {
+      id: 'npc-1',
+      npcId: 'npc-model-1',
+      name: 'Monster',
+      initiative: 5,
+      type: 'npc' as const,
+      currentHp: 20,
+      maxHp: 20,
+      tempHp: 0,
+      tempHpMax: 0
+    };
+
+    // Render PC
+    const { rerender } = render(
+      <CombatantCard
+        {...defaultProps}
+        c={pcCombatant as any}
+        pcCharacter={pcWithAction as any}
+      />
+    );
+    // PC should show the PipTracker because ActionUsageTracker mounts it
+    expect(screen.getByLabelText('Power Strike 1')).toBeInTheDocument();
+
+    // Render NPC
+    rerender(
+      <CombatantCard
+        {...defaultProps}
+        c={npcCombatant as any}
+        npcModel={npcWithAction as any}
+      />
+    );
+    // NPC shouldn't show it (gating is on c.type === 'pc')
+    expect(screen.queryByLabelText('Power Strike 1')).not.toBeInTheDocument();
   });
 });

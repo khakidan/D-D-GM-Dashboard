@@ -56,6 +56,9 @@ export interface NpcAction {
   range?: string;
   recharge?: string;
   _key?: string;
+  maxUses?: number;
+  currentUses?: number;
+  usesReset?: 'short' | 'long' | 'none';
 }
 
 export interface NpcReaction {
@@ -68,6 +71,9 @@ export interface NpcReaction {
   range?: string;
   recharge?: string;
   _key?: string;
+  maxUses?: number;
+  currentUses?: number;
+  usesReset?: 'short' | 'long' | 'none';
 }
 
 export interface NpcLegendaryAction {

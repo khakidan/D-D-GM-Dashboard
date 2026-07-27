@@ -1,0 +1,62 @@
+--- src/components/ActiveEncounterTab/__tests__/CombatantCard.test.tsx
++++ src/components/ActiveEncounterTab/__tests__/CombatantCard.test.tsx
+@@ -750,4 +750,56 @@
+     expect(passivePos).toBeLessThan(sensesPos);
+     expect(sensesPos).toBeLessThan(languagesPos);
+   });
++
++  it('shows ActionUsageTracker only for PC combatants', () => {
++    const maxUsesAction = JSON.stringify([{ _key: 'act-1', name: 'Power Strike', maxUses: 3, currentUses: 3 }]);
++
++    const pcWithAction = { ...mockPC, actions: maxUsesAction };
++    const pcCombatant = {
++      id: 'pc-1',
++      characterId: 'char-1',
++      name: 'Player',
++      initiative: 10,
++      type: 'pc' as const,
++      currentHp: 20,
++      maxHp: 20,
++      tempHp: 0,
++      tempHpMax: 0
++    };
++
++    const npcWithAction = {
++      ...mockNPC,
++      actions: maxUsesAction
++    };
++    const npcCombatant = {
++      id: 'npc-1',
++      npcId: 'npc-model-1',
++      name: 'Monster',
++      initiative: 5,
++      type: 'npc' as const,
++      currentHp: 20,
++      maxHp: 20,
++      tempHp: 0,
++      tempHpMax: 0
++    };
++
++    // Render PC
++    const { rerender } = render(
++      <CombatantCard
++        {...defaultProps}
++        combatant={pcCombatant}
++        pcCharacter={pcWithAction}
++      />
++    );
++    // PC should show the PipTracker because ActionUsageTracker mounts it
++    expect(screen.getByLabelText('Power Strike 1')).toBeInTheDocument();
++
++    // Render NPC
++    rerender(
++      <CombatantCard
++        {...defaultProps}
++        combatant={npcCombatant}
++        npcModel={npcWithAction}
++      />
++    );
++    // NPC shouldn't show it (gating is on c.type === 'pc')
++    expect(screen.queryByLabelText('Power Strike 1')).not.toBeInTheDocument();
++  });
+ });

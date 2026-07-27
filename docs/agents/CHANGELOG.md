@@ -2,6 +2,28 @@
 
 ---
 
+## Usage-Limited Actions/Reactions/Bonus Actions for PCs (Completed, 4 stages)
+
+Added the ability for PCs to configure "N uses per rest" limits on Actions, Reactions, and Bonus Actions (e.g. a Fighter's Second Wind or a homebrew limited-use Reaction), with live tracking during combat and correct reset behavior on short/long rest.
+
+**Scope, decided up front**: PCs only. NPCs keep their existing free-text `recharge`/`rechargeAbilities` system entirely untouched — NPCs don't have a "rest" concept mid-combat in this app, and the two systems are genuinely different (recharge-on-a-die-roll vs. a fixed count per rest).
+
+**Design**: mirrors `resourcePools.ts`'s existing precedent rather than the Legendary Actions/`rechargeAbilities` pattern — `maxUses`/`currentUses`/`usesReset` live directly on the Action/Reaction/Bonus Action JSON entry inside `Character.actions/reactions/bonusActions`, with **no new `Combatant`-level field**. This was a deliberate choice, confirmed against real code (`handleResourcePoolUpdate`) showing PC resource state has always had a single source of truth on `Character`, unlike NPCs, which need per-instance `Combatant` state because a single NPC template can spawn multiple simultaneous combatants.
+
+**Stage 1 (types + field-gating)**: added `maxUses?`/`currentUses?`/`usesReset?: 'short' | 'long' | 'none'` to `NpcAction`/`NpcReaction`. `NpcCombatActionFields.tsx` gained a `showUsageTracking` prop exposing editable Max Uses/Reset fields, gated so they only appear in PC editing contexts (`CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx` via `createNpcListRenderers`'s new `isPcContext` parameter) — confirmed NPC contexts (`NpcCard.tsx`, `NpcStatBlockTab.tsx`) are completely unaffected, including an explicit negative-assertion test.
+
+**Stage 2 (rest reset logic)**: new `resetActionUsages()` helper (`src/lib/actionUsages.ts`) resets `currentUses` to `maxUses` for matching items on short/long rest, mirroring `resourcePools.ts`'s exact reset semantics (short rest resets `'short'` only; long rest resets `'short'` and `'long'`, skips `'none'`). Wired into `usePartyRest.ts`'s existing `calculateShortRestUpdates`/`calculateLongRestUpdates`, applied to all three arrays (actions/reactions/bonusActions) alongside the existing resourcePools reset, in the same DB write.
+
+**Stage 3 (combat tracker UI)**: new `ActionUsageTracker.tsx` component, mounted in `CombatantCardExpanded.tsx` alongside `ResourcePoolsSection` for PC combatants only. Parses tracked items across all three arrays, renders a `PipTracker` per item, and updates route through the existing `handleResourcePoolUpdate` callback — confirmed the update payload contains only the single changed array, not accidentally overwriting the other two.
+
+**Process note**: this feature went through an unusually careful multi-round design process before any implementation, including a locked scope decision (PC-only) and a resolved architectural contradiction (an early draft proposed duplicate state on both `Character` and `Combatant`; resolved by tracing the real `resourcePools`/`handleResourcePoolUpdate` precedent to confirm a single source of truth was correct and sufficient).
+
+**Test coverage**: `NpcCombatActionFields.test.tsx`, `CharacterCardExpanded.test.tsx`, `NewPlayerDialog.test.tsx`, `NpcCard.test.tsx` (Stage 1); `actionUsages.test.ts`, `usePartyRest.test.ts` (Stage 2, including reactions/bonusActions reset, not just actions); `ActionUsageTracker.test.tsx`, `CombatantCard.test.tsx` (Stage 3, including confirming the tracker never appears for NPCs).
+
+**Verification**: `tsc` clean throughout; final state — Batch 1 503/503, Batch 5B 58/58, Batch 6A 62/62, Batch 6C 29/29, Batch 8 68/68 (all individually run across all 4 stages).
+
+---
+
 ## Reactions Field Parity with Actions (Completed)
 
 Reactions now have the same mechanical fields as Actions/Bonus Actions (attackBonus, damage, saveDC, saveType, range, recharge), rather than just name/description.
