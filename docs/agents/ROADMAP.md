@@ -38,8 +38,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 - Reactions should probably have the same fields as Actions, Bonus Actions, etc..
 
-- If the NPC library doesn't have a paging system, we should add one so that we don't have to load all of the NPCs in the library (unless we want to). Maybe the default should be 10, but it could also go to 25, 50, 100, and all / page??
-
 ### 🟡 UI Refactor
 
 - We should rework the way the NPC and PC cards display and edit the AC, Max HP, Temp HP, Level/CR and ability scores. Maybe model it after the way we refactored the Combatant card.

@@ -2,7 +2,7 @@
 Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 batch counts individually after any change — never report only a combined total).
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 991 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+**Current baseline: 992 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
 - **Batch 1: 488 → 499.** Breakdown: 488 (baseline) + 3 (sheetSyncParser.test.ts null/undefined row handling ×2, combatantBuilder.test.ts GM-controlled character mapping ×1) + 1 (untracked pre-existing test in combatLogic.test.ts, cause unconfirmed) + 7 (additional tests for dndUtils and other lib functionality) = 499.
 - **Batch 2: 56 → 57.** Breakdown: 56 (established baseline, already includes earlier bonusActions round-trip coverage for characters.test.ts/npcs.test.ts) + 1 (redundant-processing regression test for checkAndCaptureToken in googleAuth.test.ts) = 57.
 - **Batch 3: 62 tests.** Not touched this session — re-confirmed via fresh individual run, unchanged.
@@ -11,7 +11,7 @@ This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CH
 - **Batch 5B: 54 → 56.** Breakdown: 54 (baseline) + 2 (PC resource pools and NPC exclusion verification tests) = 56.
 - **Batch 6A: 60 tests.** Not touched this session — re-confirmed via fresh individual run, unchanged.
 - **Batch 6B: 26 tests.** Not touched this session — re-confirmed via fresh individual run, unchanged.
-- **Batch 6C: 26 tests.** Breakdown: 26 passed across 6 test files in src/components/NpcLibraryTab/__tests__.
+- **Batch 6C: 26 → 27.** Breakdown: 26 (baseline) + 1 (new test covering NpcLibraryTab pagination, page size switching, and search filter resets) = 27.
 - **Batch 7B-1: 18 → 21.** Breakdown: 18 (baseline) + 3 (new mock DOM scroll listener, visibility toggle, and scrollTo top tests for ScrollToTop) = 21.
 - **Batch 7B-2: 23 → 31.** Breakdown: 23 (baseline) + 8 (CampaignSelector interactions/validation/delete-lifecycle tests, plus 1 other unrecorded test confirmed via fresh run) = 31.
 - **Batch 8: 60 → 61.** Breakdown: 60 (established baseline) + 1 (new test confirming the Remove button is hidden when collapsed and functional once expanded) = 61.
@@ -29,7 +29,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 5B | ActiveEncounterTab components (`.test.tsx`) | 56 |
 | 6A | `src/components/PartyTab/__tests__` | 60 |
 | 6B | `src/components/EncountersTab/__tests__` | 26 |
-| 6C | `src/components/NpcLibraryTab/__tests__` | 26 |
+| 6C | `src/components/NpcLibraryTab/__tests__` | 27 |
 | 7B-1 | Audio + main dashboard top-level components | 21 |
 | 7B-2 | Other top-level components | 31 |
 | 8 | `src/components/ui/__tests__` | 61 |
@@ -52,7 +52,7 @@ npx vitest run src/components/ActiveEncounterTab/__tests__/AddNpcCollision.test.
 npx vitest run src/components/PartyTab/__tests__
 # BATCH 6B — 26 tests
 npx vitest run src/components/EncountersTab/__tests__
-# BATCH 6C — 26 tests
+# BATCH 6C — 27 tests
 npx vitest run src/components/NpcLibraryTab/__tests__
 # BATCH 7B-1 — 21 tests
 npx vitest run src/components/__tests__/CommandPalette.test.tsx src/components/__tests__/ErrorBoundary.test.tsx src/components/__tests__/GMDashboard.test.tsx src/components/__tests__/GMDashboardSidebar.test.tsx src/components/__tests__/AudioLibrary.test.tsx src/components/__tests__/ScrollToTop.test.tsx

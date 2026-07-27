@@ -41,6 +41,15 @@ export function NpcLibraryTab() {
   const [filterVulnerabilities, setFilterVulnerabilities] = useState('');
   const [filterCr, setFilterCr] = useState('');
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+
+  // Reset currentPage to 1 when any filter or page size changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterResistances, filterImmunities, filterVulnerabilities, filterCr, pageSize]);
+
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
       const next = new Set(prev);
@@ -68,6 +77,25 @@ export function NpcLibraryTab() {
       return matchesSearch && matchesRes && matchesImm && matchesVul && matchesCr;
     });
   }, [state.npcs, searchQuery, filterResistances, filterImmunities, filterVulnerabilities, filterCr]);
+
+  const totalPages = useMemo(() => {
+    if (pageSize === 'all') return 1;
+    return Math.max(1, Math.ceil(filteredNpcs.length / pageSize));
+  }, [filteredNpcs.length, pageSize]);
+
+  // Sync currentPage if it somehow exceeds totalPages (e.g., due to background mutations of npcs)
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedNpcs = useMemo(() => {
+    if (pageSize === 'all') return filteredNpcs;
+    const activePage = Math.min(currentPage, totalPages);
+    const startIndex = (activePage - 1) * pageSize;
+    return filteredNpcs.slice(startIndex, startIndex + pageSize);
+  }, [filteredNpcs, currentPage, totalPages, pageSize]);
 
   const hasActiveFilters = Boolean(
     searchQuery || filterResistances || filterImmunities || filterVulnerabilities || filterCr
@@ -168,17 +196,83 @@ export function NpcLibraryTab() {
           />
         ) : (
           <div className="flex flex-col gap-4">
-            {filteredNpcs.map(npc => (
-              <NpcCard
-                key={npc.id}
-                npc={npc}
-                isSyncing={syncingId === npc.id}
-                isExpanded={expandedIds.has(npc.id)}
-                onToggleExpand={() => toggleExpand(npc.id)}
-                onUpdate={(updates) => handleUpdateNpc(npc.id, updates)}
-                onDelete={() => handleDeleteNpc(npc.id)}
-              />
-            ))}
+            <div className="flex flex-col gap-4">
+              {paginatedNpcs.map(npc => (
+                <NpcCard
+                  key={npc.id}
+                  npc={npc}
+                  isSyncing={syncingId === npc.id}
+                  isExpanded={expandedIds.has(npc.id)}
+                  onToggleExpand={() => toggleExpand(npc.id)}
+                  onUpdate={(updates) => handleUpdateNpc(npc.id, updates)}
+                  onDelete={() => handleDeleteNpc(npc.id)}
+                />
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {filteredNpcs.length > 0 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#e2e8f0]">
+                {/* Page Size Selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#64748b] font-medium whitespace-nowrap">Show:</span>
+                  <select
+                    data-testid="page-size-select"
+                    aria-label="Page Size"
+                    value={pageSize}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setPageSize(val === 'all' ? 'all' : Number(val));
+                    }}
+                    className="bg-[#ffffff]/50 border border-[#e2e8f0] rounded-xl px-3 py-1.5 text-xs focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all cursor-pointer text-[#0f172a]"
+                  >
+                    <option value={10}>10 per page</option>
+                    <option value={25}>25 per page</option>
+                    <option value={50}>50 per page</option>
+                    <option value={100}>100 per page</option>
+                    <option value="all">All</option>
+                  </select>
+                  <span className="text-xs text-[#64748b] ml-1">
+                    Showing {paginatedNpcs.length} of {filteredNpcs.length} NPC{filteredNpcs.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                {/* Page Navigation */}
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={pageSize === 'all' || currentPage <= 1}
+                    data-testid="prev-page-btn"
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all select-none",
+                      (pageSize === 'all' || currentPage <= 1)
+                        ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+                        : "bg-white text-[#0f172a] border-[#e2e8f0] hover:bg-gray-50 active:scale-95 cursor-pointer"
+                    )}
+                  >
+                    Previous
+                  </button>
+                  
+                  <span className="text-xs text-[#64748b] font-medium" data-testid="page-indicator">
+                    Page {pageSize === 'all' ? 1 : Math.min(currentPage, totalPages)} of {totalPages}
+                  </span>
+
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={pageSize === 'all' || currentPage >= totalPages}
+                    data-testid="next-page-btn"
+                    className={cn(
+                      "px-3 py-1.5 text-xs font-semibold rounded-xl border transition-all select-none",
+                      (pageSize === 'all' || currentPage >= totalPages)
+                        ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+                        : "bg-white text-[#0f172a] border-[#e2e8f0] hover:bg-gray-50 active:scale-95 cursor-pointer"
+                    )}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

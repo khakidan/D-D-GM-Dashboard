@@ -2,6 +2,25 @@
 
 ---
 
+## NPC Library Pagination (Completed)
+
+Added client-side pagination to the NPC Library, so long lists no longer render every matching NPC into the DOM at once.
+
+**Design**: pure display-layer array slicing — NPCs are already fully loaded client-side via Zustand on sync (no server-side paging exists or is needed for the Google Sheets backend), so pagination only controls how many of the already-filtered NPCs render per page.
+
+**Behavior**:
+- Default page size 10, with 10/25/50/100/All options.
+- `currentPage` automatically resets to 1 whenever any filter (search, Resist/Immune/Vulnerable, CR) or the page size itself changes — prevents a narrowed filter from stranding the user on a now-nonexistent page.
+- A secondary boundary-clamp guard resets `currentPage` if it ever exceeds `totalPages` for any other reason (e.g. background NPC list mutations), not just the explicitly-tracked filter/size dependencies.
+- Previous/Next controls disable correctly at the first/last page (and always when page size is "All," since there's only one page).
+- Page-size and filter controls match this project's existing "Minimalist Sleek" styling conventions already used elsewhere in `NpcLibraryTab.tsx`.
+
+**Test coverage** (`NpcLibraryTab.test.tsx`, Batch 6C: 26 → 27): a single comprehensive integration test covering default 10-per-page slicing, Prev/Next button disabling at both boundaries, page-size switching with correct reset, and — the key edge case — applying a filter while on page 2 correctly resets to page 1 rather than showing a blank page. All assertions check real rendered NPC content, not internal state.
+
+**Verification**: `tsc` clean; Batch 6C 27/27; Batch 8 61/61 (unaffected).
+
+---
+
 ## CR Badge, Legendary Indicators, and CR Filter for NPC Library (Completed)
 
 Added a Challenge Rating badge and Legendary Action/Resistance indicators to the NPC Library's collapsed card view, plus a CR filter matching the existing Resist/Immune/Vulnerable filter pattern.
