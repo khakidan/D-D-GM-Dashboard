@@ -2,6 +2,42 @@
 
 ---
 
+## "+ Add X" Button Hit-Target Fix (Completed)
+
+Fixed the shared "+ Add Trait/Action/Reaction/Bonus Action/Legendary Action" button (`NpcListEditor.tsx`, used across 4 consumers: `CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, `NpcStatBlockTab.tsx`) being too small to reliably click.
+
+**Real diagnosis** (the original ROADMAP.md entry's "parent header intercepts the click" theory was investigated and ruled out — `stopPropagation` was already correctly implemented in `handleAddItem`): the button was a raw `<button>` with `text-xs` and zero padding, so its clickable hit area was exactly the size of its tiny text + 14px icon — worse in narrower consumer contexts like `NpcStatBlockTab.tsx`'s sidebar.
+
+**Fix**: migrated to the shared `Button.tsx` component with `intent="tertiary"` as a base, with explicit `px-3 py-1.5 text-xs` overriding `tertiary`'s own smaller default padding — confirmed to reliably apply via `Button.tsx`'s `cn()` (tailwind-merge) className composition, with the passed-in className resolved last. Preserved exact text content (`Add {singularTitle}`), the `Plus` icon, and the existing `stopPropagation` behavior unchanged.
+
+**Documentation correction**: `file-reference.md`'s `NpcListEditor.tsx` entry previously (incorrectly) implied the Add/Remove actions used `Button.tsx` already — corrected to reflect that Add now uses `Button.tsx` (tertiary + explicit padding) and Remove uses `IconButton.tsx` (destructive), both `stopPropagation`-protected.
+
+**Verification**: `tsc` clean; Batch 6C 24/24 and Batch 8 51/51, both unchanged counts (styling-only fix, existing role/text-based test queries unaffected).
+
+---
+
+## Scroll-to-Top Feature (Completed)
+
+Added a floating scroll-to-top button available on every GM-facing tab (PartyTab, EncountersTab, NpcLibraryTab, ActiveEncounterTab, SettingsPage), implemented as a single shared component rather than five separate per-page integrations.
+
+**Investigation confirmed**: all 5 tabs scroll via one shared `<main>` element in `GMDashboard.tsx` (`overflow-y-auto`), regardless of whether they're wrapped in `DashboardLayout.tsx` or not — `DashboardLayout.tsx`'s own `overflow-y-auto` never actually triggers, since it has no height constraint and its content simply overflows into the outer `<main>`. This means a single component mounted once in `GMDashboard.tsx`, targeting `<main>` by id, correctly covers all 5 tabs with no per-page integration needed. Also confirmed `PlayerView.tsx` (the second-monitor broadcast view) renders its own independent root layout entirely outside this shell, so no visibility guard was needed there.
+
+**New component** — `ScrollToTop.tsx`:
+- `containerId`/`threshold` (default 300) props.
+- Attaches a scroll listener directly to the named container element (not `window`/`document`, since this project's scroll container is the inner `<main>`).
+- Renders `null` defensively if the container isn't found in the DOM.
+- Fixed `bottom-6 right-6 z-40` placement, confirmed clear of `GlobalControls.tsx`'s top-right `z-50` footprint.
+- Uses the shared `IconButton.tsx` with a real `aria-label`, matching this project's icon-button conventions.
+- `motion`/`AnimatePresence` fade-scale transition on show/hide.
+
+Mounted once in `GMDashboard.tsx` (`<main id="gm-main-content">`), sibling to `GlobalControls`.
+
+**Test coverage** (`ScrollToTop.test.tsx`, Batch 7B-1: 18 → 21): visibility toggling on scroll-threshold crossing, real `scrollTo({ top: 0, behavior: 'smooth' })` call-argument assertion (not a shallow "was called" check), and the missing-container defensive case.
+
+**Verification**: `tsc` clean; Batch 7B-1 21/21 (every file individually run).
+
+---
+
 ## AudioLibrary.tsx Refactor — Codebase Modularity Audit Round 2, Candidate 3 (Completed)
 
 Split the 546-line `AudioLibrary.tsx` into 4 files along the 5 responsibility clusters identified in the original audit, with test coverage expanded first per this project's non-negotiable sequencing rule (structural extraction is only safe once the behavior being preserved is actually pinned down by tests).

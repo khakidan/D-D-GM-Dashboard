@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { IconButton } from './IconButton';
+import { Button } from './Button';
 import { generateUuid } from '../../lib/uuid';
 import { CardHeaderChevron } from './CardHeaderChevron';
 
@@ -55,14 +56,15 @@ export function NpcListEditor<T extends { name: string; _key?: string }>({
         </h4>
         <div className="flex items-center gap-3">
           {isExpanded && (
-            <button
+            <Button
               type="button"
               onClick={handleAddItem}
-              className="text-xs text-[#2563eb] hover:text-[#567eff] font-medium flex items-center gap-1"
+              intent="tertiary"
+              className="px-3 py-1.5 text-xs text-[#2563eb] hover:text-[#567eff] flex items-center gap-1 font-medium"
             >
               <Plus className="w-3.5 h-3.5" />
               Add {singularTitle}
-            </button>
+            </Button>
           )}
           <CardHeaderChevron
             isExpanded={isExpanded}

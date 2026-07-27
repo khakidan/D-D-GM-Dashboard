@@ -40,8 +40,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 - The Reactions section needs to have the ability to add a tracker to it that would allow me to keep track of reactions that can only be used a certain number of times.
   - We should also change the logic of the resource trackers so that it can account for things like only usable a certain number of times per day.
 
-- Add a scroll to the top feature on all the pages
-
 - Add the ability to collapse individual actions, reactions, bonus actions, etc... so that it doesn't become hard to see
 
 - Reactions should probably have the same fields as Actions, Bonus Actions, etc..
@@ -53,8 +51,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 - NPCs who have legendary actions and resistances should be added to the collapsed view for NPC library. It should be in the same line as the Spell Casting SAVE DC and Spell Attack.
 
 ### 🟡 UI Refactor
-
-- The buttons for `+ Add Trait`, `+ Add Action`, `+ Add Reaction`, `+ Add Bonus Action`, and `+Add Legendary Action` are rendered like they are using the button component. They are very tiny and hard to accurately click. We should investigate how they were implemented and fix them.
 
 - The description fields for the Traits, Actions, Reactions, Legenary Actions, and Bonus Actions don't have much height to them. They scroll properly, but they become hard to see what you have typed.
 
