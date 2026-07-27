@@ -208,6 +208,12 @@ describe('NpcCard', () => {
     const wingInput = screen.getByDisplayValue('Wing Attack');
     expect(wingInput).toBeInTheDocument();
 
+    // Edit name
+    fireEvent.change(wingInput, { target: { value: 'Wing Buffet' } });
+    expect(updatedNpcUpdates).not.toBeNull();
+    const parsedLegendaryAfterNameEdit = JSON.parse(updatedNpcUpdates.legendaryActionsList || '[]');
+    expect(parsedLegendaryAfterNameEdit[0].name).toBe('Wing Buffet');
+
     expect(screen.getByText('Cost')).toBeInTheDocument();
     const costInput = screen.getByPlaceholderText('Cost (1-3)');
     expect(costInput).toHaveValue(2);

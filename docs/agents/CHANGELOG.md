@@ -2,6 +2,30 @@
 
 ---
 
+## checkAndCaptureToken() Redundant Call Fix (Completed)
+
+Fixed the confirmed-harmless redundancy where `checkAndCaptureToken()` was called twice on load — once by `App.tsx`, and again independently by `initGoogleAuth()` (used by both `GMDashboard` and `CampaignSelector`). Previously this was harmless only because the OAuth CSRF `state` check discarded the second, stale attempt every time.
+
+**Fix**: added a module-level `processedOAuthIdentifiers` Set in `googleAuth.ts`, keyed on the actual OAuth `code`/hash `access_token` value (not just a boolean), so a second call within the same page load short-circuits before attempting the token exchange again — checked before the CSRF state validation runs, so a genuinely new code is never blocked. A `_resetProcessedOAuthIdentifiers()` export was added for test isolation.
+
+**Test coverage**: new test in `googleAuth.test.ts` — "skips redundant processing if called twice with the same code" — confirms the token-exchange `fetch` call fires exactly once across two calls with an identical code.
+
+**Incidental fix caught along the way**: `campaigns.test.ts`'s Characters-sheet column-count assertion was stale (expected 28 columns, ending at `AD1`) and didn't reflect the `Bonus_Actions` column added to `sheetSchemas.ts` in an earlier session (now 29 columns, ending at `AE1`) — corrected to keep server-side provisioning tests in sync with the real schema.
+
+**Verification**: `tsc` clean; Batch 2 57/57 (56 baseline + 1 new test); Batch 4 11/11 (unchanged count, corrected assertion values).
+
+---
+
+## NpcCard.tsx Legendary Actions Test Coverage Gap (Completed)
+
+Closed the last flagged gap in Legendary Actions test coverage — name-field editing wasn't directly asserted (only initial render, cost-editing, and add/remove were). The underlying wiring was already correct; this was purely a coverage gap.
+
+**Fix**: extended the existing "supports adding, editing, and deleting legendary actions inside NpcCard" test in `NpcCard.test.tsx` with a name-field edit assertion, immediately after the existing name-render check — firing a change event on the queried name input and asserting the resulting `onUpdate` payload's parsed `legendaryActionsList` reflects the new name. Kept in the same test rather than a new one, since it already covers the full item lifecycle for the same Legendary Action entry.
+
+**Verification**: `tsc` clean; Batch 6C 24/24 (unchanged count — assertion added to an existing test).
+
+---
+
 ## Legendary Actions Layout Push-Down Fix (Completed)
 
 Fixed the Legendary Actions "Cost" field rendering lower than the Action Name field in the same row, caused by asymmetric label usage within `NpcCombatActionFields.tsx` (the shared component behind Actions, Bonus Actions, and Legendary Actions).

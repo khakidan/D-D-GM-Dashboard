@@ -1,7 +1,7 @@
 // src/services/__tests__/googleAuth.test.ts
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { requestAccessToken, clearTokens, checkAndCaptureToken } from '../googleAuth';
+import { requestAccessToken, clearTokens, checkAndCaptureToken, _resetProcessedOAuthIdentifiers } from '../googleAuth';
 import { STORAGE_KEYS } from '../../lib/constants';
 
 describe('googleAuth token management tests', () => {
@@ -9,6 +9,7 @@ describe('googleAuth token management tests', () => {
     localStorage.clear();
     localStorage.clear();
     clearTokens();
+    _resetProcessedOAuthIdentifiers();
   });
 
   afterEach(() => {
@@ -63,6 +64,7 @@ describe('checkAndCaptureToken state validation', () => {
     localStorage.clear();
     localStorage.clear();
     clearTokens();
+    _resetProcessedOAuthIdentifiers();
   });
 
   afterEach(() => {
@@ -229,10 +231,10 @@ describe('checkAndCaptureToken state validation', () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     localStorage.setItem(STORAGE_KEYS.oauthState, 'mismatched-state');
     vi.stubGlobal('location', {
-      href: 'http://localhost/callback#access_token=hash-token-abc&state=attacker-state',
+      href: 'http://localhost/callback#access_token=hash-token-mismatch-test&state=attacker-state',
       pathname: '/callback',
       search: '',
-      hash: '#access_token=hash-token-abc&state=attacker-state',
+      hash: '#access_token=hash-token-mismatch-test&state=attacker-state',
       origin: 'http://localhost',
     });
     vi.stubGlobal('history', { replaceState: vi.fn() });
@@ -242,12 +244,41 @@ describe('checkAndCaptureToken state validation', () => {
 
     consoleErrorSpy.mockRestore();
   });
+
+  it('skips redundant processing if called twice with the same code', async () => {
+    localStorage.setItem(STORAGE_KEYS.oauthState, 'matching-state-redundant');
+    vi.stubGlobal('location', {
+      href: 'http://localhost/callback?code=unique-redundant-code&state=matching-state-redundant',
+      pathname: '/callback',
+      search: '?code=unique-redundant-code&state=matching-state-redundant',
+      hash: '',
+      origin: 'http://localhost',
+    });
+
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ access_token: 'token-redundant' }))
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+
+    // First call: should process and exchange
+    const result1 = await checkAndCaptureToken();
+    expect(result1).toBe(true);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+    // Second call: should short-circuit due to module-level flag
+    // We even restore the state to prove it doesn't even get to the state check
+    localStorage.setItem(STORAGE_KEYS.oauthState, 'matching-state-redundant');
+    const result2 = await checkAndCaptureToken();
+    expect(result2).toBe(false);
+    expect(fetchSpy).toHaveBeenCalledTimes(1); // Should NOT have been called again
+  });
 });
 
 describe('postMessage origin validation', () => {
   beforeEach(() => {
     localStorage.clear();
     clearTokens();
+    _resetProcessedOAuthIdentifiers();
   });
 
   afterEach(() => {

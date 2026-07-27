@@ -182,6 +182,17 @@ export function setManualRefreshToken(token: string) {
   refreshToken = token;
 }
 
+// Module-level set to prevent redundant processing of the same OAuth parameters (code/token)
+// within the same page session (e.g. App.tsx + initGoogleAuth() both calling checkAndCaptureToken).
+let processedOAuthIdentifiers = new Set<string>();
+
+/**
+ * ONLY FOR TESTING: Resets the processed identifiers set.
+ */
+export function _resetProcessedOAuthIdentifiers() {
+  processedOAuthIdentifiers = new Set<string>();
+}
+
 export async function checkAndCaptureToken(urlString: string = window.location.href) {
   const url = new URL(urlString);
   const code = url.searchParams.get('code');
@@ -201,6 +212,15 @@ export async function checkAndCaptureToken(urlString: string = window.location.h
     window.opener.postMessage({ type: 'OAUTH_REDIRECT_PAYLOAD', url: urlString }, '*');
     window.close();
     return false;
+  }
+
+  // Guard against redundant processing of the same OAuth payload (code or hash token)
+  const oauthIdentifier = code || hashToken;
+  if (oauthIdentifier && processedOAuthIdentifiers.has(oauthIdentifier)) {
+    return false;
+  }
+  if (oauthIdentifier) {
+    processedOAuthIdentifiers.add(oauthIdentifier);
   }
 
   const isCurrentWindow = urlString === window.location.href;
