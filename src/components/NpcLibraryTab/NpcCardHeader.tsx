@@ -1,12 +1,14 @@
 import React from 'react';
-import { Heart, Shield } from 'lucide-react';
+import { Heart, Shield, Star } from 'lucide-react';
 import { DebouncedInput } from '../ui/DebouncedInput';
 import { CardHeaderChevron } from '../ui/CardHeaderChevron';
+import { Badge } from '../ui/Badge';
 
 export interface NpcCardHeaderProps {
   name: string;
   ac: number;
   maxHp: number;
+  challengeRating?: string;
   isExpanded: boolean;
   onToggleExpand: () => void;
   isSyncing: boolean;
@@ -17,6 +19,7 @@ export const NpcCardHeader: React.FC<NpcCardHeaderProps> = ({
   name,
   ac,
   maxHp,
+  challengeRating,
   isExpanded,
   onToggleExpand,
   isSyncing,
@@ -38,6 +41,11 @@ export const NpcCardHeader: React.FC<NpcCardHeaderProps> = ({
 
         {!isExpanded && (
           <div className="flex items-center gap-4 pl-4 border-l border-[#e2e8f0] whitespace-nowrap">
+            {challengeRating && (
+              <Badge color="slate" size="compact" className="hidden sm:inline-flex shrink-0">
+                CR {challengeRating}
+              </Badge>
+            )}
             <div className="flex items-center gap-1.5 text-[15px] font-bold text-[#2563eb]">
               <Heart className="w-4 h-4" />
               {maxHp}

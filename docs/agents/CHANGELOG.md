@@ -2,6 +2,28 @@
 
 ---
 
+## CR Badge, Legendary Indicators, and CR Filter for NPC Library (Completed)
+
+Added a Challenge Rating badge and Legendary Action/Resistance indicators to the NPC Library's collapsed card view, plus a CR filter matching the existing Resist/Immune/Vulnerable filter pattern.
+
+**New utility**: `src/lib/dndUtils.ts`'s `crToNumber()` converts CR strings ("0", "1/8", "1/4", "1/2", "1"–"20") into comparable numeric values for sorting/filtering — deliberately placed outside `abilityScores.ts`, which has no conceptual connection to Challenge Rating.
+
+**Collapsed view** (`NpcCardHeader.tsx`, `NpcCard.tsx`):
+- CR badge (`Badge` component, `slate`/neutral color) added alongside the existing HP/AC indicators.
+- Legendary Actions/Resistances indicators added to `NpcCard.tsx`'s existing collapsed-view conditional row (previously only rendered `SpellcastingStatsRow` for casters) — confirmed to render correctly for legendary-only NPCs with no spellcasting ability, not just casters.
+
+**CR filter** (`NpcLibraryTab.tsx`): new `filterCr` state, options populated dynamically from the unique CR values present in the current library, sorted via `crToNumber()` rather than string order. Combines with existing Resist/Immune/Vulnerable filters using the same AND logic already in place.
+
+**Test coverage**:
+- `dndUtils.test.ts` (Batch 1): integer/fractional/decimal CR parsing, whitespace handling, invalid input fallback, and a real sort-ordering test.
+- `NpcCard.test.tsx` (Batch 6C): CR badge and Legendary indicators render correctly in collapsed view for a legendary-only NPC with no spellcasting ability set.
+- `NpcLibraryTab.test.tsx` (Batch 6C): restored the original empty-state render test (exercises the `EmptyState` branch, a different code path than the populated-list scenario) alongside a new test confirming CR filter options are populated/sorted correctly, single-CR filtering narrows the list, and CR combines correctly (AND) with the Resist filter.
+
+**Verification**: `tsc` clean; Batch 1 499/499; Batch 6C 26/26 (all individually run).
+**Addendum**: Fixed two visual bugs found after initial implementation — (1) the per-item delete icon overlapped the collapse/expand chevron, since both were absolutely/flex-positioned into the same top-right corner; (2) the expanded content's `pr-6` padding (originally added for the delete icon's clearance) was clipping the right edge of description textareas. Fix: removed the delete `IconButton` from the collapsed header entirely and relocated it inside the expanded content, in a `flex justify-end` row below the item's fields; removed the now-unnecessary `pr-6`. `aria-label` and the delete-confirmation flow are unchanged. Added a test confirming the Remove button is absent while an item is collapsed and present/functional once expanded. Batch 8: 60 → 61.
+
+---
+
 ## Per-Item Collapse/Expand for Traits/Actions/Reactions/Bonus Actions/Legendary Actions (Completed)
 
 Added the ability to collapse individual list entries (distinct from `NpcListEditor.tsx`'s existing list-level expand/collapse, which toggles the whole section at once), so long lists of Actions/Legendary Actions don't become hard to scan.

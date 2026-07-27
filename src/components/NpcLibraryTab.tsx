@@ -2,7 +2,7 @@ import { DAMAGE_TYPE_OPTIONS, CONDITION_OPTIONS } from '../lib/conditions';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAppState } from '../hooks/useAppState';
 import { useNpcLibrary } from './NpcLibraryTab/hooks/useNpcLibrary';
-import { BookOpen, Plus, Filter, X, Shield, Activity } from 'lucide-react';
+import { BookOpen, Plus, Filter, X, Shield, Activity, Award } from 'lucide-react';
 import { Callout } from './ui/Callout';
 import { EmptyState } from './ui/EmptyState';
 import { SearchInput } from './ui/SearchInput';
@@ -11,6 +11,7 @@ import { NewNpcDialog } from './NpcLibraryTab/NewNpcDialog';
 import { NpcCard } from './NpcLibraryTab/NpcCard';
 import { checkIrvMatch } from '../lib/combatLogic';
 import { DashboardLayout } from './ui/DashboardLayout';
+import { crToNumber } from '../lib/dndUtils';
 
 export function NpcLibraryTab() {
   const { state: appState, updateState } = useAppState();
@@ -38,6 +39,7 @@ export function NpcLibraryTab() {
   const [filterResistances, setFilterResistances] = useState('');
   const [filterImmunities, setFilterImmunities] = useState('');
   const [filterVulnerabilities, setFilterVulnerabilities] = useState('');
+  const [filterCr, setFilterCr] = useState('');
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
@@ -53,6 +55,7 @@ export function NpcLibraryTab() {
     setFilterResistances('');
     setFilterImmunities('');
     setFilterVulnerabilities('');
+    setFilterCr('');
   };
 
   const filteredNpcs = useMemo(() => {
@@ -61,32 +64,45 @@ export function NpcLibraryTab() {
       const matchesRes = !filterResistances || checkIrvMatch(filterResistances, npc.resistances);
       const matchesImm = !filterImmunities || checkIrvMatch(filterImmunities, npc.immunities);
       const matchesVul = !filterVulnerabilities || checkIrvMatch(filterVulnerabilities, npc.vulnerabilities);
-      return matchesSearch && matchesRes && matchesImm && matchesVul;
+      const matchesCr = !filterCr || npc.challengeRating === filterCr;
+      return matchesSearch && matchesRes && matchesImm && matchesVul && matchesCr;
     });
-  }, [state.npcs, searchQuery, filterResistances, filterImmunities, filterVulnerabilities]);
+  }, [state.npcs, searchQuery, filterResistances, filterImmunities, filterVulnerabilities, filterCr]);
 
   const hasActiveFilters = Boolean(
-    searchQuery || filterResistances || filterImmunities || filterVulnerabilities
+    searchQuery || filterResistances || filterImmunities || filterVulnerabilities || filterCr
   );
 
-  const renderFilterSelect = (icon: React.ReactNode, placeholder: string, value: string, setter: (v: string) => void) => (
+  const crOptions = useMemo(() => {
+    const uniqueCrs = Array.from(new Set(state.npcs.map(n => n.challengeRating).filter(Boolean) as string[]));
+    return uniqueCrs.sort((a, b) => crToNumber(a) - crToNumber(b));
+  }, [state.npcs]);
+
+  const renderFilterSelect = (icon: React.ReactNode, placeholder: string, value: string, setter: (v: string) => void, options?: string[], testId?: string) => (
     <div className="relative">
       <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
         {icon}
       </div>
       <select
+        data-testid={testId}
         aria-label={placeholder}
         value={value}
         onChange={e => setter(e.target.value)}
         className="w-full bg-[#ffffff]/50 border border-[#e2e8f0] rounded-xl pl-9 pr-3 py-2.5 text-sm focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all appearance-auto cursor-pointer text-[#0f172a]"
       >
         <option value="">{placeholder}: none</option>
-        <optgroup label="Damage Types">
-          {DAMAGE_TYPE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-        </optgroup>
-        <optgroup label="Conditions">
-          {CONDITION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-        </optgroup>
+        {options ? (
+          options.map(opt => <option key={opt} value={opt}>{opt}</option>)
+        ) : (
+          <>
+            <optgroup label="Damage Types">
+              {DAMAGE_TYPE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </optgroup>
+            <optgroup label="Conditions">
+              {CONDITION_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </optgroup>
+          </>
+        )}
       </select>
     </div>
   );
@@ -116,9 +132,10 @@ export function NpcLibraryTab() {
           />
           
           <div className="grid grid-cols-2 md:flex gap-3 flex-wrap">
-            {renderFilterSelect(<Shield className="w-4 h-4 text-blue-500/60" />, "Resist", filterResistances, setFilterResistances)}
-            {renderFilterSelect(<Shield className="w-4 h-4 text-green-600/60" />, "Immune", filterImmunities, setFilterImmunities)}
-            {renderFilterSelect(<Shield className="w-4 h-4 text-red-500/60" />, "Vulnerable", filterVulnerabilities, setFilterVulnerabilities)}
+            {renderFilterSelect(<Shield className="w-4 h-4 text-blue-500/60" />, "Resist", filterResistances, setFilterResistances, undefined, "resist-filter")}
+            {renderFilterSelect(<Shield className="w-4 h-4 text-green-600/60" />, "Immune", filterImmunities, setFilterImmunities, undefined, "immune-filter")}
+            {renderFilterSelect(<Shield className="w-4 h-4 text-red-500/60" />, "Vulnerable", filterVulnerabilities, setFilterVulnerabilities, undefined, "vulnerable-filter")}
+            {renderFilterSelect(<Award className="w-4 h-4 text-amber-500/60" />, "Challenge Rating", filterCr, setFilterCr, crOptions, "cr-filter")}
           </div>
 
           {hasActiveFilters && (

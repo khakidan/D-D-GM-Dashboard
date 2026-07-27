@@ -38,11 +38,7 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 - Reactions should probably have the same fields as Actions, Bonus Actions, etc..
 
-- We should add the CR rating to the collapsed header for NPCs on the NPC Library page, it should go next to the HP and AC area. We should also add a filter by CR rating, like how we have for damage resistances, immunities, and vulnerabilities.
-
 - If the NPC library doesn't have a paging system, we should add one so that we don't have to load all of the NPCs in the library (unless we want to). Maybe the default should be 10, but it could also go to 25, 50, 100, and all / page??
-
-- NPCs who have legendary actions and resistances should be added to the collapsed view for NPC library. It should be in the same line as the Spell Casting SAVE DC and Spell Attack.
 
 ### 🟡 UI Refactor
 

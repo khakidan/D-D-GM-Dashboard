@@ -144,19 +144,19 @@ export function NpcListEditor<T extends { name: string; _key?: string }>({
                   />
                 </div>
 
-                <IconButton
-                  icon={<Trash2 className="w-4 h-4" />}
-                  intent="destructive"
-                  onClick={() => setPendingDeleteIndex(index)}
-                  aria-label={`Remove ${singularTitle}`}
-                  className="absolute top-2 right-2"
-                />
-
                 {!isItemCollapsed && (
-                  <div className="pr-6 mt-3 pt-3 border-t border-[#f1f5f9]">
+                  <div className="mt-3 pt-3 border-t border-[#f1f5f9] space-y-3">
                     {renderFields(item, index, (updated) =>
                       handleItemChange(index, updated)
                     )}
+                    <div className="flex justify-end pt-1">
+                      <IconButton
+                        icon={<Trash2 className="w-4 h-4" />}
+                        intent="destructive"
+                        onClick={() => setPendingDeleteIndex(index)}
+                        aria-label={`Remove ${singularTitle}`}
+                      />
+                    </div>
                   </div>
                 )}
               </div>

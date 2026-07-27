@@ -418,4 +418,37 @@ describe('NpcCard', () => {
     expect(screen.getAllByText(/Legendary Actions/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Resistances/i)).toBeInTheDocument();
   });
+
+  it('renders CR badge and legendary indicators in collapsed view', () => {
+    const mockNpc: NPC = {
+      ...mockNpcForMemoTests,
+      id: 'npc-indicators',
+      name: 'Legendary Beast',
+      challengeRating: '15',
+      legendaryActions: 3,
+      legendaryResistances: 3,
+      spellcastingAbility: undefined, // No spellcasting
+    };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={false}
+        onToggleExpand={vi.fn()}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // Verify CR badge
+    expect(screen.getByText('CR 15')).toBeInTheDocument();
+
+    // Verify legendary indicators (not in expanded view, but in the collapsed-indicators container)
+    expect(screen.getByText('3 Legendary Actions')).toBeInTheDocument();
+    expect(screen.getByText('3 Legendary Resistances')).toBeInTheDocument();
+    
+    // SpellcastingStatsRow should NOT be rendered (spellcastingAbility is undefined)
+    expect(screen.queryByText(/Spell Save DC/i)).not.toBeInTheDocument();
+  });
 });

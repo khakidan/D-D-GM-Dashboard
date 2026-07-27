@@ -336,4 +336,33 @@ describe('NpcListEditor', () => {
     // Should be collapsed now. If it double-fired, it would still be expanded.
     expect(screen.queryByTestId('item-input')).not.toBeInTheDocument();
   });
+
+  it('confirms the Remove button is NOT present when an item is collapsed, and IS present and triggers confirmation once expanded', () => {
+    const items = [
+      { id: '1', name: 'Toggle Me', value: 'Secret Value' }
+    ];
+    render(
+      <NpcListEditor<TestItem>
+        title="Test Section"
+        items={items}
+        defaultExpanded={true}
+        emptyItem={{ id: '', name: '', value: '' }}
+        renderFields={renderFields}
+        onChange={vi.fn()}
+      />
+    );
+
+    // Initially expanded (due to 1 item), so let's collapse it first
+    fireEvent.click(screen.getByText('Toggle Me'));
+    expect(screen.queryByRole('button', { name: /Remove Test Section/i })).not.toBeInTheDocument();
+
+    // Now expand it
+    fireEvent.click(screen.getByText('Toggle Me'));
+    const removeBtn = screen.getByRole('button', { name: /Remove Test Section/i });
+    expect(removeBtn).toBeInTheDocument();
+
+    // Trigger delete confirmation flow
+    fireEvent.click(removeBtn);
+    expect(screen.getByText('Delete Test Section?')).toBeInTheDocument();
+  });
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NPC, NpcTrait, NpcAction, NpcReaction, NpcLegendaryAction } from '../../types';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Zap, Shield as ShieldIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { CardShell } from '../ui/CardShell';
 import { DebouncedInput } from '../ui/DebouncedInput';
@@ -102,19 +102,38 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
     >
 
       <NpcCardHeader
-        name={npc.name} ac={npc.ac} maxHp={npc.maxHp}
-        isExpanded={isExpanded} onToggleExpand={onToggleExpand} isSyncing={isSyncing}
+        name={npc.name} 
+        ac={npc.ac} 
+        maxHp={npc.maxHp}
+        challengeRating={npc.challengeRating}
+        isExpanded={isExpanded} 
+        onToggleExpand={onToggleExpand} 
+        isSyncing={isSyncing}
         onUpdateName={(val) => onUpdate({ name: val })}
       />
 
-      {!isExpanded && (
-        <div className="px-6 pb-3 -mt-1" id={`spellcasting-stats-container-${npc.id}`}>
-          <SpellcastingStatsRow
-            abilityScores={parsedScores}
-            profBonus={proficiencyBonusFromCR(npc.challengeRating)}
-            className={undefined}
-            overrideAbility={parsedProfs.spellcastingAbility}
-          />
+      {!isExpanded && (npc.spellcastingAbility || (npc.legendaryActions ?? 0) > 0 || (npc.legendaryResistances ?? 0) > 0) && (
+        <div className="px-6 pb-3 -mt-1 flex flex-wrap items-center gap-x-4 gap-y-1" id={`collapsed-indicators-${npc.id}`}>
+          {npc.spellcastingAbility && (
+            <SpellcastingStatsRow
+              abilityScores={parsedScores}
+              profBonus={proficiencyBonusFromCR(npc.challengeRating)}
+              className={undefined}
+              overrideAbility={parsedProfs.spellcastingAbility}
+            />
+          )}
+          {(npc.legendaryActions ?? 0) > 0 && (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8d8db9]">
+              <Zap className="w-3 h-3 text-amber-500" />
+              {npc.legendaryActions} Legendary Actions
+            </div>
+          )}
+          {(npc.legendaryResistances ?? 0) > 0 && (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8d8db9]">
+              <ShieldIcon className="w-3 h-3 text-blue-500" />
+              {npc.legendaryResistances} Legendary Resistances
+            </div>
+          )}
         </div>
       )}
 
