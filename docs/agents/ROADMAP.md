@@ -52,8 +52,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 ### 🟡 UI Refactor
 
-- The description fields for the Traits, Actions, Reactions, Legenary Actions, and Bonus Actions don't have much height to them. They scroll properly, but they become hard to see what you have typed.
-
 - Fix the legendary actions layout so that it doesn't push the cost field down lower than the Action name field. Maybe but put a name label above the name field?
 
 - We should rework the way the NPC and PC cards display and edit the AC, Max HP, Temp HP, Level/CR and ability scores. Maybe model it after the way we refactored the Combatant card.

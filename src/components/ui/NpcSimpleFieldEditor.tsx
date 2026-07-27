@@ -30,7 +30,7 @@ export function NpcSimpleFieldEditor({
         value={description}
         onChange={onDescriptionChange}
         placeholder="Description"
-        rows={2}
+        rows={4}
         className="py-1 px-2 text-sm"
       />
     </div>

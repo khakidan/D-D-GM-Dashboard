@@ -41,7 +41,7 @@ export function createNpcListRenderers(idPrefix: string) {
         onRangeValueChange={val => onChange({ ...item, range: val })}
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
-        descriptionRows={3}
+        descriptionRows={5}
       />
     ),
 
@@ -76,7 +76,7 @@ export function createNpcListRenderers(idPrefix: string) {
         onRangeValueChange={val => onChange({ ...item, range: val })}
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
-        descriptionRows={3}
+        descriptionRows={5}
       />
     ),
 
@@ -99,7 +99,7 @@ export function createNpcListRenderers(idPrefix: string) {
         onSaveTypeChange={val => onChange({ ...item, saveType: val })}
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
-        descriptionRows={2}
+        descriptionRows={4}
       />
     ),
   };

@@ -2,6 +2,21 @@
 
 ---
 
+## Description Field Height Fix (Completed)
+
+Fixed description fields for Traits, Actions, Reactions, Bonus Actions, and Legendary Actions being too short to comfortably view typed content (fixed 2–3 row height, no auto-grow, manual resize explicitly disabled — content beyond the visible area just triggered an internal scrollbar).
+
+**Fix**: increased default row counts and restored manual vertical resize, rather than just picking a larger fixed ceiling:
+- `NpcSimpleFieldEditor.tsx` (Traits, Reactions): `rows={2}` → `rows={4}`.
+- `npcListFieldRenderers.tsx`'s `descriptionRows` wiring to `NpcCombatActionFields.tsx`: Actions/Bonus Actions `3` → `5` (their descriptions tend to carry more mechanical detail), Legendary Actions `2` → `4` (typically terser per 5e convention).
+- `DebouncedTextarea.tsx`'s default className changed from `resize-none` to `resize-y` (vertical-only, no horizontal resize — avoids breaking layout in narrow contexts like `NpcStatBlockTab.tsx`'s sidebar).
+
+**Safety check**: confirmed the global `resize-y` default doesn't affect other `DebouncedTextarea` consumers — `CharacterCardExpanded.tsx` and `NpcCard.tsx`'s "Notes" fields both already pass their own explicit `resize-none` override (correctly prioritized via `tailwind-merge`), so they're unaffected. `NpcCombatTab.tsx`'s "Notes" field has no resize override and now also benefits from user-resizable height, which is an appropriate improvement for free-form GM notes.
+
+**Verification**: `tsc` clean; Batch 8 53/53, Batch 6A 60/60, Batch 6C 24/24 (all individually run, no test changes needed — no existing test asserted on `rows` or `resize` values).
+
+---
+
 ## Delete Confirmation for NPC/PC List Editors (Completed)
 
 Added a confirmation step before deleting any Trait, Action, Reaction, Bonus Action, or Legendary Action entry, closing the last of the destructive-action safety gaps found this session (following the same fix pattern already applied to `AudioLibrary.tsx`'s individual file deletion).
