@@ -36,8 +36,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 - The Reactions section needs to have the ability to add a tracker to it that would allow me to keep track of reactions that can only be used a certain number of times.
   - We should also change the logic of the resource trackers so that it can account for things like only usable a certain number of times per day.
 
-- Add the ability to collapse individual actions, reactions, bonus actions, etc... so that it doesn't become hard to see
-
 - Reactions should probably have the same fields as Actions, Bonus Actions, etc..
 
 - We should add the CR rating to the collapsed header for NPCs on the NPC Library page, it should go next to the HP and AC area. We should also add a filter by CR rating, like how we have for damage resistances, immunities, and vulnerabilities.

@@ -2,6 +2,23 @@
 
 ---
 
+## Per-Item Collapse/Expand for Traits/Actions/Reactions/Bonus Actions/Legendary Actions (Completed)
+
+Added the ability to collapse individual list entries (distinct from `NpcListEditor.tsx`'s existing list-level expand/collapse, which toggles the whole section at once), so long lists of Actions/Legendary Actions don't become hard to scan.
+
+**Design**:
+- Per-item state tracked via a `collapsedKeys: Set<string>` keyed on each item's stable `_key`, avoiding index-based state "jumping" on reorder/delete.
+- Collapsed summary: name only for Traits/Reactions; name + `formatActionMeta()` output (e.g. "Multiattack — +7 to hit | 2d8+4 slashing") for Actions/Bonus Actions/Legendary Actions. Empty names fall back to "(untitled trait)" etc. rather than rendering blank.
+- **Initial state on mount**: items start expanded if the list has ≤3 entries, collapsed if >3 — set once via a lazy `useState` initializer, not recalculated on every add/remove, so a user's manual toggles aren't overridden by unrelated list-length changes elsewhere. This means short lists (not the actual complaint) look unchanged, while long lists are compact from the moment the card opens.
+- New items added via "+ Add X" always start expanded regardless of list length, for immediate editing.
+- Reused `CardHeaderChevron.tsx` (`bordered={false}`) for the per-item toggle, matching the existing list-level toggle's pattern — including `stopPropagation`, since the per-item header row has the same nested-click-handler structure as the list-level header.
+
+**Test coverage** (`NpcListEditor.test.tsx`, Batch 8: 53 → 60): initial collapse/expand rules by count, new-item-always-expanded behavior, per-item chevron toggle (verified as a single, non-double-firing click — a real regression pin, not just a header-text click), collapsed summary content for both simple and combat-action item types, untitled-name fallback, and state persistence when sibling items are added/removed.
+
+**Verification**: `tsc` clean; Batch 8 60/60; Batch 6C 24/24 (unaffected — existing fixtures use ≤3 items).
+
+---
+
 ## checkAndCaptureToken() Redundant Call Fix (Completed)
 
 Fixed the confirmed-harmless redundancy where `checkAndCaptureToken()` was called twice on load — once by `App.tsx`, and again independently by `initGoogleAuth()` (used by both `GMDashboard` and `CampaignSelector`). Previously this was harmless only because the OAuth CSRF `state` check discarded the second, stale attempt every time.

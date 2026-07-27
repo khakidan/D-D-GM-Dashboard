@@ -156,4 +156,184 @@ describe('NpcListEditor', () => {
     
     expect(screen.getByText('This will permanently remove this test section. This cannot be undone.')).toBeInTheDocument();
   });
+
+  it('collapses existing items by default when initial count > 3', () => {
+    const items = [
+      { id: '1', name: 'Item 1', value: 'V1' },
+      { id: '2', name: 'Item 2', value: 'V2' },
+      { id: '3', name: 'Item 3', value: 'V3' },
+      { id: '4', name: 'Item 4', value: 'V4' },
+    ];
+    render(
+      <NpcListEditor<TestItem>
+        title="Test Section"
+        items={items}
+        defaultExpanded={true}
+        emptyItem={{ id: '', name: '', value: '' }}
+        renderFields={renderFields}
+        onChange={vi.fn()}
+      />
+    );
+    // Should be collapsed initially due to count > 3
+    expect(screen.queryByTestId('item-input')).not.toBeInTheDocument();
+    // But headers should be visible
+    expect(screen.getByText('Item 1')).toBeInTheDocument();
+    expect(screen.getByText('Item 4')).toBeInTheDocument();
+  });
+
+  it('stays expanded when initial count <= 3', () => {
+    const items = [
+      { id: '1', name: 'Item 1', value: 'V1' },
+      { id: '2', name: 'Item 2', value: 'V2' },
+      { id: '3', name: 'Item 3', value: 'V3' },
+    ];
+    render(
+      <NpcListEditor<TestItem>
+        title="Test Section"
+        items={items}
+        defaultExpanded={true}
+        emptyItem={{ id: '', name: '', value: '' }}
+        renderFields={renderFields}
+        onChange={vi.fn()}
+      />
+    );
+    // Should be expanded initially due to count <= 3
+    expect(screen.getAllByTestId('item-input')).toHaveLength(3);
+  });
+
+  it('toggles per-item expansion when clicking item header', () => {
+    render(
+      <NpcListEditor<TestItem>
+        title="Test Section"
+        items={[{ id: '1', name: 'Toggle Me', value: 'Secret Value' }]}
+        defaultExpanded={true}
+        emptyItem={{ id: '', name: '', value: '' }}
+        renderFields={renderFields}
+        onChange={vi.fn()}
+      />
+    );
+
+    // Initially expanded
+    expect(screen.getByTestId('item-input')).toBeInTheDocument();
+
+    // Click header to collapse item
+    fireEvent.click(screen.getByText('Toggle Me'));
+    expect(screen.queryByTestId('item-input')).not.toBeInTheDocument();
+
+    // Click header to expand again
+    fireEvent.click(screen.getByText('Toggle Me'));
+    expect(screen.getByTestId('item-input')).toBeInTheDocument();
+  });
+
+  it('shows untitled fallback in header when name is empty', () => {
+    render(
+      <NpcListEditor<TestItem>
+        title="Traits"
+        items={[{ id: '1', name: '', value: 'V1' }]}
+        defaultExpanded={true}
+        emptyItem={{ id: '', name: '', value: '' }}
+        renderFields={renderFields}
+        onChange={vi.fn()}
+      />
+    );
+    expect(screen.getByText('(untitled trait)')).toBeInTheDocument();
+  });
+
+  it('newly added items start expanded regardless of total count', () => {
+    const items = [
+      { id: '1', name: 'I1', value: 'V1', _key: 'k1' },
+      { id: '2', name: 'I2', value: 'V2', _key: 'k2' },
+      { id: '3', name: 'I3', value: 'V3', _key: 'k3' },
+      { id: '4', name: 'I4', value: 'V4', _key: 'k4' },
+    ];
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <NpcListEditor<TestItem & { _key?: string }>
+        title="Test Section"
+        items={items}
+        defaultExpanded={true}
+        emptyItem={{ id: 'new', name: 'New Item', value: 'new-val' }}
+        renderFields={renderFields}
+        onChange={onChange}
+      />
+    );
+
+    // Initial 4 are collapsed
+    expect(screen.queryByTestId('item-input')).not.toBeInTheDocument();
+
+    // Click Add
+    fireEvent.click(screen.getByText(/Add\s+Test Section/i));
+    expect(onChange).toHaveBeenCalled();
+
+    // Simulate update from parent
+    const updatedItems = [
+      ...items,
+      { id: 'new', name: 'New Item', value: 'new-val', _key: 'k5' }
+    ];
+    rerender(
+      <NpcListEditor<TestItem & { _key?: string }>
+        title="Test Section"
+        items={updatedItems}
+        defaultExpanded={true}
+        emptyItem={{ id: 'new', name: 'New Item', value: 'new-val' }}
+        renderFields={renderFields}
+        onChange={onChange}
+      />
+    );
+
+    // The new item should be expanded
+    expect(screen.getByDisplayValue('new-val')).toBeInTheDocument();
+    // Old items remain collapsed
+    expect(screen.queryByDisplayValue('V1')).not.toBeInTheDocument();
+  });
+
+  it('shows combat action metadata in collapsed summary', () => {
+    // We need to use fields that formatActionMeta recognizes
+    interface CombatItem extends TestItem {
+      attackBonus?: number;
+      damage?: string;
+    }
+    const renderCombatFields = (item: CombatItem) => <div data-testid="combat-fields">{item.value}</div>;
+    
+    render(
+      <NpcListEditor<CombatItem>
+        title="Actions"
+        items={[{ id: '1', name: 'Slash', value: 'V1', attackBonus: 5, damage: '1d6+3' }]}
+        defaultExpanded={true}
+        emptyItem={{ id: '', name: '', value: '' }}
+        renderFields={renderCombatFields}
+        onChange={vi.fn()}
+      />
+    );
+
+    // Collapse it to see summary
+    fireEvent.click(screen.getByText('Slash'));
+    
+    // Summary should show meta: "+5 to hit | 1d6+3"
+    expect(screen.getByText(/\+5 to hit\s*\|\s*1d6\+3/)).toBeInTheDocument();
+  });
+
+  it('toggling via chevron click directly does not double-fire (bubble prevention)', () => {
+    render(
+      <NpcListEditor<TestItem>
+        title="Test Section"
+        items={[{ id: '1', name: 'Toggle Me', value: 'Secret Value' }]}
+        defaultExpanded={true}
+        emptyItem={{ id: '', name: '', value: '' }}
+        renderFields={renderFields}
+        onChange={vi.fn()}
+      />
+    );
+
+    // Initially expanded
+    expect(screen.getByTestId('item-input')).toBeInTheDocument();
+
+    // Click ONLY the chevron icon (by label)
+    // CardHeaderChevron uses "Collapse [label]" or "Expand [label]"
+    const chevron = screen.getByLabelText(/(Collapse|Expand) Toggle Me/i);
+    fireEvent.click(chevron);
+
+    // Should be collapsed now. If it double-fired, it would still be expanded.
+    expect(screen.queryByTestId('item-input')).not.toBeInTheDocument();
+  });
 });
