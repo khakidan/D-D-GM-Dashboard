@@ -337,6 +337,7 @@ export function CombatantCardExpanded({
               items={reactions.map(r => ({
                 name: r.name,
                 description: r.description,
+                meta: formatActionMeta(r),
               }))}
             />
           )}

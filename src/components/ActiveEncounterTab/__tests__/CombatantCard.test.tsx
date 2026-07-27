@@ -527,6 +527,29 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     expect(screen.queryByText('Legendary Resistances')).not.toBeInTheDocument();
   });
 
+  it('renders Reactions with mechanical fields meta string in expanded layout', () => {
+    const c = makeCombatant({
+      id: 'npc1',
+      type: 'npc',
+      name: 'Shield Mage',
+      reactions: JSON.stringify([{
+        name: 'Arcane Shield',
+        description: 'Creates a barrier',
+        attackBonus: 5,
+        damage: '2d6+3',
+        saveDC: 14,
+        saveType: 'Con',
+      }])
+    });
+
+    render(<CombatantCard {...defaultProps} c={c} />);
+
+    // Assert name, description and meta string are rendered correctly
+    expect(screen.getByText('Arcane Shield')).toBeInTheDocument();
+    expect(screen.getByText('Creates a barrier')).toBeInTheDocument();
+    expect(screen.getByText(/\+5 to hit\s*\|\s*2d6\+3\s*\|\s*DC 14 Con save/)).toBeInTheDocument();
+  });
+
   it('renders StatBlockSkills without an expand/collapse toggle in read-only mode', () => {
     const c = makeCombatant({ id: 'pc1', type: 'pc' });
     render(<CombatantCard {...defaultProps} c={c} />);

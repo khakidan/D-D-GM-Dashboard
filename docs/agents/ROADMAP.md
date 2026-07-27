@@ -36,8 +36,6 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 - The Reactions section needs to have the ability to add a tracker to it that would allow me to keep track of reactions that can only be used a certain number of times.
   - We should also change the logic of the resource trackers so that it can account for things like only usable a certain number of times per day.
 
-- Reactions should probably have the same fields as Actions, Bonus Actions, etc..
-
 ### 🟡 UI Refactor
 
 - We should rework the way the NPC and PC cards display and edit the AC, Max HP, Temp HP, Level/CR and ability scores. Maybe model it after the way we refactored the Combatant card.

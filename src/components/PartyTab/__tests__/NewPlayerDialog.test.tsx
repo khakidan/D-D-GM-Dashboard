@@ -164,7 +164,7 @@ describe('NewPlayerDialog', () => {
     // Fill in content
     fireEvent.change(getByPlaceholderText('Trait name'), { target: { value: 'Innate Spellcasting' } });
     fireEvent.change(getByPlaceholderText('Action name (e.g. Bite)'), { target: { value: 'Multiattack' } });
-    fireEvent.change(getByPlaceholderText('Reaction name'), { target: { value: 'Parry' } });
+    fireEvent.change(getByPlaceholderText('Reaction name (e.g. Shield)'), { target: { value: 'Parry' } });
 
     // 4. Submit form
     fireEvent.click(getByRole('button', { name: /add character/i }));

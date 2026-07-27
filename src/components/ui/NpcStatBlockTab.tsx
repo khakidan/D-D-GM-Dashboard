@@ -77,7 +77,16 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
         title="Reactions"
         items={reactions}
         defaultExpanded={true}
-        emptyItem={{ name: '', description: '' }}
+        emptyItem={{
+          name: '',
+          description: '',
+          attackBonus: undefined,
+          damage: undefined,
+          saveDC: undefined,
+          saveType: undefined,
+          range: undefined,
+          recharge: undefined,
+        }}
         renderFields={renderReactionFields}
         onChange={onReactionsChange}
       />

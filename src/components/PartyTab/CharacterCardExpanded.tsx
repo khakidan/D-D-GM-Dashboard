@@ -372,7 +372,16 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                 title="Reactions"
                 items={reactions}
                 defaultExpanded={reactions.length > 0}
-                emptyItem={{ name: '', description: '' }}
+                emptyItem={{
+                  name: '',
+                  description: '',
+                  attackBonus: undefined,
+                  damage: undefined,
+                  saveDC: undefined,
+                  saveType: undefined,
+                  range: undefined,
+                  recharge: undefined,
+                }}
                 renderFields={renderReactionFields}
                 onChange={(updated) =>
                   onUpdate({ reactions: JSON.stringify(updated) })

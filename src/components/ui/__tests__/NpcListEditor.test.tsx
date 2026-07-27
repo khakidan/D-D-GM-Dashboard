@@ -3,6 +3,7 @@ import React from 'react';
 import { render, fireEvent, screen, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { NpcListEditor } from '../NpcListEditor';
+import { formatActionMeta } from '../NpcStatBlockSection';
 
 interface TestItem {
   id: string;
@@ -364,5 +365,25 @@ describe('NpcListEditor', () => {
     // Trigger delete confirmation flow
     fireEvent.click(removeBtn);
     expect(screen.getByText('Delete Test Section?')).toBeInTheDocument();
+  });
+
+  it('correctly handles formatActionMeta for legacy reaction data and mechanical fields', () => {
+    // Legacy reaction has only name and description
+    const legacyReaction = {
+      name: 'Shield',
+      description: 'Gains +5 AC',
+    };
+    expect(formatActionMeta(legacyReaction)).toBe('');
+
+    // Mechanical reaction has combat fields
+    const mechanicalReaction = {
+      name: 'Shield',
+      description: 'Gains +5 AC',
+      attackBonus: 5,
+      damage: '1d6+2',
+      saveDC: 13,
+      saveType: 'Con',
+    };
+    expect(formatActionMeta(mechanicalReaction)).toBe('+5 to hit | 1d6+2 | DC 13 Con save');
   });
 });

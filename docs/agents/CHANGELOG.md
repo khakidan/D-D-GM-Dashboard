@@ -2,6 +2,27 @@
 
 ---
 
+## Reactions Field Parity with Actions (Completed)
+
+Reactions now have the same mechanical fields as Actions/Bonus Actions (attackBonus, damage, saveDC, saveType, range, recharge), rather than just name/description.
+
+**Scope determination**: confirmed via investigation to be a TypeScript type + shared-component-swap task, not a schema migration — Reactions are stored as a JSON-serialized blob column (same as Actions/Traits/Bonus Actions), with no explicit field-by-field adapter mapping, so adding optional fields required zero spreadsheet column or adapter changes.
+
+**Changes**:
+- `NpcReaction` (types.ts) now matches `NpcAction`'s shape exactly (excluding `cost`, which is Legendary-Actions-specific).
+- `npcListFieldRenderers.tsx`'s `renderReactionFields` switched from `NpcSimpleFieldEditor` to `NpcCombatActionFields`, matching the existing Bonus Actions pattern.
+- `formatActionMeta()` (`NpcStatBlockSection.tsx`) type signature extended to accept `NpcReaction` — no logic changes needed, since it was already generic.
+- All 4 real consumers' empty-item shapes updated to match Actions' (`CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, `NpcStatBlockTab.tsx`).
+- **Found and fixed during implementation**: `CombatantCardExpanded.tsx`'s read-only Reactions mapper was omitting `meta: formatActionMeta(r)` entirely (unlike Actions/Bonus Actions/Legendary Actions in the same file) — without this fix, the new mechanical fields would have been invisible in the active combat view despite being editable everywhere else.
+
+**Backward compatibility**: confirmed both by direct reasoning and by re-running every test file with existing Reaction fixtures (`sheetAdapters.test.ts`, `combatantBuilder.test.ts`, `characters.test.ts`, `npcs.test.ts`) — since all new fields are optional, legacy `{name, description}`-only Reaction data parses and renders correctly with no migration needed.
+
+**Test coverage**: new tests across `NewPlayerDialog.test.tsx`, `NewNpcDialog.test.tsx`, `NpcListEditor.test.tsx` (legacy vs. mechanical `formatActionMeta` formatting), and `CombatantCard.test.tsx` (confirms the read-only expanded view now shows the meta string for a Reaction with mechanical fields).
+
+**Verification**: `tsc` clean; Batch 1 499/499, Batch 2 57/57, Batch 5B 57/57, Batch 6C 28/28, Batch 8 62/62 (all individually run, all pre-existing Reaction fixtures unaffected).
+
+---
+
 ## NPC Library Pagination (Completed)
 
 Added client-side pagination to the NPC Library, so long lists no longer render every matching NPC into the DOM at once.

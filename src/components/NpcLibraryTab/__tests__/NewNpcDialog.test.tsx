@@ -182,6 +182,80 @@ describe('NewNpcDialog', () => {
       .not.toHaveBeenCalled();
   });
 
+  it('reaction added on Stat Block tab with mechanical fields is included in reactions JSON on confirm', async () => {
+    const onConfirmMock = vi.fn();
+    const { getByLabelText, getByRole, getByText, getByPlaceholderText } = render(
+      <NewNpcDialog
+        isOpen={true}
+        onClose={vi.fn()}
+        onConfirm={onConfirmMock}
+      />
+    );
+
+    // Fill in required name on Identity tab
+    fireEvent.change(
+      getByLabelText(/^NPC Name/i),
+      { target: { value: 'Shield Mage' } }
+    );
+
+    // Navigate to Stat Block tab
+    fireEvent.click(
+      getByRole('tab',
+        { name: /stat block/i }
+      )
+    );
+
+    // Click "Add Reaction" button
+    fireEvent.click(
+      getByText('Add Reaction')
+    );
+
+    // Fill in the reaction name field using the new placeholder
+    const reactionNameInput = getByPlaceholderText('Reaction name (e.g. Shield)');
+    fireEvent.change(reactionNameInput, {
+      target: { value: 'Arcane Shield' }
+    });
+
+    // Fill in mechanical fields: attackBonus, damage, saveDC
+    const attackInput = getByPlaceholderText('+N');
+    fireEvent.change(attackInput, { target: { value: '5' } });
+
+    const damageInput = getByPlaceholderText('2d6');
+    fireEvent.change(damageInput, { target: { value: '2d6+3' } });
+
+    const dcInput = getByPlaceholderText('DC');
+    fireEvent.change(dcInput, { target: { value: '14' } });
+
+    const descriptionInput = getByPlaceholderText('Description');
+    fireEvent.change(descriptionInput, { target: { value: 'Creates a barrier' } });
+    fireEvent.blur(descriptionInput);
+
+    // Submit the form
+    fireEvent.click(
+      getByRole('button',
+        { name: /add npc/i }
+      )
+    );
+
+    expect(onConfirmMock).toHaveBeenCalled();
+
+    const payload = onConfirmMock.mock.calls[0][0];
+
+    // Reactions should contain the mechanical fields
+    const reactions = JSON.parse(payload.reactions);
+    expect(reactions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'Arcane Shield',
+          attackBonus: 5,
+          damage: '2d6+3',
+          saveDC: 14,
+          description: 'Creates a barrier',
+        })
+      ])
+    );
+  });
+
   it('creation context (NewNpcDialog) sections are always expanded by default even with 0 items', () => {
     const { getByRole, getByText } = render(
       <NewNpcDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} />

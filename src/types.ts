@@ -61,6 +61,12 @@ export interface NpcAction {
 export interface NpcReaction {
   name: string;
   description: string;
+  attackBonus?: number;
+  damage?: string;
+  saveDC?: number;
+  saveType?: string;
+  range?: string;
+  recharge?: string;
   _key?: string;
 }
 

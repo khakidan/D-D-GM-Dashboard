@@ -380,7 +380,16 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                       title="Reactions"
                       items={reactions}
                       defaultExpanded={true}
-                      emptyItem={{ name: '', description: '' }}
+                      emptyItem={{
+                        name: '',
+                        description: '',
+                        attackBonus: undefined,
+                        damage: undefined,
+                        saveDC: undefined,
+                        saveType: undefined,
+                        range: undefined,
+                        recharge: undefined,
+                      }}
                       renderFields={renderReactionFields}
                       onChange={(updated: NpcReaction[]) =>
                         handleChange('reactions', JSON.stringify(updated))

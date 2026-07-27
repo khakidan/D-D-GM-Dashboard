@@ -46,12 +46,27 @@ export function createNpcListRenderers(idPrefix: string) {
     ),
 
     renderReactionFields: (item: NpcReaction, index: number, onChange: (updated: NpcReaction) => void) => (
-      <NpcSimpleFieldEditor
+      <NpcCombatActionFields
+        idPrefix={`${idPrefix}-reaction-${index}`}
         name={item.name}
         onNameChange={name => onChange({ ...item, name })}
-        namePlaceholder="Reaction name"
+        namePlaceholder="Reaction name (e.g. Shield)"
+        recharge={item.recharge}
+        onRechargeChange={val => onChange({ ...item, recharge: val })}
+        attackBonus={item.attackBonus}
+        onAttackBonusChange={val => onChange({ ...item, attackBonus: val })}
+        damage={item.damage}
+        onDamageChange={val => onChange({ ...item, damage: val })}
+        damagePlaceholder="2d6"
+        saveDC={item.saveDC}
+        onSaveDCChange={val => onChange({ ...item, saveDC: val })}
+        saveType={item.saveType}
+        onSaveTypeChange={val => onChange({ ...item, saveType: val })}
+        rangeValue={item.range}
+        onRangeValueChange={val => onChange({ ...item, range: val })}
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
+        descriptionRows={5}
       />
     ),
 
