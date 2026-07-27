@@ -130,8 +130,9 @@ export const useDashboardStore =
         },
 
         getSnapshot: () => {
-          // Return only the AppState fields, 
-          // not the store methods
+          // Return only the core Sheets-synchronized AppState-shaped fields.
+          // Note: Extended state like activeCombatLog and store methods are excluded.
+          // Call useDashboardStore.getState() directly if the combat log is needed.
           const state = get();
           return {
             characters: state.characters,
