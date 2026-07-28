@@ -9,7 +9,7 @@ import type {
   NpcLegendaryAction 
 } from '../../types';
 
-export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityScores, proficiencyBonus: number, isPcContext: boolean = false) {
+export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityScores, proficiencyBonus: number) {
   return {
     renderTraitFields: (item: NpcTrait, index: number, onChange: (updated: NpcTrait) => void) => (
       <NpcSimpleFieldEditor
@@ -43,11 +43,6 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
         descriptionRows={5}
-        showUsageTracking={isPcContext}
-        maxUses={item.maxUses}
-        onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
-        usesReset={item.usesReset}
-        onUsesResetChange={val => onChange({ ...item, usesReset: val })}
         abilityScores={abilityScores}
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}
@@ -77,11 +72,6 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
         descriptionRows={5}
-        showUsageTracking={isPcContext}
-        maxUses={item.maxUses}
-        onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
-        usesReset={item.usesReset}
-        onUsesResetChange={val => onChange({ ...item, usesReset: val })}
         abilityScores={abilityScores}
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}
@@ -111,11 +101,6 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
         descriptionRows={5}
-        showUsageTracking={isPcContext}
-        maxUses={item.maxUses}
-        onMaxUsesChange={val => onChange({ ...item, maxUses: val })}
-        usesReset={item.usesReset}
-        onUsesResetChange={val => onChange({ ...item, usesReset: val })}
         abilityScores={abilityScores}
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}

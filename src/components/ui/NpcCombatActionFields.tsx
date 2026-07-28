@@ -37,11 +37,6 @@ export interface NpcCombatActionFieldsProps {
   onRangeValueChange?: (val: string | undefined) => void;
   cost?: number;
   onCostChange?: (val: number) => void;
-  showUsageTracking?: boolean;
-  maxUses?: number;
-  onMaxUsesChange?: (val: number | undefined) => void;
-  usesReset?: 'short' | 'long' | 'none';
-  onUsesResetChange?: (val: 'short' | 'long' | 'none' | undefined) => void;
 }
 
 export function NpcCombatActionFields({
@@ -75,11 +70,6 @@ export function NpcCombatActionFields({
   onRangeValueChange,
   cost,
   onCostChange,
-  showUsageTracking = false,
-  maxUses,
-  onMaxUsesChange,
-  usesReset,
-  onUsesResetChange,
 }: NpcCombatActionFieldsProps) {
   const inputClass = "w-full bg-white border border-[#e2e8f0] rounded-xl outline-none transition-all font-serif italic text-sm py-1 px-2 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]";
   
@@ -213,42 +203,6 @@ export function NpcCombatActionFields({
         <div>
           <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC Basis</label>
           <AbilitySelectChips selected={dcAbilities || []} onChange={onDcAbilitiesChange} />
-        </div>
-      )}
-
-      {showUsageTracking && onMaxUsesChange !== undefined && onUsesResetChange !== undefined && (
-        <div className="grid grid-cols-2 gap-2" data-testid="pc-usage-tracking-fields">
-          <div>
-            <label htmlFor={`${idPrefix}-max-uses`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Max Uses</label>
-            <input
-              id={`${idPrefix}-max-uses`}
-              type="number"
-              min="1"
-              value={maxUses !== undefined ? maxUses : ''}
-              onChange={e => {
-                const val = e.target.value;
-                onMaxUsesChange(val !== '' ? parseInt(val, 10) : undefined);
-              }}
-              className={inputClass}
-              placeholder="e.g. 1"
-            />
-          </div>
-          <div>
-            <label htmlFor={`${idPrefix}-uses-reset`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Reset</label>
-            <select
-              id={`${idPrefix}-uses-reset`}
-              value={usesReset || 'none'}
-              onChange={e => {
-                const val = e.target.value as 'short' | 'long' | 'none';
-                onUsesResetChange(val !== 'none' ? val : undefined);
-              }}
-              className={`${inputClass} bg-white h-[30px] py-1 px-2`}
-            >
-              <option value="none">Manual</option>
-              <option value="short">Short Rest</option>
-              <option value="long">Long Rest</option>
-            </select>
-          </div>
         </div>
       )}
 

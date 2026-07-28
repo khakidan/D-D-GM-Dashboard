@@ -88,8 +88,7 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
   } = React.useMemo(() => createNpcListRenderers(
     'char-card',
     parsedAbilityScores,
-    proficiencyBonusFromLevel(character.level),
-    true
+    proficiencyBonusFromLevel(character.level)
   ), [parsedAbilityScores, character.level]);
 
   const handleConditionAdded = (label: string) => {
@@ -364,9 +363,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                   saveType: undefined,
                   range: undefined,
                   recharge: undefined,
-                  maxUses: undefined,
-                  currentUses: undefined,
-                  usesReset: undefined,
                 }}
                 renderFields={renderActionFields}
                 onChange={(updated) =>
@@ -389,9 +385,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                   saveType: undefined,
                   range: undefined,
                   recharge: undefined,
-                  maxUses: undefined,
-                  currentUses: undefined,
-                  usesReset: undefined,
                 }}
                 renderFields={renderReactionFields}
                 onChange={(updated) =>
@@ -414,9 +407,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                   saveType: undefined,
                   range: undefined,
                   recharge: undefined,
-                  maxUses: undefined,
-                  currentUses: undefined,
-                  usesReset: undefined,
                 }}
                 renderFields={renderBonusActionFields}
                 onChange={(updated) =>

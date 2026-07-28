@@ -6,7 +6,6 @@ import { ConditionChips } from '../ui/ConditionChips';
 import { CombatantRechargeTracker } from './CombatantRechargeTracker';
 import { CombatantLegendaryTracker } from './CombatantLegendaryTracker';
 import { ResourcePoolsSection } from '../ui/ResourcePoolsSection';
-import { ActionUsageTracker } from '../ui/ActionUsageTracker';
 import { StatTile } from '../ui/StatTile';
 import { 
   parseAbilityScores, 
@@ -268,18 +267,11 @@ export function CombatantCardExpanded({
             />
           )}
           {c.type === 'pc' && pcCharacter && (
-            <>
-              <ResourcePoolsSection
-                character={pcCharacter}
-                isSyncing={isSyncing}
-                onUpdate={(updates) => handleResourcePoolUpdate(c, updates)}
-              />
-              <ActionUsageTracker
-                pcCharacter={pcCharacter}
-                isSyncing={isSyncing}
-                onUpdate={(updates) => handleResourcePoolUpdate(c, updates)}
-              />
-            </>
+            <ResourcePoolsSection
+              character={pcCharacter}
+              isSyncing={isSyncing}
+              onUpdate={(updates) => handleResourcePoolUpdate(c, updates)}
+            />
           )}
         </div>
         <div>

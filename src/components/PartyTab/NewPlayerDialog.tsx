@@ -115,8 +115,7 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
   } = React.useMemo(() => createNpcListRenderers(
     'new-player', 
     formData.abilityScores, 
-    proficiencyBonusFromLevel(formData.level), 
-    true
+    proficiencyBonusFromLevel(formData.level)
   ), [formData.abilityScores, formData.level]);
 
   const poolsCustomized = useRef(false);
@@ -372,9 +371,6 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                         saveType: undefined,
                         range: undefined,
                         recharge: undefined,
-                        maxUses: undefined,
-                        currentUses: undefined,
-                        usesReset: undefined,
                       }}
                       renderFields={renderActionFields}
                       onChange={(updated: NpcAction[]) =>
@@ -397,9 +393,6 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                         saveType: undefined,
                         range: undefined,
                         recharge: undefined,
-                        maxUses: undefined,
-                        currentUses: undefined,
-                        usesReset: undefined,
                       }}
                       renderFields={renderReactionFields}
                       onChange={(updated: NpcReaction[]) =>
@@ -422,9 +415,6 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                         saveType: undefined,
                         range: undefined,
                         recharge: undefined,
-                        maxUses: undefined,
-                        currentUses: undefined,
-                        usesReset: undefined,
                       }}
                       renderFields={renderBonusActionFields}
                       onChange={(updated: NpcAction[]) =>

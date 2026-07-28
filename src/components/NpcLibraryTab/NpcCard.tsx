@@ -93,8 +93,7 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
   } = React.useMemo(() => createNpcListRenderers(
     'npc-card', 
     parsedScores, 
-    proficiencyBonusFromCR(npc.challengeRating), 
-    false
+    proficiencyBonusFromCR(npc.challengeRating)
   ), [parsedScores, npc.challengeRating]);
 
   return (

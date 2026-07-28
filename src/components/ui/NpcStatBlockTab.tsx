@@ -47,7 +47,7 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
     renderReactionFields,
     renderBonusActionFields,
     renderLegendaryActionFields,
-  } = React.useMemo(() => createNpcListRenderers('npc-tab', abilityScores, profBonus, false), [abilityScores, profBonus]);
+  } = React.useMemo(() => createNpcListRenderers('npc-tab', abilityScores, profBonus), [abilityScores, profBonus]);
 
   return (
     <div className={cn("space-y-4", compact && "space-y-2")} id="npc-statblock-tab">

@@ -32,23 +32,11 @@ describe('useParty - REST and Recovery', () => {
   });
   afterEach(() => vi.restoreAllMocks());
 
-  it('handleLongRest resets all resource pools and actions that restore on long rest', async () => {
+  it('handleLongRest resets all resource pools that restore on long rest', async () => {
     const updateStateSpy = vi.fn();
     const mockState = { characters: [{ 
       id: 'char-1', 
       resourcePools: JSON.stringify([{ name: 'Rage', current: 0, max: 3, reset: 'long' }]),
-      actions: JSON.stringify([
-        { name: 'Short Rest Action', maxUses: 3, currentUses: 0, usesReset: 'short' },
-        { name: 'Long Rest Action', maxUses: 3, currentUses: 0, usesReset: 'long' },
-        { name: 'Manual Action', maxUses: 3, currentUses: 0, usesReset: 'none' },
-        { name: 'No Tracking Action', description: 'Just text' }
-      ]),
-      reactions: JSON.stringify([
-        { name: 'Long Rest Reaction', maxUses: 2, currentUses: 0, usesReset: 'long' },
-      ]),
-      bonusActions: JSON.stringify([
-        { name: 'Long Rest Bonus', maxUses: 1, currentUses: 0, usesReset: 'long' },
-      ])
     }] };
 
     vi.mocked(useAppState).mockReturnValue({
@@ -67,21 +55,8 @@ describe('useParty - REST and Recovery', () => {
     const stateUpdater = updateStateSpy.mock.calls[0][0];
     const nextState = stateUpdater(mockState);
     const updatedPools = JSON.parse(nextState.characters[0].resourcePools);
-    const updatedActions = JSON.parse(nextState.characters[0].actions);
-    const updatedReactions = JSON.parse(nextState.characters[0].reactions);
-    const updatedBonusActions = JSON.parse(nextState.characters[0].bonusActions);
 
     expect(updatedPools[0].current).toBe(3);
-
-    // Actions resets
-    expect(updatedActions[0].currentUses).toBe(3); // Short rest action reset on long rest
-    expect(updatedActions[1].currentUses).toBe(3); // Long rest action reset
-    expect(updatedActions[2].currentUses).toBe(0); // Manual action not reset
-    expect(updatedActions[3]).not.toHaveProperty('currentUses'); // No tracking action untouched
-
-    // Reactions and bonus actions also reset
-    expect(updatedReactions[0].currentUses).toBe(2);
-    expect(updatedBonusActions[0].currentUses).toBe(1);
   });
 
     it('handleShortRest resets only pools that restore on short rest', async () => {
@@ -92,18 +67,6 @@ describe('useParty - REST and Recovery', () => {
         { name: 'Ki', current: 0, max: 3, reset: 'short' },
         { name: 'Rage', current: 0, max: 3, reset: 'long' }
       ]),
-      actions: JSON.stringify([
-        { name: 'Short Rest Action', maxUses: 3, currentUses: 0, usesReset: 'short' },
-        { name: 'Long Rest Action', maxUses: 3, currentUses: 0, usesReset: 'long' },
-        { name: 'Manual Action', maxUses: 3, currentUses: 0, usesReset: 'none' },
-        { name: 'No Tracking Action', description: 'Just text' }
-      ]),
-      reactions: JSON.stringify([
-        { name: 'Short Rest Reaction', maxUses: 2, currentUses: 0, usesReset: 'short' },
-      ]),
-      bonusActions: JSON.stringify([
-        { name: 'Short Rest Bonus', maxUses: 1, currentUses: 0, usesReset: 'short' },
-      ])
     }] };
 
     vi.mocked(useAppState).mockReturnValue({
@@ -122,22 +85,9 @@ describe('useParty - REST and Recovery', () => {
     const stateUpdater = updateStateSpy.mock.calls[0][0];
     const nextState = stateUpdater(mockState);
     const updatedPools = JSON.parse(nextState.characters[0].resourcePools);
-    const updatedActions = JSON.parse(nextState.characters[0].actions);
-    const updatedReactions = JSON.parse(nextState.characters[0].reactions);
-    const updatedBonusActions = JSON.parse(nextState.characters[0].bonusActions);
     
     expect(updatedPools[0].current).toBe(3); // Ki reset
     expect(updatedPools[1].current).toBe(0); // Rage not reset
-
-    // Actions resets
-    expect(updatedActions[0].currentUses).toBe(3); // Short rest action reset
-    expect(updatedActions[1].currentUses).toBe(0); // Long rest action not reset
-    expect(updatedActions[2].currentUses).toBe(0); // Manual action not reset
-    expect(updatedActions[3]).not.toHaveProperty('currentUses'); // No tracking action untouched
-
-    // Reactions and bonus actions also reset
-    expect(updatedReactions[0].currentUses).toBe(2);
-    expect(updatedBonusActions[0].currentUses).toBe(1);
   });
 
   it('handleLongRest resets hit dice used to empty', async () => {

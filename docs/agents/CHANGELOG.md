@@ -2,6 +2,20 @@
 
 ---
 
+## Rollback of Usage-Limited Actions/Reactions/Bonus Actions for PCs (Completed)
+
+Fully rolled back the Usage-Limited Actions/Reactions/Bonus Actions feature (originally added across 4 stages — see prior entry). The feature turned out to be unnecessary: the pre-existing Class Resource Tracker (`resourcePools.ts` and its UI) already covers the same underlying need — tracking a limited number of uses that reset on rest — so the dedicated per-Action tracking system was redundant.
+
+**Files deleted**: `src/lib/actionUsages.ts`, `src/lib/__tests__/actionUsages.test.ts`, `src/components/ui/ActionUsageTracker.tsx`, `src/components/ui/__tests__/ActionUsageTracker.test.tsx`.
+
+**Fields removed**: `maxUses`/`currentUses`/`usesReset` removed from `NpcAction`/`NpcReaction` (types.ts); the `showUsageTracking` prop and its Max Uses/Reset fields removed from `NpcCombatActionFields.tsx`; the now-unused `isPcContext` parameter removed from `createNpcListRenderers`'s signature (it existed solely to gate usage-tracking fields).
+
+**Confirmed preserved, untouched**: `resourcePools.ts`, `ResourcePoolsSection.tsx`, and `ResourcePoolManager.tsx` (the Class Resource Tracker) were never modified by the original feature and remain exactly as they were — verified byte-identical, not reverted. The separate, still-active Saving Throw DC automation feature (`dcAbilities`, Auto-fill DC button) — which shares several of the same files as this rollback — was confirmed fully intact and passing throughout.
+
+**Verification**: `tsc` clean; Batch 1 499/499, Batch 5B 57/57, Batch 6A 61/61, Batch 6C 29/29, Batch 8 67/67 (all individually run, counts confirmed back to pre-feature baselines).
+
+---
+
 ## Saving Throw DC Automation (Completed, 4 stages)
 
 PCs and NPCs can now select one or more ability scores as the "basis" for an Action/Reaction/Bonus Action/Legendary Action's Save DC, and auto-fill the calculated value (8 + proficiency bonus + summed ability modifiers) with one click — while the DC field itself remains fully manually editable at all times.
