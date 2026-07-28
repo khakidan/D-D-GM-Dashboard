@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, RefreshCcw, Zap, Swords, HelpCircle } from 'lucide-react';
+import { Eye, RefreshCcw, Zap, Swords, HelpCircle, ArrowLeft } from 'lucide-react';
 import { Encounter, DamageType } from '../../types';
 import { cn } from '../../lib/utils';
 import { MultiTargetActionPanel } from './MultiTargetActionPanel';
@@ -75,13 +75,13 @@ export function CombatHeader({
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="flex-shrink-0 self-start h-8 flex items-center">
+          <div className="flex-shrink-0 self-start flex items-center">
             <Button
-              intent="tertiary"
+              intent="secondary"
               onClick={onBack}
-              className="text-xs text-stone-500 hover:text-stone-700 flex items-center gap-1 p-0 h-auto font-normal"
+              className="flex items-center gap-1.5"
             >
-              <span>&larr;</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Encounters</span>
             </Button>
           </div>

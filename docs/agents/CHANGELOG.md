@@ -2,6 +2,12 @@
 
 ---
 
+## "Back to Encounters" Header Button Styling Fix
+
+- Updated the "Back to Encounters" button in `CombatHeader.tsx` to use the standard `Button` component with `intent="secondary"` and an `ArrowLeft` icon from `lucide-react`, matching the established design system and styling of every other button across the application.
+
+---
+
 ## "Stale Auto-Calculated Value" Workflow for Save DC / Attack Bonus / Damage Bonus Automation (Completed, 5 stages)
 
 PCs and NPCs no longer silently carry outdated auto-calculated mechanics after their ability scores, level, or CR change. Every Auto-fill value (Save DC, Attack Bonus, per-row Damage Bonus) now tracks its own provenance, can detect when it's gone stale, and offers both a manual and an opt-in automatic path back to correctness — all without ever touching a value the GM typed by hand.
