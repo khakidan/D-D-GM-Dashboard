@@ -534,4 +534,108 @@ describe('NpcCombatActionFields Component', () => {
     expect(input).toHaveValue(8);
     expect(onAttackBonusChange).not.toHaveBeenCalled();
   });
+
+  it('renders simple/legacy mode when damageComponents is absent and supports switching to builder', () => {
+    const onDamageComponentsChange = vi.fn();
+    const onDamageChange = vi.fn();
+
+    render(
+      <NpcCombatActionFields
+        idPrefix="test-dmg"
+        name="Claw"
+        onNameChange={vi.fn()}
+        namePlaceholder="Action name"
+        attackBonus={undefined}
+        onAttackBonusChange={vi.fn()}
+        damage="2d6+3"
+        onDamageChange={onDamageChange}
+        saveDC={undefined}
+        onSaveDCChange={vi.fn()}
+        saveType={undefined}
+        onSaveTypeChange={vi.fn()}
+        description=""
+        onDescriptionChange={vi.fn()}
+        descriptionRows={2}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
+        onDamageComponentsChange={onDamageComponentsChange}
+      />
+    );
+
+    // Verify Dmg input is not disabled
+    const dmgInput = screen.getByPlaceholderText('2d8+5 fire') as HTMLInputElement;
+    expect(dmgInput).not.toBeDisabled();
+    expect(dmgInput.value).toBe('2d6+3');
+
+    // Click "Build" button to switch to structured mode
+    const buildBtn = screen.getByRole('button', { name: /Toggle damage builder/i });
+    expect(buildBtn).toBeInTheDocument();
+    fireEvent.click(buildBtn);
+
+    // Should call onDamageComponentsChange with initial 1-row array
+    expect(onDamageComponentsChange).toHaveBeenCalled();
+    const componentsCalled = onDamageComponentsChange.mock.calls[0][0];
+    expect(componentsCalled.length).toBe(1);
+    expect(componentsCalled[0].dice).toBe('2d6+3');
+    expect(onDamageChange).not.toHaveBeenCalled();
+  });
+
+  it('renders in structured mode and triggers both callbacks on edits (single-row-with-bonus & multi-row-no-bonus)', () => {
+    const onDamageComponentsChange = vi.fn();
+    const onDamageChange = vi.fn();
+
+    // Start in structured mode with 3 rows (no bonuses, i.e., Dragon Breath)
+    const initialComponents = [
+      { dice: '14d8', type: 'cold', _key: 'row1' },
+      { dice: '10d8', type: 'poison', _key: 'row2' },
+      { dice: '6d8', type: 'necrotic', _key: 'row3' },
+    ];
+
+    render(
+      <NpcCombatActionFields
+        idPrefix="test-dmg-struct"
+        name="Dragon Breath"
+        onNameChange={vi.fn()}
+        namePlaceholder="Action name"
+        attackBonus={undefined}
+        onAttackBonusChange={vi.fn()}
+        damage="14d8 cold & 10d8 poison & 6d8 necrotic"
+        onDamageChange={onDamageChange}
+        saveDC={undefined}
+        onSaveDCChange={vi.fn()}
+        saveType={undefined}
+        onSaveTypeChange={vi.fn()}
+        description=""
+        onDescriptionChange={vi.fn()}
+        descriptionRows={2}
+        abilityScores={DEFAULT_ABILITY_SCORES}
+        proficiencyBonus={2}
+        damageComponents={initialComponents}
+        onDamageComponentsChange={onDamageComponentsChange}
+      />
+    );
+
+    // Dmg input should be disabled because we are in structured mode
+    const dmgInput = screen.getByPlaceholderText('2d8+5 fire') as HTMLInputElement;
+    expect(dmgInput).toBeDisabled();
+    expect(dmgInput.value).toBe('14d8 cold & 10d8 poison & 6d8 necrotic');
+
+    // Edit a row (e.g. change dice of row 1 to "15d8")
+    const dice1Input = screen.getByLabelText('Damage dice for row 0') as HTMLInputElement;
+    fireEvent.change(dice1Input, { target: { value: '15d8' } });
+
+    expect(onDamageComponentsChange).toHaveBeenCalled();
+    const calledComponents = onDamageComponentsChange.mock.calls[0][0];
+    expect(calledComponents[0].dice).toBe('15d8');
+
+    expect(onDamageChange).not.toHaveBeenCalled();
+
+    // Test transition back to simple mode via "Text" button
+    const textBtn = screen.getByRole('button', { name: /Toggle damage builder/i });
+    expect(textBtn).toBeInTheDocument();
+    fireEvent.click(textBtn);
+
+    // Should clear damageComponents
+    expect(onDamageComponentsChange).toHaveBeenLastCalledWith(undefined);
+  });
 });

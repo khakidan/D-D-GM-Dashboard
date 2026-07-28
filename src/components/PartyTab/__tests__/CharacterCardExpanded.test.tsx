@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { CharacterCardExpanded } from '../CharacterCardExpanded';
 
@@ -198,4 +198,66 @@ describe('CharacterCardExpanded', () => {
     const updatedActions = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
     expect(updatedActions[0].attackBonus).toBe(7);
   });
+
+  it('calculates damage bonus with STR ability in PC context', () => {
+    const onUpdateMock = vi.fn();
+    const mockAbilityScores = { STR: 16, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }; // STR +3
+    const pcCharacter = {
+      ...defaultCharacter,
+      gmControlled: true,
+      abilityScores: JSON.stringify(mockAbilityScores),
+      actions: JSON.stringify([{ 
+        name: 'Greatsword', 
+        description: 'Slash!', 
+        damageComponents: [{ dice: '2d6', type: 'slashing', _key: 'row1' }]
+      }]),
+    };
+
+    const { rerender } = render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={pcCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // 1. Reveal row's ability picker
+    const toggleBtn = screen.getByTitle('Toggle Ability Bonus Modifier');
+    fireEvent.click(toggleBtn);
+
+    // 2. Select STR inside the row container
+    const rowContainer = screen.getByTestId('char-card-action-0-dmg-row-0');
+    const strBtn = within(rowContainer).getByRole('button', { name: 'STR' });
+    fireEvent.click(strBtn);
+
+    expect(onUpdateMock).toHaveBeenCalled();
+    let updatedActions = JSON.parse(onUpdateMock.mock.calls[onUpdateMock.mock.calls.length - 1][0].actions);
+    expect(updatedActions[0].damageComponents[0].bonusAbility).toBe('STR');
+
+    // 3. Rerender with updated actions containing bonusAbility: STR
+    onUpdateMock.mockClear();
+    const pcCharacterWithAbility = {
+      ...pcCharacter,
+      actions: JSON.stringify(updatedActions)
+    };
+
+    rerender(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={pcCharacterWithAbility}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // 4. Click Auto button (should now be enabled since bonusAbility is set) inside the row container
+    const updatedRowContainer = screen.getByTestId('char-card-action-0-dmg-row-0');
+    const autoBtn = within(updatedRowContainer).getByRole('button', { name: /Auto/i });
+    expect(autoBtn).not.toBeDisabled();
+    fireEvent.click(autoBtn);
+
+    expect(onUpdateMock).toHaveBeenCalled();
+    updatedActions = JSON.parse(onUpdateMock.mock.calls[onUpdateMock.mock.calls.length - 1][0].actions);
+    expect(updatedActions[0].damageComponents[0].bonus).toBe(3); // +3 STR modifier only, no proficiency bonus
+  });
 });
+

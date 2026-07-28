@@ -4102,3 +4102,23 @@ Started from a user report that a PC at 0 HP was being skipped entirely instead 
 Verified across all 3 stages: TypeScript clean, Batch 1 (19 files/449 tests), Batch 3 (11 files/44 tests), Batch 5A (7 files/48 tests), and Batch 5B (11 files/26 tests) all matching established baselines with real raw output, every diff checked directly against the real files.
 
 ---
+
+## Damage Bonus Automation & Tier 4 Completion (Completed, 3 stages)
+
+PCs and NPCs can now configure a structured "Damage Components Builder" for Actions, Reactions, and Bonus Actions. This allows selecting an ability score modifier and automatically compiling the damage string (e.g., 1d8 + STR modifier + bonus) dynamically, while maintaining manual override support.
+
+**Design decisions**: 
+- Follows the single-ability source pattern established in Attack Bonus Automation.
+- Restricts the compiled output to include the selected ability modifier but excludes the proficiency bonus from the damage calculation, strictly adhering to standard 5e rules.
+- Establishes a clean architectural contract: `NpcCombatActionFields` serves as a "dumb" component that solely emits the structured `damageComponents` array. It is the caller's/parent's (`npcListFieldRenderers.tsx`) responsibility to compile this structure into the final `damage` string via `compileDamageComponents` and propagate it, preserving clean data separation.
+
+**Stage 1**: Integrated the `DamageComponentsBuilder` into `NpcCombatActionFields.tsx` under the "Build" toggle, linking structured component modifications to the parent component.
+**Stage 2**: Wired the `damageComponents` and `onDamageComponentsChange` properties through `npcListFieldRenderers.tsx`'s `renderActionFields`/`renderReactionFields`/`renderBonusActionFields` signatures using the existing `abilityScores`/`proficiencyBonus` plumbing.
+**Stage 3**: Updated the `emptyItem` templates for Actions, Reactions, and Bonus Actions across all 4 primary user-facing consumer components (`CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, and `NpcStatBlockTab.tsx`) to initialize with `damageComponents: undefined`, completing the end-to-end integration path.
+
+**Test coverage**:
+- `NpcCombatActionFields.test.tsx` (Batch 8): Aligned with the new dumb-component contract. Verified that toggling or modifying structured damage components properly fires `onDamageComponentsChange` rather than directly writing compiled strings within the child.
+- `NpcCard.test.tsx` (Batch 6C): Fixed a DOM selector issue to correctly target the mechanical damage field.
+- Integration coverage in `CharacterCardExpanded.test.tsx` and `NpcCard.test.tsx` confirms correct end-to-end flow with dynamic ability updates.
+
+**Verification**: `tsc` compiled clean (exit code 0); Batch 6A (63 tests), Batch 6C (31 tests), and Batch 8 (81 tests) fully passing. Baseline total is 1025 tests.

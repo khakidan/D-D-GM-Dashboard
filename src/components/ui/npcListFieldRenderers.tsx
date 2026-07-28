@@ -2,6 +2,7 @@ import React from 'react';
 import { NpcSimpleFieldEditor } from './NpcSimpleFieldEditor';
 import { NpcCombatActionFields } from './NpcCombatActionFields';
 import { DEFAULT_ABILITY_SCORES, AbilityScores } from '../../lib/abilityScores';
+import { compileDamageComponents } from './DamageComponentsBuilder';
 import type { 
   NpcTrait, 
   NpcAction, 
@@ -49,6 +50,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
         atkAbility={item.atkAbility}
         onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
+        damageComponents={item.damageComponents}
+        onDamageComponentsChange={val => onChange({ 
+          ...item, 
+          damageComponents: val,
+          damage: val ? compileDamageComponents(val) : item.damage
+        })}
       />
     ),
 
@@ -80,6 +87,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
         atkAbility={item.atkAbility}
         onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
+        damageComponents={item.damageComponents}
+        onDamageComponentsChange={val => onChange({ 
+          ...item, 
+          damageComponents: val,
+          damage: val ? compileDamageComponents(val) : item.damage
+        })}
       />
     ),
 
@@ -111,6 +124,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
         atkAbility={item.atkAbility}
         onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
+        damageComponents={item.damageComponents}
+        onDamageComponentsChange={val => onChange({ 
+          ...item, 
+          damageComponents: val,
+          damage: val ? compileDamageComponents(val) : item.damage
+        })}
       />
     ),
 

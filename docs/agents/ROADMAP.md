@@ -13,21 +13,7 @@ None.
 
 ### 🟡 Features to Add / Test Coverage Gaps
 
-- Look at calculating the damage bonus based on if they have proficiency with the weapon.
-  - For D&D 5e (2014 and 2024):
-    * Attack bonus = Ability modifier + Proficiency bonus (if you’re proficient with the weapon or spell)
-      * Melee weapons usually use Strength.
-      * Finesse weapons can use Strength or Dexterity.
-      * Ranged weapons usually use Dexterity.
-      * Spell attacks use your spellcasting ability.
-    * Damage bonus = Ability modifier
-      * Add the same ability modifier used for the attack.
-      * Do not add your proficiency bonus to damage.
-      * Some class features, spells, or magic weapons can add extra damage.
-    * Example:
-      * Strength 16 (+3), proficiency bonus +2, using a longsword you’re proficient with:
-        * Attack: +5 (+3 Strength +2 proficiency)
-        * Damage: 1d8 +3 slashing 
+None.
 
 ### 🟡 UI Refactor
 

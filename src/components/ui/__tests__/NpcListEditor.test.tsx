@@ -14,7 +14,7 @@ interface TestItem {
 describe('NpcListEditor', () => {
   afterEach(() => cleanup());
 
-  const renderFields = (item: TestItem, onChange: (updated: TestItem) => void) => (
+  const renderFields = (item: TestItem, _index: number, onChange: (updated: TestItem) => void) => (
     <input
       data-testid="item-input"
       value={item.value}

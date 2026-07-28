@@ -47,11 +47,20 @@ export interface NpcTrait {
   _key?: string;
 }
 
+export interface DamageComponent {
+  dice: string;
+  type?: string;
+  bonus?: number;
+  bonusAbility?: AbilityName;
+  _key?: string;
+}
+
 export interface NpcAction {
   name: string;
   description: string;
   attackBonus?: number;
   damage?: string;
+  damageComponents?: DamageComponent[];
   saveDC?: number;
   saveType?: string;
   dcAbilities?: AbilityName[];
@@ -66,6 +75,7 @@ export interface NpcReaction {
   description: string;
   attackBonus?: number;
   damage?: string;
+  damageComponents?: DamageComponent[];
   saveDC?: number;
   saveType?: string;
   dcAbilities?: AbilityName[];
@@ -81,6 +91,7 @@ export interface NpcLegendaryAction {
   cost?: number;
   attackBonus?: number;
   damage?: string;
+  damageComponents?: DamageComponent[];
   saveDC?: number;
   saveType?: string;
   dcAbilities?: AbilityName[];

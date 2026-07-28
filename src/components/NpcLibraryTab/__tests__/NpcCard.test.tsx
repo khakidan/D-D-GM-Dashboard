@@ -544,4 +544,41 @@ describe('NpcCard', () => {
     // SpellcastingStatsRow should NOT be rendered (spellcastingAbility is undefined)
     expect(screen.queryByText(/Spell Save DC/i)).not.toBeInTheDocument();
   });
+
+  it('renders and compiles a multi-row, NO-bonus damageComponents list matching dragon breath weapon', () => {
+    // 3 rows: "14d8 cold", "10d8 poison", "6d8 necrotic", no ability/bonus on any row
+    const mockNpc: NPC = {
+      ...mockNpcForMemoTests,
+      id: 'npc-dragon-breath',
+      name: 'Adult Green Dragon',
+      actions: JSON.stringify([{
+        name: 'Poison Breath',
+        description: 'Breathes poison.',
+        damage: '14d8 cold & 10d8 poison & 6d8 necrotic',
+        damageComponents: [
+          { dice: '14d8', type: 'cold', _key: 'row1' },
+          { dice: '10d8', type: 'poison', _key: 'row2' },
+          { dice: '6d8', type: 'necrotic', _key: 'row3' },
+        ]
+      }]),
+    };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={vi.fn()}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // Get the damage input by its ID (npc-card-action-0-dmg)
+    const dmgInput = document.getElementById('npc-card-action-0-dmg') as HTMLInputElement;
+    expect(dmgInput).toBeInTheDocument();
+    expect(dmgInput).toBeDisabled();
+    expect(dmgInput.value).toBe('14d8 cold & 10d8 poison & 6d8 necrotic');
+  });
 });
+

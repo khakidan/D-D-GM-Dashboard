@@ -270,6 +270,7 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
                 saveType: undefined,
                 dcAbilities: undefined,
                 atkAbility: undefined,
+                damageComponents: undefined,
                 range: undefined,
                 recharge: undefined,
               }}
@@ -294,6 +295,7 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
                 saveType: undefined,
                 dcAbilities: undefined,
                 atkAbility: undefined,
+                damageComponents: undefined,
                 range: undefined,
                 recharge: undefined,
               }}
@@ -318,6 +320,7 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
                 saveType: undefined,
                 dcAbilities: undefined,
                 atkAbility: undefined,
+                damageComponents: undefined,
                 range: undefined,
                 recharge: undefined,
               }}

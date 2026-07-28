@@ -3,6 +3,8 @@ import { DebouncedTextarea } from './DebouncedTextarea';
 import { AbilityName } from '../../lib/abilityFundamentals';
 import { AbilityScores, calculateModifier } from '../../lib/abilityScores';
 import { AbilitySelectChips } from './AbilitySelectChips';
+import { DamageComponent } from '../../types';
+import { DamageComponentsBuilder, compileDamageComponents } from './DamageComponentsBuilder';
 
 export interface NpcCombatActionFieldsProps {
   idPrefix: string;
@@ -33,6 +35,10 @@ export interface NpcCombatActionFieldsProps {
   // New props for Atk Automation
   atkAbility?: AbilityName;
   onAtkAbilityChange?: (val: AbilityName | undefined) => void;
+
+  // New props for Dmg Automation
+  damageComponents?: DamageComponent[];
+  onDamageComponentsChange?: (val: DamageComponent[] | undefined) => void;
 
   // Typed props
   recharge?: string;
@@ -71,6 +77,9 @@ export function NpcCombatActionFields({
   atkAbility,
   onAtkAbilityChange,
 
+  damageComponents,
+  onDamageComponentsChange,
+
   recharge,
   onRechargeChange,
   rangeValue,
@@ -79,6 +88,14 @@ export function NpcCombatActionFields({
   onCostChange,
 }: NpcCombatActionFieldsProps) {
   const inputClass = "w-full bg-white border border-[#e2e8f0] rounded-xl outline-none transition-all font-serif italic text-sm py-1 px-2 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]";
+  
+  const [isStructuredMode, setIsStructuredMode] = React.useState(!!damageComponents && damageComponents.length > 0);
+
+  React.useEffect(() => {
+    if (damageComponents && damageComponents.length > 0) {
+      setIsStructuredMode(true);
+    }
+  }, [damageComponents]);
   
   const handleAutoFillDC = () => {
     if (!dcAbilities || dcAbilities.length === 0) return;
@@ -176,7 +193,28 @@ export function NpcCombatActionFields({
           </div>
         </div>
         <div>
-          <label htmlFor={`${idPrefix}-dmg`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Dmg</label>
+          <div className="flex items-center justify-between px-1">
+            <label htmlFor={`${idPrefix}-dmg`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase">Dmg</label>
+            {onDamageComponentsChange && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (isStructuredMode) {
+                    onDamageComponentsChange(undefined);
+                    setIsStructuredMode(false);
+                  } else {
+                    const initialRow = { dice: damage || '', _key: Math.random().toString(36).substring(2, 9) };
+                    onDamageComponentsChange([initialRow]);
+                    setIsStructuredMode(true);
+                  }
+                }}
+                className="text-[9px] text-[#2563eb] font-bold uppercase hover:underline"
+                aria-label="Toggle damage builder"
+              >
+                {isStructuredMode ? "Text" : "Build"}
+              </button>
+            )}
+          </div>
           <input
             id={`${idPrefix}-dmg`}
             type="text"
@@ -184,6 +222,7 @@ export function NpcCombatActionFields({
             onChange={e => onDamageChange(e.target.value || undefined)}
             className={inputClass}
             placeholder={damagePlaceholder}
+            disabled={isStructuredMode}
           />
         </div>
         <div>
@@ -225,6 +264,17 @@ export function NpcCombatActionFields({
           />
         </div>
       </div>
+
+      {isStructuredMode && onDamageComponentsChange && damageComponents && (
+        <DamageComponentsBuilder
+          idPrefix={idPrefix}
+          components={damageComponents}
+          onChange={(newComponents) => {
+            onDamageComponentsChange(newComponents);
+          }}
+          abilityScores={abilityScores}
+        />
+      )}
       
       {onAtkAbilityChange && (
         <div>
