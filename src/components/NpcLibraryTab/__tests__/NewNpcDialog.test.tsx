@@ -271,4 +271,40 @@ describe('NewNpcDialog', () => {
     expect(getByText('Add Reaction')).toBeInTheDocument();
     expect(getByText('Add Legendary Action')).toBeInTheDocument();
   });
+
+  it('unconditionally recomputes automated action mechanics at submission', () => {
+    const onConfirmMock = vi.fn();
+
+    const { getByLabelText, getByRole, getByText, getByPlaceholderText } = render(
+      <NewNpcDialog
+        isOpen={true}
+        onClose={vi.fn()}
+        onConfirm={onConfirmMock}
+      />
+    );
+
+    fireEvent.change(getByLabelText(/^NPC Name/i), { target: { value: 'Manticore' } });
+    fireEvent.change(getByLabelText(/^CR/i), { target: { value: '5' } }); // CR 5 = +3 prof bonus
+    fireEvent.blur(getByLabelText(/^CR/i));
+
+    // Navigate to Stat Block tab
+    fireEvent.click(getByRole('tab', { name: /stat block/i }));
+
+    // Click "Add Action" button
+    fireEvent.click(getByText('Add Action'));
+
+    const actionNameInput = getByPlaceholderText('Action name (e.g. Bite)');
+    fireEvent.change(actionNameInput, { target: { value: 'Tail Spike' } });
+
+    // Submit
+    fireEvent.click(getByRole('button', { name: /add npc/i }));
+
+    expect(onConfirmMock).toHaveBeenCalledOnce();
+    const payload = onConfirmMock.mock.calls[0][0];
+    expect(payload.autoRefreshMechanics).toBe(false);
+    expect(payload.actions).toBeDefined();
+    const actions = JSON.parse(payload.actions);
+    expect(actions).toHaveLength(1);
+    expect(actions[0].name).toBe('Tail Spike');
+  });
 });

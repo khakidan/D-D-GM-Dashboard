@@ -6,22 +6,9 @@ import { DamageComponent } from '../../types';
 import { DAMAGE_TYPE_OPTIONS } from '../../lib/irvOptions';
 import { Plus, Trash2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { compileDamageComponents } from '../../lib/automation';
 
-export function compileDamageComponents(components: DamageComponent[]): string {
-  return components
-    .map(c => {
-      const dice = (c.dice || '').trim();
-      const type = (c.type || '').trim();
-      let bonusStr = '';
-      if (c.bonus !== undefined && c.bonus !== 0) {
-        bonusStr = c.bonus > 0 ? `+${c.bonus}` : `${c.bonus}`;
-      }
-      const part = `${dice}${bonusStr} ${type}`.trim();
-      return part;
-    })
-    .filter(Boolean)
-    .join(' & ');
-}
+export { compileDamageComponents };
 
 interface DamageComponentsBuilderProps {
   idPrefix: string;
@@ -78,7 +65,7 @@ export function DamageComponentsBuilder({
     if (!comp.bonusAbility) return;
     const score = abilityScores[comp.bonusAbility];
     const mod = calculateModifier(score);
-    handleComponentChange(index, { bonus: mod });
+    handleComponentChange(index, { bonus: mod, bonusAutoComputed: true });
   };
 
   const isRowRevealed = (comp: DamageComponent, index: number) => {
@@ -104,6 +91,11 @@ export function DamageComponentsBuilder({
       <div className="flex flex-col gap-2">
         {components.map((comp, index) => {
           const key = comp._key || String(index);
+          const isBonusStale = Boolean(
+            comp.bonusAutoComputed &&
+            comp.bonusAbility !== undefined &&
+            comp.bonus !== calculateModifier(abilityScores[comp.bonusAbility])
+          );
           return (
             <div
               key={key}
@@ -152,7 +144,7 @@ export function DamageComponentsBuilder({
                     value={comp.bonus !== undefined ? comp.bonus : ''}
                     onChange={e => {
                       const val = e.target.value;
-                      handleComponentChange(index, { bonus: val !== '' ? parseInt(val) : undefined });
+                      handleComponentChange(index, { bonus: val !== '' ? parseInt(val) : undefined, bonusAutoComputed: false });
                     }}
                     placeholder="+Dmg"
                     className="w-full px-2 py-1 text-xs border border-[#e2e8f0] rounded bg-white text-[#0f172a] focus:outline-none focus:border-[#2563eb]"
@@ -215,10 +207,20 @@ export function DamageComponentsBuilder({
                       type="button"
                       disabled={!comp.bonusAbility}
                       onClick={() => handleAutoFillBonus(index)}
-                      className="px-2 py-1 bg-white border border-[#e2e8f0] rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50"
+                      className={cn(
+                        "px-2 py-1 bg-white border rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50 flex items-center gap-1",
+                        isBonusStale ? "border-[#f59e0b] text-[#b45309] bg-[#fffbeb]" : "border-[#e2e8f0]"
+                      )}
                       aria-label="Auto-fill bonus"
                     >
                       Auto
+                      {isBonusStale && (
+                        <span
+                          data-testid="stale-indicator"
+                          className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
+                          title="Value is stale — click Auto to refresh"
+                        />
+                      )}
                     </button>
                   </div>
                 </div>

@@ -39,6 +39,7 @@ export interface Character {
   actions?: string;
   reactions?: string;
   bonusActions?: string;
+  autoRefreshMechanics?: boolean;
 }
 
 export interface NpcTrait {
@@ -52,6 +53,7 @@ export interface DamageComponent {
   type?: string;
   bonus?: number;
   bonusAbility?: AbilityName;
+  bonusAutoComputed?: boolean;
   _key?: string;
 }
 
@@ -65,6 +67,8 @@ export interface NpcAction {
   saveType?: string;
   dcAbilities?: AbilityName[];
   atkAbility?: AbilityName;
+  dcAutoComputed?: boolean;
+  atkAutoComputed?: boolean;
   range?: string;
   recharge?: string;
   _key?: string;
@@ -80,6 +84,8 @@ export interface NpcReaction {
   saveType?: string;
   dcAbilities?: AbilityName[];
   atkAbility?: AbilityName;
+  dcAutoComputed?: boolean;
+  atkAutoComputed?: boolean;
   range?: string;
   recharge?: string;
   _key?: string;
@@ -126,6 +132,7 @@ export interface NPC {
   legendaryActionsList: string; // JSON: NpcLegendaryAction[]
   spellcastingAbility?: string;
   bonusActions?: string;
+  autoRefreshMechanics?: boolean;
 }
 
 export interface Encounter {

@@ -2,7 +2,8 @@ import React from 'react';
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { DamageComponentsBuilder, compileDamageComponents } from '../DamageComponentsBuilder';
+import { DamageComponentsBuilder } from '../DamageComponentsBuilder';
+import { compileDamageComponents } from '../../../lib/automation';
 import { AbilityScores } from '../../../lib/abilityScores';
 import { DamageComponent } from '../../../types';
 
@@ -166,6 +167,16 @@ describe('DamageComponentsBuilder', () => {
     expect(onChange).toHaveBeenCalled();
     const calledWith = onChange.mock.calls[0][0];
     expect(calledWith[0].bonus).toBe(4);
+    expect(calledWith[0].bonusAutoComputed).toBe(true);
+
+    // Type in bonus manually
+    const bonusInput = screen.getByLabelText('Damage bonus for row 0') as HTMLInputElement;
+    fireEvent.change(bonusInput, { target: { value: '5' } });
+    
+    expect(onChange).toHaveBeenCalledTimes(2);
+    const calledWithManual = onChange.mock.calls[1][0];
+    expect(calledWithManual[0].bonus).toBe(5);
+    expect(calledWithManual[0].bonusAutoComputed).toBe(false);
   });
 
   it('compiles damage components into correct string formats', () => {
@@ -182,5 +193,41 @@ describe('DamageComponentsBuilder', () => {
       { dice: '10d8', type: 'poison' },
       { dice: '6d8', type: 'necrotic' }
     ])).toBe('14d8 cold & 10d8 poison & 6d8 necrotic');
+  });
+
+  it('renders per-row stale indicator when bonusAutoComputed is true and stored bonus is stale', () => {
+    const components: DamageComponent[] = [
+      { dice: '2d6', type: 'fire', bonus: 2, bonusAbility: 'STR', bonusAutoComputed: true, _key: 'row1' }, // STR mod is +4, so bonus 2 is stale
+    ];
+    const onChange = vi.fn();
+
+    const { rerender } = render(
+      <DamageComponentsBuilder
+        idPrefix="test-action"
+        components={components}
+        onChange={onChange}
+        abilityScores={mockAbilityScores}
+      />
+    );
+
+    const toggleBtn = screen.getByTitle('Toggle Ability Bonus Modifier');
+    fireEvent.click(toggleBtn);
+
+    expect(screen.getByTestId('stale-indicator')).toBeInTheDocument();
+
+    // Rerender with bonus = 4 (fresh)
+    const freshComponents: DamageComponent[] = [
+      { dice: '2d6', type: 'fire', bonus: 4, bonusAbility: 'STR', bonusAutoComputed: true, _key: 'row1' },
+    ];
+    rerender(
+      <DamageComponentsBuilder
+        idPrefix="test-action"
+        components={freshComponents}
+        onChange={onChange}
+        abilityScores={mockAbilityScores}
+      />
+    );
+
+    expect(screen.queryByTestId('stale-indicator')).not.toBeInTheDocument();
   });
 });

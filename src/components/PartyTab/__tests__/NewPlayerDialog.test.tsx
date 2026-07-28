@@ -187,5 +187,39 @@ describe('NewPlayerDialog', () => {
     expect(reactions[0]).toEqual(expect.objectContaining({ name: 'Parry' }));
   });
 
+  it('unconditionally recomputes automated action mechanics at submission', () => {
+    const onConfirmMock = vi.fn();
 
+    const { getByPlaceholderText, getByRole, container } = render(
+      <NewPlayerDialog
+        statuses={mockStatuses}
+        isOpen={true}
+        onClose={vi.fn()}
+        onConfirm={onConfirmMock}
+      />
+    );
+
+    fireEvent.change(getByPlaceholderText('e.g. Sarah'), { target: { value: 'Bob' } });
+    fireEvent.change(getByPlaceholderText('e.g. Drogar'), { target: { value: 'Hero' } });
+
+    // Level 5 (+3 prof)
+    const levelInput = container.querySelector('input[type="number"]') as HTMLInputElement;
+    fireEvent.change(levelInput, { target: { value: '5' } });
+
+    // Go to Stat Block tab and enable GM controlled
+    fireEvent.click(getByRole('tab', { name: /stat block/i }));
+    fireEvent.click(screen.getByLabelText('GM-Controlled Character'));
+
+    // Add action
+    fireEvent.click(screen.getByRole('button', { name: /add action/i }));
+    fireEvent.change(getByPlaceholderText('Action name (e.g. Bite)'), { target: { value: 'Strike' } });
+
+    // Submit
+    fireEvent.click(getByRole('button', { name: /add character/i }));
+
+    expect(onConfirmMock).toHaveBeenCalledOnce();
+    const payload = onConfirmMock.mock.calls[0][0];
+    expect(payload.autoRefreshMechanics).toBe(false);
+    expect(payload.actions).toBeDefined();
+  });
 });

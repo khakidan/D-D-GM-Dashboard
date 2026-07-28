@@ -178,12 +178,12 @@ describe('NpcCombatActionFields Component', () => {
     const attackInput = screen.getByPlaceholderText('+N');
     expect(attackInput).toHaveValue(5);
     fireEvent.change(attackInput, { target: { value: '' } });
-    expect(onAttackBonusChange).toHaveBeenCalledWith(undefined);
+    expect(onAttackBonusChange).toHaveBeenCalledWith(undefined, false);
 
     const dcInput = screen.getByPlaceholderText('DC');
     expect(dcInput).toHaveValue(13);
     fireEvent.change(dcInput, { target: { value: '' } });
-    expect(onSaveDCChange).toHaveBeenCalledWith(undefined);
+    expect(onSaveDCChange).toHaveBeenCalledWith(undefined, false);
   });
 
   it('falls back to 1 when Cost field is emptied', () => {
@@ -282,7 +282,7 @@ describe('NpcCombatActionFields Component', () => {
     // DC should be 8 + 4 (prof) + 4 (STR mod) + 3 (CHA mod) = 19
     const autoButton = screen.getByLabelText('Auto-fill DC');
     fireEvent.click(autoButton);
-    expect(onSaveDCChange).toHaveBeenCalledWith(19);
+    expect(onSaveDCChange).toHaveBeenCalledWith(19, true);
   });
   
   it('disables auto-fill button when dcAbilities is empty', () => {
@@ -380,7 +380,7 @@ describe('NpcCombatActionFields Component', () => {
 
     // Clicking Auto-fill Atk should compute 3 (prof) + 4 (STR mod) = 7
     fireEvent.click(autoAtkBtn);
-    expect(onAttackBonusChange).toHaveBeenCalledWith(7);
+    expect(onAttackBonusChange).toHaveBeenCalledWith(7, true);
 
     // Re-render with atkAbility as 'DEX'
     rerender(
@@ -409,7 +409,7 @@ describe('NpcCombatActionFields Component', () => {
 
     // Clicking Auto-fill Atk should compute 3 (prof) + 2 (DEX mod) = 5
     fireEvent.click(autoAtkBtn);
-    expect(onAttackBonusChange).toHaveBeenLastCalledWith(5);
+    expect(onAttackBonusChange).toHaveBeenLastCalledWith(5, true);
   });
 
   it('does not render Atk basis when onAtkAbilityChange is absent', () => {
@@ -637,5 +637,120 @@ describe('NpcCombatActionFields Component', () => {
 
     // Should clear damageComponents
     expect(onDamageComponentsChange).toHaveBeenLastCalledWith(undefined);
+  });
+
+  it('passes isAutoComputed flag to onSaveDCChange and onAttackBonusChange when clicking Auto-fill or typing manually', () => {
+    const onSaveDCChange = vi.fn();
+    const onAttackBonusChange = vi.fn();
+
+    const customScores = { ...DEFAULT_ABILITY_SCORES, STR: 18 }; // STR mod +4
+    render(
+      <NpcCombatActionFields
+        idPrefix="test-auto"
+        name="Claw"
+        onNameChange={vi.fn()}
+        namePlaceholder="Action name"
+        attackBonus={undefined}
+        onAttackBonusChange={onAttackBonusChange}
+        damage={undefined}
+        onDamageChange={vi.fn()}
+        saveDC={undefined}
+        onSaveDCChange={onSaveDCChange}
+        saveType={undefined}
+        onSaveTypeChange={vi.fn()}
+        description=""
+        onDescriptionChange={vi.fn()}
+        descriptionRows={2}
+        abilityScores={customScores}
+        proficiencyBonus={2}
+        dcAbilities={['STR']}
+        onDcAbilitiesChange={vi.fn()}
+        atkAbility="STR"
+        onAtkAbilityChange={vi.fn()}
+      />
+    );
+
+    // Click Auto DC (8 + 2 prof + 4 STR = 14)
+    fireEvent.click(screen.getByLabelText('Auto-fill DC'));
+    expect(onSaveDCChange).toHaveBeenCalledWith(14, true);
+
+    // Type in DC manually
+    fireEvent.change(screen.getByPlaceholderText('DC'), { target: { value: '15' } });
+    expect(onSaveDCChange).toHaveBeenCalledWith(15, false);
+
+    // Click Auto Atk (2 prof + 4 STR = 6)
+    fireEvent.click(screen.getByLabelText('Auto-fill Atk'));
+    expect(onAttackBonusChange).toHaveBeenCalledWith(6, true);
+
+    // Type in Atk manually
+    fireEvent.change(screen.getByPlaceholderText('+N'), { target: { value: '5' } });
+    expect(onAttackBonusChange).toHaveBeenCalledWith(5, false);
+  });
+
+  it('renders stale indicator on Atk and DC Auto buttons when xAutoComputed is true and value is stale', () => {
+    const customScores = { ...DEFAULT_ABILITY_SCORES, STR: 18 }; // STR mod +4, prof 2 => Atk = 6, DC = 14
+    const { rerender } = render(
+      <NpcCombatActionFields
+        idPrefix="test-stale-ui"
+        name="Claw"
+        onNameChange={vi.fn()}
+        namePlaceholder="Action name"
+        attackBonus={5} // Stale (should be 6)
+        onAttackBonusChange={vi.fn()}
+        atkAutoComputed={true}
+        atkAbility="STR"
+        onAtkAbilityChange={vi.fn()}
+        saveDC={12} // Stale (should be 14)
+        onSaveDCChange={vi.fn()}
+        dcAutoComputed={true}
+        dcAbilities={['STR']}
+        onDcAbilitiesChange={vi.fn()}
+        damage={undefined}
+        onDamageChange={vi.fn()}
+        saveType={undefined}
+        onSaveTypeChange={vi.fn()}
+        description=""
+        onDescriptionChange={vi.fn()}
+        descriptionRows={2}
+        abilityScores={customScores}
+        proficiencyBonus={2}
+      />
+    );
+
+    // Stale indicators should be present on both buttons
+    const staleIndicators = screen.getAllByTestId('stale-indicator');
+    expect(staleIndicators.length).toBe(2);
+
+    // Rerender with matching values (attackBonus = 6, saveDC = 14)
+    rerender(
+      <NpcCombatActionFields
+        idPrefix="test-stale-ui"
+        name="Claw"
+        onNameChange={vi.fn()}
+        namePlaceholder="Action name"
+        attackBonus={6}
+        onAttackBonusChange={vi.fn()}
+        atkAutoComputed={true}
+        atkAbility="STR"
+        onAtkAbilityChange={vi.fn()}
+        saveDC={14}
+        onSaveDCChange={vi.fn()}
+        dcAutoComputed={true}
+        dcAbilities={['STR']}
+        onDcAbilitiesChange={vi.fn()}
+        damage={undefined}
+        onDamageChange={vi.fn()}
+        saveType={undefined}
+        onSaveTypeChange={vi.fn()}
+        description=""
+        onDescriptionChange={vi.fn()}
+        descriptionRows={2}
+        abilityScores={customScores}
+        proficiencyBonus={2}
+      />
+    );
+
+    // Stale indicators should no longer be present
+    expect(screen.queryByTestId('stale-indicator')).not.toBeInTheDocument();
   });
 });

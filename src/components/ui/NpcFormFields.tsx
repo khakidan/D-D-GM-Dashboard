@@ -42,6 +42,7 @@ export interface NpcFormData {
   reactions?: string;
   bonusActions?: string;
   legendaryActionsList?: string;
+  autoRefreshMechanics?: boolean;
 }
 
 export const DEFAULT_NPC_FORM_DATA: NpcFormData = {
@@ -65,6 +66,7 @@ export const DEFAULT_NPC_FORM_DATA: NpcFormData = {
   reactions: '[]',
   bonusActions: '[]',
   legendaryActionsList: '[]',
+  autoRefreshMechanics: false,
 };
 
 

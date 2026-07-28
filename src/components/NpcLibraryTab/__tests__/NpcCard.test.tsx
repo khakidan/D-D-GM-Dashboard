@@ -5,6 +5,15 @@ import { NpcCard } from '../NpcCard';
 import { NPC } from '../../../types';
 import { AbilityScores, proficiencyBonusFromCR } from '../../../lib/abilityScores';
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { toast } from 'sonner';
+
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), {
+    warning: vi.fn(),
+    error: vi.fn(),
+    success: vi.fn(),
+  }),
+}));
 
 describe('NpcCard', () => {
   afterEach(() => cleanup());
@@ -579,6 +588,155 @@ describe('NpcCard', () => {
     expect(dmgInput).toBeInTheDocument();
     expect(dmgInput).toBeDisabled();
     expect(dmgInput.value).toBe('14d8 cold & 10d8 poison & 6d8 necrotic');
+  });
+
+  it('fires toast when ability score change causes stale auto-computed values in NpcCard', () => {
+    vi.mocked(toast).mockClear();
+    const mockNpc: NPC = {
+      ...mockNpcForMemoTests,
+      id: 'npc-stale-1',
+      challengeRating: '1', // +2 prof bonus
+      abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+      actions: JSON.stringify([{
+        name: 'Claw',
+        description: 'Atk',
+        atkAbility: 'STR',
+        atkAutoComputed: true,
+        attackBonus: 2,
+      }]),
+    };
+
+    let updatedNpcUpdates: any = null;
+    const onUpdate = (updates: Partial<NPC>) => { updatedNpcUpdates = updates; };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
+    const strInput = screen.getByLabelText('STR score');
+    fireEvent.change(strInput, { target: { value: '16' } }); // +3 mod -> new atkBonus = 5 (stale!)
+    fireEvent.blur(strInput);
+
+    expect(toast).toHaveBeenCalledWith(
+      '1 action value is out of date.',
+      expect.objectContaining({
+        action: expect.objectContaining({
+          label: 'Recalculate',
+          onClick: expect.any(Function),
+        }),
+      })
+    );
+
+    const toastCall = vi.mocked(toast).mock.calls.find(call => call[0] === '1 action value is out of date.');
+    const actionObj = (toastCall?.[1] as any)?.action;
+    actionObj.onClick();
+
+    expect(updatedNpcUpdates).not.toBeNull();
+    const recalculatedActions = JSON.parse(updatedNpcUpdates.actions);
+    expect(recalculatedActions[0].attackBonus).toBe(5);
+  });
+
+  it('fires toast when CR change causes stale auto-computed values in NpcCard', () => {
+    vi.mocked(toast).mockClear();
+    const mockNpc: NPC = {
+      ...mockNpcForMemoTests,
+      id: 'npc-stale-2',
+      challengeRating: '1', // +2 prof bonus
+      abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+      actions: JSON.stringify([{
+        name: 'Claw',
+        description: 'Atk',
+        atkAbility: 'STR',
+        atkAutoComputed: true,
+        attackBonus: 2,
+      }]),
+    };
+
+    let updatedNpcUpdates: any = null;
+    const onUpdate = (updates: Partial<NPC>) => { updatedNpcUpdates = updates; };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
+    const crInput = screen.getByDisplayValue('1');
+    fireEvent.change(crInput, { target: { value: '5' } }); // CR 5 -> +3 prof bonus -> new atkBonus = 3 (stale!)
+    fireEvent.blur(crInput);
+
+    expect(toast).toHaveBeenCalledWith(
+      '1 action value is out of date.',
+      expect.objectContaining({
+        action: expect.objectContaining({
+          label: 'Recalculate',
+          onClick: expect.any(Function),
+        }),
+      })
+    );
+
+    const toastCall = vi.mocked(toast).mock.calls.find(call => call[0] === '1 action value is out of date.');
+    const actionObj = (toastCall?.[1] as any)?.action;
+    actionObj.onClick();
+
+    expect(updatedNpcUpdates).not.toBeNull();
+    const recalculatedActions = JSON.parse(updatedNpcUpdates.actions);
+    expect(recalculatedActions[0].attackBonus).toBe(3);
+  });
+
+  it('skips toast and auto-recalculates immediately in single onUpdate call when autoRefreshMechanics is true in NpcCard', () => {
+    vi.mocked(toast).mockClear();
+    const mockNpc: NPC = {
+      ...mockNpcForMemoTests,
+      id: 'npc-auto-1',
+      challengeRating: '1', // +2 prof bonus
+      autoRefreshMechanics: true,
+      abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+      actions: JSON.stringify([{
+        name: 'Claw',
+        description: 'Atk',
+        atkAbility: 'STR',
+        atkAutoComputed: true,
+        attackBonus: 2,
+      }]),
+    };
+
+    let updatedNpcUpdates: any = null;
+    const onUpdate = (updates: Partial<NPC>) => { updatedNpcUpdates = updates; };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
+    const strInput = screen.getByLabelText('STR score');
+    fireEvent.change(strInput, { target: { value: '16' } }); // +3 mod -> new atkBonus = 5
+    fireEvent.blur(strInput);
+
+    expect(toast).not.toHaveBeenCalled();
+
+    expect(updatedNpcUpdates).not.toBeNull();
+    expect(updatedNpcUpdates.abilityScores).toBeDefined();
+    const recalculatedActions = JSON.parse(updatedNpcUpdates.actions);
+    expect(recalculatedActions[0].attackBonus).toBe(5);
   });
 });
 

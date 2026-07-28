@@ -2,7 +2,7 @@ import React from 'react';
 import { NpcSimpleFieldEditor } from './NpcSimpleFieldEditor';
 import { NpcCombatActionFields } from './NpcCombatActionFields';
 import { DEFAULT_ABILITY_SCORES, AbilityScores } from '../../lib/abilityScores';
-import { compileDamageComponents } from './DamageComponentsBuilder';
+import { compileDamageComponents } from '../../lib/automation';
 import type { 
   NpcTrait, 
   NpcAction, 
@@ -31,12 +31,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         recharge={item.recharge}
         onRechargeChange={val => onChange({ ...item, recharge: val })}
         attackBonus={item.attackBonus}
-        onAttackBonusChange={val => onChange({ ...item, attackBonus: val })}
+        onAttackBonusChange={(val, isAuto) => onChange({ ...item, attackBonus: val, ...(isAuto !== undefined && { atkAutoComputed: isAuto }) })}
         damage={item.damage}
         onDamageChange={val => onChange({ ...item, damage: val })}
         damagePlaceholder="2d8+5 fire"
         saveDC={item.saveDC}
-        onSaveDCChange={val => onChange({ ...item, saveDC: val })}
+        onSaveDCChange={(val, isAuto) => onChange({ ...item, saveDC: val, ...(isAuto !== undefined && { dcAutoComputed: isAuto }) })}
         saveType={item.saveType}
         onSaveTypeChange={val => onChange({ ...item, saveType: val })}
         rangeValue={item.range}
@@ -48,12 +48,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
+        dcAutoComputed={item.dcAutoComputed}
         atkAbility={item.atkAbility}
         onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
+        atkAutoComputed={item.atkAutoComputed}
         damageComponents={item.damageComponents}
-        onDamageComponentsChange={val => onChange({ 
-          ...item, 
-          damageComponents: val,
+        onDamageComponentsChange={val => onChange({ ...item, damageComponents: val,
           damage: val ? compileDamageComponents(val) : item.damage
         })}
       />
@@ -68,12 +68,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         recharge={item.recharge}
         onRechargeChange={val => onChange({ ...item, recharge: val })}
         attackBonus={item.attackBonus}
-        onAttackBonusChange={val => onChange({ ...item, attackBonus: val })}
+        onAttackBonusChange={(val, isAuto) => onChange({ ...item, attackBonus: val, ...(isAuto !== undefined && { atkAutoComputed: isAuto }) })}
         damage={item.damage}
         onDamageChange={val => onChange({ ...item, damage: val })}
         damagePlaceholder="2d6"
         saveDC={item.saveDC}
-        onSaveDCChange={val => onChange({ ...item, saveDC: val })}
+        onSaveDCChange={(val, isAuto) => onChange({ ...item, saveDC: val, ...(isAuto !== undefined && { dcAutoComputed: isAuto }) })}
         saveType={item.saveType}
         onSaveTypeChange={val => onChange({ ...item, saveType: val })}
         rangeValue={item.range}
@@ -85,12 +85,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
+        dcAutoComputed={item.dcAutoComputed}
         atkAbility={item.atkAbility}
         onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
+        atkAutoComputed={item.atkAutoComputed}
         damageComponents={item.damageComponents}
-        onDamageComponentsChange={val => onChange({ 
-          ...item, 
-          damageComponents: val,
+        onDamageComponentsChange={val => onChange({ ...item, damageComponents: val,
           damage: val ? compileDamageComponents(val) : item.damage
         })}
       />
@@ -105,12 +105,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         recharge={item.recharge}
         onRechargeChange={val => onChange({ ...item, recharge: val })}
         attackBonus={item.attackBonus}
-        onAttackBonusChange={val => onChange({ ...item, attackBonus: val })}
+        onAttackBonusChange={(val, isAuto) => onChange({ ...item, attackBonus: val, ...(isAuto !== undefined && { atkAutoComputed: isAuto }) })}
         damage={item.damage}
         onDamageChange={val => onChange({ ...item, damage: val })}
         damagePlaceholder="1d4+3"
         saveDC={item.saveDC}
-        onSaveDCChange={val => onChange({ ...item, saveDC: val })}
+        onSaveDCChange={(val, isAuto) => onChange({ ...item, saveDC: val, ...(isAuto !== undefined && { dcAutoComputed: isAuto }) })}
         saveType={item.saveType}
         onSaveTypeChange={val => onChange({ ...item, saveType: val })}
         rangeValue={item.range}
@@ -122,12 +122,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
+        dcAutoComputed={item.dcAutoComputed}
         atkAbility={item.atkAbility}
         onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
+        atkAutoComputed={item.atkAutoComputed}
         damageComponents={item.damageComponents}
-        onDamageComponentsChange={val => onChange({ 
-          ...item, 
-          damageComponents: val,
+        onDamageComponentsChange={val => onChange({ ...item, damageComponents: val,
           damage: val ? compileDamageComponents(val) : item.damage
         })}
       />
@@ -142,12 +142,12 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         cost={item.cost}
         onCostChange={val => onChange({ ...item, cost: val })}
         attackBonus={item.attackBonus}
-        onAttackBonusChange={val => onChange({ ...item, attackBonus: val })}
+        onAttackBonusChange={(val, isAuto) => onChange({ ...item, attackBonus: val, ...(isAuto !== undefined && { atkAutoComputed: isAuto }) })}
         damage={item.damage}
         onDamageChange={val => onChange({ ...item, damage: val })}
         damagePlaceholder="2d8+5"
         saveDC={item.saveDC}
-        onSaveDCChange={val => onChange({ ...item, saveDC: val })}
+        onSaveDCChange={(val, isAuto) => onChange({ ...item, saveDC: val, ...(isAuto !== undefined && { dcAutoComputed: isAuto }) })}
         saveType={item.saveType}
         onSaveTypeChange={val => onChange({ ...item, saveType: val })}
         description={item.description}

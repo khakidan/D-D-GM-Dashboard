@@ -4,7 +4,9 @@ import { AbilityName } from '../../lib/abilityFundamentals';
 import { AbilityScores, calculateModifier } from '../../lib/abilityScores';
 import { AbilitySelectChips } from './AbilitySelectChips';
 import { DamageComponent } from '../../types';
-import { DamageComponentsBuilder, compileDamageComponents } from './DamageComponentsBuilder';
+import { DamageComponentsBuilder } from './DamageComponentsBuilder';
+import { compileDamageComponents } from '../../lib/automation';
+import { cn } from '../../lib/utils';
 
 export interface NpcCombatActionFieldsProps {
   idPrefix: string;
@@ -13,12 +15,12 @@ export interface NpcCombatActionFieldsProps {
   namePlaceholder: string;
   secondaryField?: React.ReactNode;
   attackBonus: number | undefined;
-  onAttackBonusChange: (val: number | undefined) => void;
+  onAttackBonusChange: (val: number | undefined, isAutoComputed?: boolean) => void;
   damage: string | undefined;
   onDamageChange: (val: string | undefined) => void;
   damagePlaceholder?: string;
   saveDC: number | undefined;
-  onSaveDCChange: (val: number | undefined) => void;
+  onSaveDCChange: (val: number | undefined, isAutoComputed?: boolean) => void;
   saveType: string | undefined;
   onSaveTypeChange: (val: string | undefined) => void;
   range?: React.ReactNode;
@@ -31,10 +33,12 @@ export interface NpcCombatActionFieldsProps {
   proficiencyBonus: number;
   dcAbilities?: AbilityName[];
   onDcAbilitiesChange?: (val: AbilityName[]) => void;
+  dcAutoComputed?: boolean;
 
   // New props for Atk Automation
   atkAbility?: AbilityName;
   onAtkAbilityChange?: (val: AbilityName | undefined) => void;
+  atkAutoComputed?: boolean;
 
   // New props for Dmg Automation
   damageComponents?: DamageComponent[];
@@ -73,9 +77,11 @@ export function NpcCombatActionFields({
   proficiencyBonus,
   dcAbilities,
   onDcAbilitiesChange,
+  dcAutoComputed,
 
   atkAbility,
   onAtkAbilityChange,
+  atkAutoComputed,
 
   damageComponents,
   onDamageComponentsChange,
@@ -87,7 +93,7 @@ export function NpcCombatActionFields({
   cost,
   onCostChange,
 }: NpcCombatActionFieldsProps) {
-  const inputClass = "w-full bg-white border border-[#e2e8f0] rounded-xl outline-none transition-all font-serif italic text-sm py-1 px-2 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]";
+  const inputClass = "w-full bg-[#ffffff] border border-[#e2e8f0] rounded-xl outline-none transition-all font-serif italic text-sm py-1 px-2 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb]";
   
   const [isStructuredMode, setIsStructuredMode] = React.useState(!!damageComponents && damageComponents.length > 0);
 
@@ -96,6 +102,19 @@ export function NpcCombatActionFields({
       setIsStructuredMode(true);
     }
   }, [damageComponents]);
+
+  const isDcStale = Boolean(
+    dcAutoComputed &&
+    dcAbilities &&
+    dcAbilities.length > 0 &&
+    saveDC !== (8 + proficiencyBonus + dcAbilities.reduce((sum, a) => sum + calculateModifier(abilityScores[a]), 0))
+  );
+
+  const isAtkStale = Boolean(
+    atkAutoComputed &&
+    atkAbility !== undefined &&
+    attackBonus !== (proficiencyBonus + calculateModifier(abilityScores[atkAbility]))
+  );
   
   const handleAutoFillDC = () => {
     if (!dcAbilities || dcAbilities.length === 0) return;
@@ -105,14 +124,14 @@ export function NpcCombatActionFields({
     }, 0);
     
     const newDC = 8 + proficiencyBonus + modifierSum;
-    onSaveDCChange(newDC);
+    onSaveDCChange(newDC, true);
   };
 
   const handleAutoFillAtk = () => {
     if (atkAbility === undefined) return;
     const modifier = calculateModifier(abilityScores[atkAbility]);
     const newAtk = proficiencyBonus + modifier;
-    onAttackBonusChange(newAtk);
+    if (onAttackBonusChange) onAttackBonusChange(newAtk, true);
   };
 
   return (
@@ -174,7 +193,7 @@ export function NpcCombatActionFields({
               value={attackBonus !== undefined ? attackBonus : ''}
               onChange={e => {
                 const val = e.target.value;
-                onAttackBonusChange(val !== '' ? parseInt(val) : undefined);
+                if (onAttackBonusChange) onAttackBonusChange(val !== '' ? parseInt(val) : undefined, false);
               }}
               className={inputClass}
               placeholder="+N"
@@ -184,10 +203,20 @@ export function NpcCombatActionFields({
                 type="button"
                 onClick={handleAutoFillAtk}
                 disabled={atkAbility === undefined}
-                className="px-2 bg-[#f9f8ff] border border-[#e2e8f0] rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50"
+                className={cn(
+                  "px-2 bg-[#f9f8ff] border rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50 flex items-center gap-1",
+                  isAtkStale ? "border-[#f59e0b] text-[#b45309] bg-[#fffbeb]" : "border-[#e2e8f0]"
+                )}
                 aria-label="Auto-fill Atk"
               >
                 Auto
+                {isAtkStale && (
+                  <span
+                    data-testid="stale-indicator"
+                    className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
+                    title="Value is stale — click Auto to refresh"
+                  />
+                )}
               </button>
             )}
           </div>
@@ -234,7 +263,7 @@ export function NpcCombatActionFields({
               value={saveDC !== undefined ? saveDC : ''}
               onChange={e => {
                 const val = e.target.value;
-                onSaveDCChange(val !== '' ? parseInt(val) : undefined);
+                onSaveDCChange(val !== '' ? parseInt(val) : undefined, false);
               }}
               className={inputClass}
               placeholder="DC"
@@ -244,10 +273,20 @@ export function NpcCombatActionFields({
                 type="button"
                 onClick={handleAutoFillDC}
                 disabled={!dcAbilities || dcAbilities.length === 0}
-                className="px-2 bg-[#f9f8ff] border border-[#e2e8f0] rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50"
+                className={cn(
+                  "px-2 bg-[#f9f8ff] border rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50 flex items-center gap-1",
+                  isDcStale ? "border-[#f59e0b] text-[#b45309] bg-[#fffbeb]" : "border-[#e2e8f0]"
+                )}
                 aria-label="Auto-fill DC"
               >
                 Auto
+                {isDcStale && (
+                  <span
+                    data-testid="stale-indicator"
+                    className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
+                    title="Value is stale — click Auto to refresh"
+                  />
+                )}
               </button>
             )}
           </div>

@@ -6,7 +6,9 @@ import {
   proficiencyBonusFromCR,
   parseProficiencies,
   serializeProficiencies,
+  parseAbilityScores,
 } from '../../lib/abilityScores';
+import { recalculateAutomatedValues } from '../../lib/automation';
 import { DialogShell } from '../ui/DialogShell';
 import { Button } from '../ui/Button';
 
@@ -35,6 +37,33 @@ export function NewNpcDialog({ isOpen, onClose, onConfirm }: NewNpcDialogProps) 
     // ... basic validation logic
     if (formData.name.trim() === '') return;
 
+    const profBonus = proficiencyBonusFromCR(formData.challengeRating);
+    const parsedScores = parseAbilityScores(formData.abilityScores);
+
+    const parseActions = (str?: string) => {
+      try {
+        return JSON.parse(str || '[]');
+      } catch {
+        return [];
+      }
+    };
+
+    const recomputedActions = recalculateAutomatedValues(
+      parseActions(formData.actions),
+      parsedScores,
+      profBonus
+    );
+    const recomputedReactions = recalculateAutomatedValues(
+      parseActions(formData.reactions),
+      parsedScores,
+      profBonus
+    );
+    const recomputedBonusActions = recalculateAutomatedValues(
+      parseActions(formData.bonusActions),
+      parsedScores,
+      profBonus
+    );
+
     onConfirm({
       name: formData.name,
       ac: Number(formData.ac),
@@ -56,10 +85,7 @@ export function NewNpcDialog({ isOpen, onClose, onConfirm }: NewNpcDialogProps) 
           const parsed = parseProficiencies(
             formData.proficiencies
           );
-          parsed.proficiencyBonus =
-            proficiencyBonusFromCR(
-              formData.challengeRating
-            );
+          parsed.proficiencyBonus = profBonus;
           return serializeProficiencies(parsed);
         } catch {
           return formData.proficiencies;
@@ -69,9 +95,11 @@ export function NewNpcDialog({ isOpen, onClose, onConfirm }: NewNpcDialogProps) 
       senses: formData.senses,
       languages: formData.languages,
       challengeRating: formData.challengeRating,
+      autoRefreshMechanics: formData.autoRefreshMechanics,
       traits: formData.traits || '[]',
-      actions: formData.actions || '[]',
-      reactions: formData.reactions || '[]',
+      actions: JSON.stringify(recomputedActions),
+      reactions: JSON.stringify(recomputedReactions),
+      bonusActions: JSON.stringify(recomputedBonusActions),
       legendaryActionsList: formData.legendaryActionsList || '[]',
     });
   };

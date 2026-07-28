@@ -21,6 +21,8 @@ import { NpcLegendarySection } from './NpcLegendarySection';
 import { StatBlock } from '../ui/StatBlock';
 import { SpellcastingStatsRow } from '../ui/SpellcastingStatsRow';
 import { serializeSpellcastingAbility } from '../../lib/spellcasting';
+import { toast } from 'sonner';
+import { findStaleAutomatedValues, recalculateAutomatedValues } from '../../lib/automation';
 import { parseAbilityScores, parseProficiencies, serializeAbilityScores, serializeProficiencies, proficiencyBonusFromCR } from '../../lib/abilityScores';
 
 export interface NpcCardProps {
@@ -170,7 +172,38 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
                 type="text"
                 value={npc.challengeRating || ''}
                 onFocus={(e) => (e.target as HTMLInputElement).select()}
-                onChange={(v) => onUpdate({ challengeRating: v as string })}
+                onChange={(v) => {
+                  const crVal = v as string;
+                  const newProfBonus = proficiencyBonusFromCR(crVal);
+                  if (npc.autoRefreshMechanics) {
+                    onUpdate({
+                      challengeRating: crVal,
+                      actions: JSON.stringify(recalculateAutomatedValues(actions, parsedScores, newProfBonus)),
+                      reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedScores, newProfBonus)),
+                      bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedScores, newProfBonus)),
+                    });
+                  } else {
+                    onUpdate({ challengeRating: crVal });
+                    const staleCount =
+                      findStaleAutomatedValues(actions, parsedScores, newProfBonus) +
+                      findStaleAutomatedValues(reactions, parsedScores, newProfBonus) +
+                      findStaleAutomatedValues(bonusActions, parsedScores, newProfBonus);
+                    if (staleCount > 0) {
+                      toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
+                        action: {
+                          label: 'Recalculate',
+                          onClick: () => {
+                            onUpdate({
+                              actions: JSON.stringify(recalculateAutomatedValues(actions, parsedScores, newProfBonus)),
+                              reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedScores, newProfBonus)),
+                              bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedScores, newProfBonus)),
+                            });
+                          },
+                        },
+                      });
+                    }
+                  }
+                }}
                 className="text-lg font-bold text-[#0f172a] w-full text-center bg-transparent border-none focus:ring-0 p-0 disabled:opacity-50"
                 placeholder="—"
                 disabled={isSyncing}
@@ -183,10 +216,39 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
             proficiencies={parsedProfs}
             readOnly={false}
             onChange={(scores, profs) => {
-              onUpdate({
-                abilityScores: serializeAbilityScores(scores),
-                proficiencies: serializeProficiencies(profs),
-              });
+              const profBonus = proficiencyBonusFromCR(npc.challengeRating);
+              if (npc.autoRefreshMechanics) {
+                onUpdate({
+                  abilityScores: serializeAbilityScores(scores),
+                  proficiencies: serializeProficiencies(profs),
+                  actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
+                  reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
+                  bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
+                });
+              } else {
+                onUpdate({
+                  abilityScores: serializeAbilityScores(scores),
+                  proficiencies: serializeProficiencies(profs),
+                });
+                const staleCount =
+                  findStaleAutomatedValues(actions, scores, profBonus) +
+                  findStaleAutomatedValues(reactions, scores, profBonus) +
+                  findStaleAutomatedValues(bonusActions, scores, profBonus);
+                if (staleCount > 0) {
+                  toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
+                    action: {
+                      label: 'Recalculate',
+                      onClick: () => {
+                        onUpdate({
+                          actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
+                          reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
+                          bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
+                        });
+                      },
+                    },
+                  });
+                }
+              }
             }}
           />
 
@@ -242,6 +304,19 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
           <LabeledField label="Notes">
             <DebouncedTextarea value={npc.notes || ''} onChange={(v) => onUpdate({ notes: v as string })} placeholder="Special abilities or description..." rows={3} className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all resize-none placeholder:text-[#cccbcb] disabled:opacity-50 leading-relaxed font-sans" disabled={isSyncing} />
           </LabeledField>
+
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={npc.autoRefreshMechanics || false}
+              onChange={(e) => onUpdate({ autoRefreshMechanics: e.target.checked })}
+              className="rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb] w-4 h-4"
+              disabled={isSyncing}
+            />
+            <span className="text-sm font-medium text-[#0f172a]">
+              Auto-refresh action mechanics
+            </span>
+          </label>
 
           <div className="space-y-4 pt-4 border-t border-[#e2e8f0]/40">
             <NpcListEditor<NpcTrait>

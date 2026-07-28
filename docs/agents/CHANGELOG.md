@@ -2,6 +2,24 @@
 
 ---
 
+## "Stale Auto-Calculated Value" Workflow for Save DC / Attack Bonus / Damage Bonus Automation (Completed, 5 stages)
+
+PCs and NPCs no longer silently carry outdated auto-calculated mechanics after their ability scores, level, or CR change. Every Auto-fill value (Save DC, Attack Bonus, per-row Damage Bonus) now tracks its own provenance, can detect when it's gone stale, and offers both a manual and an opt-in automatic path back to correctness — all without ever touching a value the GM typed by hand.
+
+**Design principle (locked from the outset)**: no silent auto-anything by default. A value is only ever recomputed when the GM explicitly clicks Auto, explicitly clicks "Recalculate" on a toast, or has explicitly opted a specific character/NPC into silent auto-refresh. Hand-typed values are never inspected, flagged, or overwritten, regardless of any of the above.
+
+**Stage 1 — Provenance tracking**: new `dcAutoComputed?`/`atkAutoComputed?` booleans on `NpcAction`/`NpcReaction`, and `bonusAutoComputed?` per-row on `DamageComponent`. Set to `true` only inside the Auto-fill click handlers; set to `false` the instant the GM types into the corresponding raw input directly — this is what distinguishes "auto-generated, possibly stale" from "deliberately hand-typed to account for a magic item."
+
+**Stage 2 — Atomic callback wiring + a real race-condition fix**: wired the new provenance callbacks through `npcListFieldRenderers.tsx`. Along the way, discovered and fixed a genuine bug this feature introduced: `handleAutoFillDC`/`handleAutoFillAtk` originally fired the value-change and the provenance-flag-change as two sequential callbacks in the same click handler, which could race against React's closure-over-stale-`item` behavior and silently drop one of the two updates. Fixed by consolidating `onSaveDCChange`/`onAttackBonusChange` into a single call accepting an optional second `isAutoComputed` argument, so both the value and its provenance are always written atomically in one state transition — matching the pattern `DamageComponentsBuilder.tsx`'s `handleAutoFillBonus` already used safely.
+
+**Stage 3 — Pure staleness detection + persistent per-field badges**: new `src/lib/automation.ts` housing `findStaleAutomatedValues()` and `recalculateAutomatedValues()` — pure functions, no stored snapshots, staleness is always computed live by comparing the stored value against what Auto would produce right now. `compileDamageComponents()` was relocated here from `DamageComponentsBuilder.tsx` to fix a real layer-dependency violation (a `lib` file must never import from `components/ui`). A small persistent stale indicator (dot + amber border) now appears on the Auto button itself whenever `xAutoComputed: true` and the stored value no longer matches the live formula, resolved either by re-clicking Auto or by hand-editing (which clears provenance instead).
+
+**Stage 4 — Toast + bulk recalculate**: committing an ability-score, level, or CR change on an existing PC/NPC now fires a `sonner` toast with a "Recalculate" action whenever that change created ≥1 stale value (silent otherwise). Clicking Recalculate runs `recalculateAutomatedValues()` across Actions/Reactions/Bonus Actions (not Legendary Actions, matching the established precedent that Legendary Actions never get Auto-fill UI) and writes all three arrays back in a single `onUpdate` call.
+
+**Stage 5 — Opt-in silent auto-refresh + creation-time consistency**: new `autoRefreshMechanics?: boolean` on `Character`/`NPC` (checkbox near "GM-Controlled Character" in `CharacterCardExpanded.tsx`; below Notes in `NpcCard.tsx`). When enabled, ability-score/level/CR commits skip the toast entirely and silently recompute in the same single `onUpdate` call as the underlying stat change — hand-typed fields are still never touched. Separately, both creation dialogs (`NewPlayerDialog.tsx` and `NewNpcDialog.tsx`) now run
+
+---
+
 ## Attack Bonus Automation (Completed, 3 stages)
 
 PCs and NPCs can now select a single ability score as the basis for an Action/Reaction/Bonus Action's Attack Bonus, and auto-fill the calculated value (proficiency bonus + ability modifier) with one click — the field remains fully manually editable at all times.

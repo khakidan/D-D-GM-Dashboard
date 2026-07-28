@@ -16,6 +16,7 @@ import { LabeledField } from '../ui/LabeledField';
 import { StatTile } from '../ui/StatTile';
 import { PipTracker } from '../ui/PipTracker';
 import { parseAbilityScores, parseProficiencies, serializeAbilityScores, serializeProficiencies, proficiencyBonusFromLevel } from '../../lib/abilityScores';
+import { findStaleAutomatedValues, recalculateAutomatedValues } from '../../lib/automation';
 import { SpellcastingStatsRow } from '../ui/SpellcastingStatsRow';
 import { serializeSpellcastingAbility } from '../../lib/spellcasting';
 import { Button } from '../ui/Button';
@@ -162,7 +163,37 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
         <StatTile label="Level" className="group/lvl">
           <CardNumberInput
             value={character.level || 1}
-            onChange={v => onUpdate({ level: v })}
+            onChange={v => {
+              const newProfBonus = proficiencyBonusFromLevel(v);
+              if (character.autoRefreshMechanics) {
+                onUpdate({
+                  level: v,
+                  actions: JSON.stringify(recalculateAutomatedValues(actions, parsedAbilityScores, newProfBonus)),
+                  reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedAbilityScores, newProfBonus)),
+                  bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedAbilityScores, newProfBonus)),
+                });
+              } else {
+                onUpdate({ level: v });
+                const staleCount =
+                  findStaleAutomatedValues(actions, parsedAbilityScores, newProfBonus) +
+                  findStaleAutomatedValues(reactions, parsedAbilityScores, newProfBonus) +
+                  findStaleAutomatedValues(bonusActions, parsedAbilityScores, newProfBonus);
+                if (staleCount > 0) {
+                  toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
+                    action: {
+                      label: 'Recalculate',
+                      onClick: () => {
+                        onUpdate({
+                          actions: JSON.stringify(recalculateAutomatedValues(actions, parsedAbilityScores, newProfBonus)),
+                          reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedAbilityScores, newProfBonus)),
+                          bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedAbilityScores, newProfBonus)),
+                        });
+                      },
+                    },
+                  });
+                }
+              }
+            }}
             fallback={1}
             min={1}
             max={20}
@@ -179,10 +210,39 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
         characterLevel={character.level}
         readOnly={false}
         onChange={(scores, profs) => {
-          onUpdate({
-            abilityScores: serializeAbilityScores(scores),
-            proficiencies: serializeProficiencies(profs),
-          });
+          const profBonus = proficiencyBonusFromLevel(character.level);
+          if (character.autoRefreshMechanics) {
+            onUpdate({
+              abilityScores: serializeAbilityScores(scores),
+              proficiencies: serializeProficiencies(profs),
+              actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
+              reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
+              bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
+            });
+          } else {
+            onUpdate({
+              abilityScores: serializeAbilityScores(scores),
+              proficiencies: serializeProficiencies(profs),
+            });
+            const staleCount =
+              findStaleAutomatedValues(actions, scores, profBonus) +
+              findStaleAutomatedValues(reactions, scores, profBonus) +
+              findStaleAutomatedValues(bonusActions, scores, profBonus);
+            if (staleCount > 0) {
+              toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
+                action: {
+                  label: 'Recalculate',
+                  onClick: () => {
+                    onUpdate({
+                      actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
+                      reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
+                      bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
+                    });
+                  },
+                },
+              });
+            }
+          }
         }}
       />
 
@@ -321,6 +381,19 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
       />
 
       <div className="space-y-4">
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={character.autoRefreshMechanics || false}
+            onChange={(e) => onUpdate({ autoRefreshMechanics: e.target.checked })}
+            className="rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb] w-4 h-4"
+            disabled={isSyncing}
+          />
+          <span className="text-sm font-medium text-[#0f172a]">
+            Auto-refresh action mechanics
+          </span>
+        </label>
+
         <label className="flex items-center gap-2 cursor-pointer select-none">
           <input
             type="checkbox"

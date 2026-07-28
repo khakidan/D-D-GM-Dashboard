@@ -14,6 +14,7 @@ import {
   getPassiveScore,
   proficiencyBonusFromLevel,
 } from '../../lib/abilityScores';
+import { recalculateAutomatedValues } from '../../lib/automation';
 
 import {
   ResourcePool,
@@ -65,6 +66,7 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
     proficiencies: DEFAULT_PROFICIENCIES,
     resourcePools: [] as ResourcePool[],
     gmControlled: false,
+    autoRefreshMechanics: false,
     traits: '[]',
     actions: '[]',
     reactions: '[]',
@@ -144,6 +146,15 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
     e.preventDefault();
     if (!isFormValid) return;
 
+    const levelVal = typeof formData.level === 'number'
+      ? formData.level
+      : (parseInt(String(formData.level), 10) || 1);
+    const profBonus = proficiencyBonusFromLevel(levelVal);
+
+    const recomputedActions = recalculateAutomatedValues(actions, formData.abilityScores, profBonus);
+    const recomputedReactions = recalculateAutomatedValues(reactions, formData.abilityScores, profBonus);
+    const recomputedBonusActions = recalculateAutomatedValues(bonusActions, formData.abilityScores, profBonus);
+
     onConfirm({
       playerName: formData.playerName,
       characterName: formData.characterName,
@@ -170,21 +181,19 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
       hitDiceUsed: '{}',
       abilityScores: serializeAbilityScores(formData.abilityScores),
       proficiencies: (() => {
-        const level = typeof formData.level === 'number'
-          ? formData.level
-          : (parseInt(String(formData.level), 10) || 1);
         const parsed = {
           ...formData.proficiencies,
-          proficiencyBonus: proficiencyBonusFromLevel(level),
+          proficiencyBonus: profBonus,
         };
         return serializeProficiencies(parsed);
       })(),
       resourcePools: serializeResourcePools(formData.resourcePools),
       gmControlled: formData.gmControlled,
+      autoRefreshMechanics: formData.autoRefreshMechanics,
       traits: formData.traits,
-      actions: formData.actions,
-      reactions: formData.reactions,
-      bonusActions: formData.bonusActions,
+      actions: JSON.stringify(recomputedActions),
+      reactions: JSON.stringify(recomputedReactions),
+      bonusActions: JSON.stringify(recomputedBonusActions),
     });
   };
 

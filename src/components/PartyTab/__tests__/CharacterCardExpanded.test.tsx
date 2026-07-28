@@ -2,7 +2,16 @@ import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { toast } from 'sonner';
 import { CharacterCardExpanded } from '../CharacterCardExpanded';
+
+vi.mock('sonner', () => ({
+  toast: Object.assign(vi.fn(), {
+    warning: vi.fn(),
+    error: vi.fn(),
+    success: vi.fn(),
+  }),
+}));
 
 describe('CharacterCardExpanded', () => {
   afterEach(() => {
@@ -162,8 +171,8 @@ describe('CharacterCardExpanded', () => {
     const autoFillBtn = screen.getByRole('button', { name: /auto-fill dc/i });
     fireEvent.click(autoFillBtn);
 
-    expect(onUpdateMock).toHaveBeenCalledTimes(1);
-    const updatedActions = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
+    expect(onUpdateMock).toHaveBeenCalled();
+    const updatedActions = JSON.parse(onUpdateMock.mock.calls[onUpdateMock.mock.calls.length - 1][0].actions);
     expect(updatedActions[0].saveDC).toBe(16);
   });
 
@@ -194,8 +203,8 @@ describe('CharacterCardExpanded', () => {
     const autoFillBtn = screen.getByRole('button', { name: 'Auto-fill Atk' });
     fireEvent.click(autoFillBtn);
 
-    expect(onUpdateMock).toHaveBeenCalledTimes(1);
-    const updatedActions = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
+    expect(onUpdateMock).toHaveBeenCalled();
+    const updatedActions = JSON.parse(onUpdateMock.mock.calls[onUpdateMock.mock.calls.length - 1][0].actions);
     expect(updatedActions[0].attackBonus).toBe(7);
   });
 
@@ -258,6 +267,170 @@ describe('CharacterCardExpanded', () => {
     expect(onUpdateMock).toHaveBeenCalled();
     updatedActions = JSON.parse(onUpdateMock.mock.calls[onUpdateMock.mock.calls.length - 1][0].actions);
     expect(updatedActions[0].damageComponents[0].bonus).toBe(3); // +3 STR modifier only, no proficiency bonus
+  });
+
+  it('fires toast when ability score change causes stale auto-computed values, and clicking Recalculate recalculates and calls onUpdate', () => {
+    vi.mocked(toast).mockClear();
+    const onUpdateMock = vi.fn();
+    const pcCharacter = {
+      ...defaultCharacter,
+      level: 1, // +2 prof bonus
+      abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+      actions: JSON.stringify([{
+        name: 'Slash',
+        description: 'Attack',
+        atkAbility: 'STR',
+        atkAutoComputed: true,
+        attackBonus: 2, // STR 10 (mod 0) + prof 2 = 2. Currently NOT stale.
+      }]),
+    };
+
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={pcCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // Edit STR score to 14 (mod +2) -> new computed attack bonus = 2 + 2 = 4 (stale!)
+    const strInput = screen.getByLabelText('STR score');
+    fireEvent.change(strInput, { target: { value: '14' } });
+    fireEvent.blur(strInput);
+
+    expect(toast).toHaveBeenCalledWith(
+      '1 action value is out of date.',
+      expect.objectContaining({
+        action: expect.objectContaining({
+          label: 'Recalculate',
+          onClick: expect.any(Function),
+        }),
+      })
+    );
+
+    // Call the Recalculate action's onClick handler
+    const toastCall = vi.mocked(toast).mock.calls.find(call => call[0] === '1 action value is out of date.');
+    const actionObj = (toastCall?.[1] as any)?.action;
+    actionObj.onClick();
+
+    expect(onUpdateMock).toHaveBeenCalled();
+    const lastCall = onUpdateMock.mock.calls[onUpdateMock.mock.calls.length - 1][0];
+    const recalculatedActions = JSON.parse(lastCall.actions);
+    expect(recalculatedActions[0].attackBonus).toBe(4);
+  });
+
+  it('does NOT fire toast when ability score change does not create stale values', () => {
+    vi.mocked(toast).mockClear();
+    const onUpdateMock = vi.fn();
+    const pcCharacter = {
+      ...defaultCharacter,
+      actions: '[]',
+      reactions: '[]',
+      bonusActions: '[]',
+    };
+
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={pcCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    const strInput = screen.getByLabelText('STR score');
+    fireEvent.change(strInput, { target: { value: '14' } });
+    fireEvent.blur(strInput);
+
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it('fires toast when level change causes stale auto-computed values, and clicking Recalculate recalculates', () => {
+    vi.mocked(toast).mockClear();
+    const onUpdateMock = vi.fn();
+    const pcCharacter = {
+      ...defaultCharacter,
+      level: 1, // +2 prof bonus
+      abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+      actions: JSON.stringify([{
+        name: 'Slash',
+        description: 'Attack',
+        atkAbility: 'STR',
+        atkAutoComputed: true,
+        attackBonus: 2, // +2 prof bonus
+      }]),
+    };
+
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={pcCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    const levelInput = screen.getByDisplayValue('1');
+    fireEvent.change(levelInput, { target: { value: '5' } }); // level 5 -> +3 prof bonus -> new atkBonus = 3 (stale!)
+    fireEvent.blur(levelInput);
+
+    expect(toast).toHaveBeenCalledWith(
+      '1 action value is out of date.',
+      expect.objectContaining({
+        action: expect.objectContaining({
+          label: 'Recalculate',
+          onClick: expect.any(Function),
+        }),
+      })
+    );
+
+    const toastCall = vi.mocked(toast).mock.calls.find(call => call[0] === '1 action value is out of date.');
+    const actionObj = (toastCall?.[1] as any)?.action;
+    actionObj.onClick();
+
+    expect(onUpdateMock).toHaveBeenCalled();
+    const lastCall = onUpdateMock.mock.calls[onUpdateMock.mock.calls.length - 1][0];
+    const recalculatedActions = JSON.parse(lastCall.actions);
+    expect(recalculatedActions[0].attackBonus).toBe(3);
+  });
+
+  it('skips toast and auto-recalculates immediately in single onUpdate call when autoRefreshMechanics is true', () => {
+    vi.mocked(toast).mockClear();
+    const onUpdateMock = vi.fn();
+    const pcCharacter = {
+      ...defaultCharacter,
+      level: 1, // +2 prof bonus
+      autoRefreshMechanics: true,
+      abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+      actions: JSON.stringify([{
+        name: 'Slash',
+        description: 'Attack',
+        atkAbility: 'STR',
+        atkAutoComputed: true,
+        attackBonus: 2, // STR 10 (mod 0) + prof 2 = 2.
+      }]),
+    };
+
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={pcCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // Edit STR score to 14 (mod +2) -> new computed attack bonus = 2 + 2 = 4
+    const strInput = screen.getByLabelText('STR score');
+    fireEvent.change(strInput, { target: { value: '14' } });
+    fireEvent.blur(strInput);
+
+    // Should NOT show toast
+    expect(toast).not.toHaveBeenCalled();
+
+    // Should call onUpdate ONCE with both abilityScores/proficiencies and recalculated actions
+    expect(onUpdateMock).toHaveBeenCalledTimes(1);
+    const callArg = onUpdateMock.mock.calls[0][0];
+    expect(callArg.abilityScores).toBeDefined();
+    const recalculatedActions = JSON.parse(callArg.actions);
+    expect(recalculatedActions[0].attackBonus).toBe(4);
   });
 });
 
