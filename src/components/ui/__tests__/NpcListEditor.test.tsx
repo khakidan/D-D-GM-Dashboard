@@ -367,6 +367,26 @@ describe('NpcListEditor', () => {
     expect(screen.getByText('Delete Test Section?')).toBeInTheDocument();
   });
 
+  it('renders per-item header as a flex container with chevron present inside', () => {
+    render(
+      <NpcListEditor<TestItem>
+        title="Test Section"
+        items={[{ id: '1', name: 'Item 1', value: 'Val' }]}
+        defaultExpanded={true}
+        emptyItem={{ id: '', name: '', value: '' }}
+        renderFields={renderFields}
+        onChange={vi.fn()}
+      />
+    );
+    const chevronLabel = screen.getByLabelText('Collapse Item 1');
+    expect(chevronLabel).toBeInTheDocument();
+    
+    const itemName = screen.getByText('Item 1');
+    const headerRow = itemName.closest('.justify-between');
+    expect(headerRow).toBeInTheDocument();
+    expect(headerRow).toHaveClass('flex', 'items-center');
+  });
+
   it('correctly handles formatActionMeta for legacy reaction data and mechanical fields', () => {
     // Legacy reaction has only name and description
     const legacyReaction = {

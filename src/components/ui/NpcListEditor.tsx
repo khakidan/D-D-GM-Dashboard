@@ -124,7 +124,7 @@ export function NpcListEditor<T extends { name: string; _key?: string }>({
                   className="flex items-center justify-between cursor-pointer group/item py-0.5"
                   onClick={() => toggleItemCollapse(itemKey)}
                 >
-                  <div className="flex items-baseline gap-2 flex-1 min-w-0 pr-8">
+                  <div className="flex items-baseline gap-2 flex-1 min-w-0">
                     <span className="font-bold text-[#2563eb] italic text-sm truncate">
                       {displayName}
                     </span>
@@ -140,7 +140,7 @@ export function NpcListEditor<T extends { name: string; _key?: string }>({
                     label={displayName}
                     bordered={false}
                     stopPropagation={true}
-                    className="w-4 h-4 text-[#8d8db9] group-hover/item:text-[#0f172a] transition-colors"
+                    className="text-[#8d8db9] group-hover/item:text-[#0f172a] transition-colors"
                   />
                 </div>
 
