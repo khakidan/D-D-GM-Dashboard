@@ -6,6 +6,7 @@ import { cn } from '../../lib/utils';
 import { MultiTargetActionPanel } from './MultiTargetActionPanel';
 import { ToggleBadge } from '../ui/ToggleBadge';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { Button } from '../ui/Button';
 
 interface CombatHeaderProps {
   encounter?: Encounter;
@@ -75,12 +76,14 @@ export function CombatHeader({
 
           {/* RIGHT SIDE */}
           <div className="flex-shrink-0 self-start h-8 flex items-center">
-            <button 
-              onClick={onBack} 
-              className="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 bg-transparent border-0 cursor-pointer p-0 select-none focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-1 rounded"
+            <Button
+              intent="tertiary"
+              onClick={onBack}
+              className="text-xs text-stone-500 hover:text-stone-700 flex items-center gap-1 p-0 h-auto font-normal"
             >
-              &larr; Back to Encounters
-            </button>
+              <span>&larr;</span>
+              <span>Back to Encounters</span>
+            </Button>
           </div>
         </div>
 
@@ -105,13 +108,14 @@ export function CombatHeader({
           </ToggleBadge>
 
           {/* TOOLS BUTTON */}
-          <button
+          <Button
+            intent="secondary"
             onClick={onOpenTools}
-            className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-500 rounded hover:text-gray-700 hover:border-gray-400 bg-transparent flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-500 rounded hover:text-gray-700 hover:border-gray-400 bg-transparent hover:bg-transparent flex items-center gap-1.5 transition-colors shadow-none"
           >
             <span>Tools</span>
             <span className="text-[9px] bg-stone-100 px-1 py-0.5 rounded border border-gray-200 font-mono">T</span>
-          </button>
+          </Button>
 
           {/* BROADCAST LINK BUTTON */}
           <Link
@@ -125,52 +129,57 @@ export function CombatHeader({
           </Link>
 
           {/* CALL FOR INITIATIVE BUTTON */}
-          <button
+          <Button
+            intent="tertiary"
             onClick={onCallInitiative}
             disabled={initiativeEvent}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-sans font-bold uppercase bg-[#f9f8ff] border border-[#2563eb] text-[#2563eb] hover:bg-[#f0f7ff] disabled:opacity-50 disabled:cursor-not-allowed rounded-full transition-all font-bold cursor-pointer"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-sans font-bold uppercase bg-[#f9f8ff] border border-[#2563eb] text-[#2563eb] hover:bg-[#f0f7ff] disabled:opacity-50 disabled:cursor-not-allowed rounded-full transition-all font-bold"
             title="Trigger full-screen cinematic initiative call for all players"
           >
             <Swords className="w-3 h-3" />
             <span>Call for Initiative</span>
-            <span className="text-[9px] bg-[#f9f8ff]0/10 px-1 py-0.5 rounded border border-[#2563eb]/20 font-mono">C</span>
-          </button>
+            <span className="text-[9px] bg-[#f9f8ff] px-1 py-0.5 rounded border border-[#2563eb]/20 font-mono">C</span>
+          </Button>
 
           {/* ROLL NPC INIT BUTTON */}
-          <button
+          <Button
+            intent="secondary"
             onClick={onRollNpcInit}
-            className="text-xs font-medium px-2 py-1 border border-[#e2e8f0] text-[#8d8db9] rounded hover:text-[#0f172a] hover:border-[#2563eb] bg-transparent flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="text-xs font-medium px-2 py-1 border border-[#e2e8f0] text-[#8d8db9] rounded hover:text-[#0f172a] hover:border-[#2563eb] bg-transparent hover:bg-transparent flex items-center gap-1.5 transition-colors shadow-none"
             title="Roll 1d20 for all NPCs"
           >
             <span>Roll NPC Init</span>
             <span className="text-[9px] bg-[#f9f8ff] px-1 py-0.5 rounded border border-[#e2e8f0] font-mono text-[#8d8db9]">R</span>
-          </button>
+          </Button>
 
           {/* RECORD / END ENCOUNTER BUTTON */}
           {encounter?.loggingRequested ? (
-            <button
+            <Button
+              intent="secondary"
               onClick={onResetCombat}
-              className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 bg-transparent flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 bg-transparent flex items-center gap-1.5 transition-colors shadow-none"
             >
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               <span>End Encounter</span>
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
+              intent="secondary"
               onClick={onRecordEncounter}
-              className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-500 rounded hover:text-gray-700 hover:border-gray-400 bg-transparent flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="text-xs font-medium px-2 py-1 border border-gray-300 text-gray-500 rounded hover:text-gray-700 hover:border-gray-400 bg-transparent hover:bg-transparent flex items-center gap-1.5 transition-colors shadow-none"
             >
               <span>Record Encounter</span>
-            </button>
+            </Button>
           )}
 
           {/* CANCEL ENCOUNTER BUTTON */}
-          <button
+          <Button
+            intent="destructive"
             onClick={() => setIsConfirmOpen(true)}
-            className="bg-red-50 text-red-600 border border-red-100 rounded-xl uppercase text-xs font-bold px-3 py-2 hover:bg-red-100 transition-colors cursor-pointer"
+            className="uppercase text-xs font-bold px-3 py-2"
           >
             Cancel Encounter
-          </button>
+          </Button>
           <ConfirmationDialog
             isOpen={isConfirmOpen}
             title="Cancel Encounter?"
@@ -181,13 +190,14 @@ export function CombatHeader({
           />
 
           {/* NEXT TURN BUTTON */}
-          <button
+          <Button
+            intent="primary"
             onClick={onNextTurn}
-            className="flex items-center gap-2 px-4 py-2 text-xs font-sans font-bold uppercase bg-[#2563eb] hover:bg-[#567eff] text-white rounded-full transition-colors shadow-sm cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 text-xs font-sans font-bold uppercase hover:bg-[#567eff] rounded-full transition-colors shadow-sm"
           >
             <span>Next Turn</span>
             <span className="text-[9px] bg-[#2563eb]/20 px-1 py-0.5 rounded border border-[#2563eb]/30 font-mono">N</span>
-          </button>
+          </Button>
         </div>
       </div>
 

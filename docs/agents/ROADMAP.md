@@ -9,11 +9,10 @@ Per root AGENTS.md rule 12: when something here is completed, it gets **removed 
 
 ### 🔴 Bugs to Fix
 
-- Back to Encounters button doesn't seem to be using the Button component.
+None.
 
 ### 🟡 Features to Add / Test Coverage Gaps
 
-- Look into having the Attack bonus for PC's and NPC's be automated based on their ability score and proficiency bonus.
 - Look at calculating the damage bonus based on if they have proficiency with the weapon.
   - For D&D 5e (2014 and 2024):
     * Attack bonus = Ability modifier + Proficiency bonus (if you’re proficient with the weapon or spell)

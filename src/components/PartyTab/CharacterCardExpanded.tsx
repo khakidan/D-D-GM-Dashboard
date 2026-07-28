@@ -361,6 +361,8 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                   damage: undefined,
                   saveDC: undefined,
                   saveType: undefined,
+                  dcAbilities: undefined,
+                  atkAbility: undefined,
                   range: undefined,
                   recharge: undefined,
                 }}
@@ -383,6 +385,8 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                   damage: undefined,
                   saveDC: undefined,
                   saveType: undefined,
+                  dcAbilities: undefined,
+                  atkAbility: undefined,
                   range: undefined,
                   recharge: undefined,
                 }}
@@ -405,6 +409,8 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                   damage: undefined,
                   saveDC: undefined,
                   saveType: undefined,
+                  dcAbilities: undefined,
+                  atkAbility: undefined,
                   range: undefined,
                   recharge: undefined,
                 }}

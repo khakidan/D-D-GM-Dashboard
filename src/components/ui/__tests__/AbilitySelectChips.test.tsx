@@ -40,4 +40,27 @@ describe('AbilitySelectChips', () => {
     fireEvent.click(screen.getByRole('button', { name: 'STR' }));
     expect(onChange).toHaveBeenCalledWith(['WIS']);
   });
+
+  it('enforces single selection when singleSelect is true', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<AbilitySelectChips selected={[]} onChange={onChange} singleSelect />);
+
+    // Click STR -> selects STR
+    fireEvent.click(screen.getByRole('button', { name: 'STR' }));
+    expect(onChange).toHaveBeenLastCalledWith(['STR']);
+
+    // Re-render with STR selected
+    rerender(<AbilitySelectChips selected={['STR']} onChange={onChange} singleSelect />);
+
+    // Click DEX -> selects DEX and removes STR
+    fireEvent.click(screen.getByRole('button', { name: 'DEX' }));
+    expect(onChange).toHaveBeenLastCalledWith(['DEX']);
+
+    // Re-render with DEX selected
+    rerender(<AbilitySelectChips selected={['DEX']} onChange={onChange} singleSelect />);
+
+    // Click DEX again -> deselects DEX (returns empty array)
+    fireEvent.click(screen.getByRole('button', { name: 'DEX' }));
+    expect(onChange).toHaveBeenLastCalledWith([]);
+  });
 });

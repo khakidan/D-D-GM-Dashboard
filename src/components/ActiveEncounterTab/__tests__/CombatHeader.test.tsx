@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { CombatHeader } from '../CombatHeader';
 import { MemoryRouter } from 'react-router-dom';
@@ -40,6 +40,21 @@ describe('CombatHeader', () => {
     );
     expect(screen.getByText('Test Encounter')).toBeInTheDocument();
     expect(screen.getByText(/round 3/i)).toBeInTheDocument();
+  });
+
+  it('calls onBack when Back to Encounters button is clicked', () => {
+    render(
+      <MemoryRouter>
+        <CombatHeader
+          {...defaultProps}
+          encounter={{ id: 'e1', name: 'Test Encounter', location: 'Test Loc', difficultyId: 1, difficultyName: 'Easy', npcDefinitions: '', status: 'active' }}
+        />
+      </MemoryRouter>
+    );
+    const backBtn = screen.getByRole('button', { name: /Back to Encounters/i });
+    expect(backBtn).toBeInTheDocument();
+    fireEvent.click(backBtn);
+    expect(defaultProps.onBack).toHaveBeenCalledTimes(1);
   });
 
   it('shows Record Encounter when loggingRequested is false', () => {

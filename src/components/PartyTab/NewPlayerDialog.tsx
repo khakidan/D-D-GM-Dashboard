@@ -369,6 +369,8 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                         damage: undefined,
                         saveDC: undefined,
                         saveType: undefined,
+                        dcAbilities: undefined,
+                        atkAbility: undefined,
                         range: undefined,
                         recharge: undefined,
                       }}
@@ -391,6 +393,8 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                         damage: undefined,
                         saveDC: undefined,
                         saveType: undefined,
+                        dcAbilities: undefined,
+                        atkAbility: undefined,
                         range: undefined,
                         recharge: undefined,
                       }}
@@ -413,6 +417,8 @@ export function NewPlayerDialog({ isOpen, onClose, onConfirm, statuses }: NewPla
                         damage: undefined,
                         saveDC: undefined,
                         saveType: undefined,
+                        dcAbilities: undefined,
+                        atkAbility: undefined,
                         range: undefined,
                         recharge: undefined,
                       }}

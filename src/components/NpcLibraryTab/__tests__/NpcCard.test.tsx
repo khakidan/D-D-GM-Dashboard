@@ -307,6 +307,52 @@ describe('NpcCard', () => {
     expect(parsedActions[0].saveDC).toBe(16);
   });
 
+  it('calculates attack bonus with atkAbility in NPC context', () => {
+    const mockNpc: NPC = {
+      id: 'npc-atk',
+      name: 'Test Attacker',
+      ac: 15,
+      maxHp: 100,
+      notes: '',
+      abilityScores: JSON.stringify({ STR: 18, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+      proficiencies: JSON.stringify({}),
+      speed: '30ft.',
+      senses: '',
+      languages: '',
+      challengeRating: '5', // +3 prof bonus
+      traits: '[]',
+      actions: JSON.stringify([{ 
+        name: 'Greatsword', 
+        description: 'Slash!', 
+        atkAbility: 'STR' // Attack Bonus = 3 + 4 = 7
+      }]),
+      reactions: '[]',
+      legendaryActionsList: '[]',
+    };
+
+    let updatedNpcUpdates: any = null;
+    const onUpdate = (updates: Partial<NPC>) => { updatedNpcUpdates = updates; };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // Click Auto-fill Atk
+    const autoFillBtn = screen.getByRole('button', { name: 'Auto-fill Atk' });
+    fireEvent.click(autoFillBtn);
+
+    expect(updatedNpcUpdates).not.toBeNull();
+    const parsedActions = JSON.parse(updatedNpcUpdates.actions || '[]');
+    expect(parsedActions[0].attackBonus).toBe(7);
+  });
+
   const mockNpcForMemoTests: NPC = {
     id: 'npc-memo-1',
     name: 'Kobold',

@@ -55,6 +55,7 @@ export interface NpcAction {
   saveDC?: number;
   saveType?: string;
   dcAbilities?: AbilityName[];
+  atkAbility?: AbilityName;
   range?: string;
   recharge?: string;
   _key?: string;
@@ -68,6 +69,7 @@ export interface NpcReaction {
   saveDC?: number;
   saveType?: string;
   dcAbilities?: AbilityName[];
+  atkAbility?: AbilityName;
   range?: string;
   recharge?: string;
   _key?: string;
@@ -82,6 +84,7 @@ export interface NpcLegendaryAction {
   saveDC?: number;
   saveType?: string;
   dcAbilities?: AbilityName[];
+  atkAbility?: AbilityName;
   _key?: string;
 }
 

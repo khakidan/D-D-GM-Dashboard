@@ -166,4 +166,36 @@ describe('CharacterCardExpanded', () => {
     const updatedActions = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
     expect(updatedActions[0].saveDC).toBe(16);
   });
+
+  it('calculates attack bonus with atkAbility in PC context', () => {
+    const onUpdateMock = vi.fn();
+    const mockAbilityScores = { STR: 18, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }; // STR +4
+    const pcCharacter = {
+      ...defaultCharacter,
+      gmControlled: true,
+      abilityScores: JSON.stringify(mockAbilityScores),
+      level: 5, // +3 prof
+      actions: JSON.stringify([{ 
+        name: 'Greatsword', 
+        description: 'Slash!', 
+        atkAbility: 'STR' // Attack Bonus = 3 + 4 = 7
+      }]),
+    };
+
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={pcCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // Click Auto-fill Atk
+    const autoFillBtn = screen.getByRole('button', { name: 'Auto-fill Atk' });
+    fireEvent.click(autoFillBtn);
+
+    expect(onUpdateMock).toHaveBeenCalledTimes(1);
+    const updatedActions = JSON.parse(onUpdateMock.mock.calls[0][0].actions);
+    expect(updatedActions[0].attackBonus).toBe(7);
+  });
 });

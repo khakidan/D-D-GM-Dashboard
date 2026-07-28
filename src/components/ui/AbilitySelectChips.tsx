@@ -5,16 +5,21 @@ import { cn } from '../../lib/utils';
 interface Props {
   selected: AbilityName[];
   onChange: (val: AbilityName[]) => void;
+  singleSelect?: boolean;
 }
 
-export function AbilitySelectChips({ selected, onChange }: Props) {
+export function AbilitySelectChips({ selected, onChange, singleSelect = false }: Props) {
   const toggleAbility = (ability: AbilityName) => {
-    const nextSelected = selected.includes(ability)
-      ? selected.filter(a => a !== ability)
-      : [...selected, ability];
-
-    // Enforce order
-    nextSelected.sort((a, b) => abilitiesInOrder.indexOf(a) - abilitiesInOrder.indexOf(b));
+    let nextSelected: AbilityName[];
+    if (singleSelect) {
+      nextSelected = selected.includes(ability) ? [] : [ability];
+    } else {
+      nextSelected = selected.includes(ability)
+        ? selected.filter(a => a !== ability)
+        : [...selected, ability];
+      // Enforce order
+      nextSelected.sort((a, b) => abilitiesInOrder.indexOf(a) - abilitiesInOrder.indexOf(b));
+    }
     onChange(nextSelected);
   };
 

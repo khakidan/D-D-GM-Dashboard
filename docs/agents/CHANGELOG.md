@@ -2,6 +2,51 @@
 
 ---
 
+## Attack Bonus Automation (Completed, 3 stages)
+
+PCs and NPCs can now select a single ability score as the basis for an Action/Reaction/Bonus Action's Attack Bonus, and auto-fill the calculated value (proficiency bonus + ability modifier) with one click — the field remains fully manually editable at all times.
+
+**Design decision (deliberately simpler than Save DC)**: assumes the PC/NPC is always proficient with whatever weapon/spell the Action represents — no separate proficiency toggle needed, since this app doesn't model per-weapon proficiency. Unlike Save DC (which supports summing multiple abilities for homebrew cases), Attack Bonus uses **exactly one** ability, matching real D&D rules (even finesse weapons pick one ability, never both — locked via explicit confirmation before implementation).
+
+**Formula**: `Attack Bonus = proficiencyBonus + calculateModifier(score of the single selected ability)`. Does not account for magic weapon bonuses (e.g. a +1 weapon) — that remains a manual adjustment on top of the auto-filled baseline, by design.
+
+**Stage 1**: added `atkAbility?: AbilityName` (singular, not an array) to `NpcAction`/`NpcReaction`/`NpcLegendaryAction`. Extended the existing `AbilitySelectChips.tsx` with a `singleSelect` prop (constraining selection to 0-or-1) rather than building a separate component, reusing the established multi-select pattern from Save DC. Added the Auto-fill Atk button and single-select ability picker to `NpcCombatActionFields.tsx`.
+
+**Stage 2**: wired `atkAbility`/`onAtkAbilityChange` through `npcListFieldRenderers.tsx`'s `renderActionFields`/`renderReactionFields`/`renderBonusActionFields` — reusing the `abilityScores`/`proficiencyBonus` plumbing already established for Save DC (no new signature changes needed). `renderLegendaryActionFields` intentionally left unwired, consistent with Legendary Actions' NPC-only/no-Auto-fill-UI precedent.
+
+**Stage 3**: added `atkAbility: undefined` to the Actions/Reactions/Bonus Actions `emptyItem` objects in all 4 real consumers (`CharacterCardExpanded.tsx`, `NewPlayerDialog.tsx`, `NpcCard.tsx`, `NpcStatBlockTab.tsx`), completing the wiring end-to-end.
+
+**Test coverage**: `AbilitySelectChips.test.tsx` (single-select enforcement — selecting a 2nd ability replaces, not adds to, the 1st), `NpcCombatActionFields.test.tsx` (Auto-fill computation for 2 distinct abilities, disabled state, no auto-trigger on prop change, manual-value preservation), and real end-to-end tests in `CharacterCardExpanded.test.tsx` and `NpcCard.test.tsx` proving the full data path with real, distinct ability scores and hand-verified math (STR 18 → +4, level 5/CR 5 → +3 prof, `3+4=7`).
+
+**Verification**: `tsc` clean throughout; final state — Batch 6A 62/62, Batch 6C 30/30, Batch 8 73/73 (all individually run across all 3 stages).
+---
+
+## Button Component Migration: CombatHeader.tsx (Completed)
+
+Migrated all 7 raw `<button>` elements in `CombatHeader.tsx` to the shared `Button` component, for visual/interaction consistency across the app.
+
+- **Back to Encounters** → `intent="tertiary"`, plain text-link style, exact match.
+- **Cancel Encounter** → `intent="destructive"`, near-exact match to the original red/border styling.
+- **Next Turn** → `intent="primary"`, with `rounded-full`/`shadow-sm` overrides preserved to keep the original pill shape (Button's own default radius is `rounded-xl`).
+- **Tools / Roll NPC Init / Record Encounter / End Encounter** → `intent="secondary"` as the closest base for these bordered "ghost" buttons, with `bg-transparent` overrides to cancel `secondary`'s solid gray fill — and, critically, matching `hover:bg-transparent` overrides where the original had no hover background at all (the base `secondary` intent's `hover:bg-[#cbd5e1]` is a separate CSS rule from the resting `bg-[#e2e8f0]`, so overriding one does not automatically override the other — this was caught and fixed before merging). End Encounter correctly kept its original `hover:bg-gray-100`, since that hover style already existed pre-migration.
+- **Call for Initiative** → `intent="tertiary"` as the closest unbordered base, with the original `bg`/`border`/`text` brand-blue styling and `rounded-full` preserved via override. The manual `disabled:opacity-50 disabled:cursor-not-allowed` was restored after confirming `Button`'s `tertiary` intent defines no disabled-state styling of its own (unlike `primary`/`secondary`/`destructive`, which each handle this natively) — removing it would have silently broken the disabled visual state while `initiativeEvent` is active.
+
+All keyboard-shortcut badge `<span>` children, `onClick`/`disabled`/`title` props, and existing hover text/border colors preserved exactly.
+
+**Verification**: `tsc` clean; Batch 5B 58/58 (all 12 files individually run, including a new click-behavior test for the migrated Back to Encounters button).
+
+---
+
+## Migration of "Back to Encounters" Control to Shared Button Component (Completed)
+
+Migrated the raw `<button>` element rendering "← Back to Encounters" in `CombatHeader.tsx` to the shared `Button` component with `intent="tertiary"`.
+
+- **Files Modified**: `src/components/ActiveEncounterTab/CombatHeader.tsx`, `src/components/ActiveEncounterTab/__tests__/CombatHeader.test.tsx`.
+- **Changes**: Replaced raw `<button>` with `<Button intent="tertiary" onClick={onBack}>`, maintaining clean styling and focus/hover states. Added unit test in `CombatHeader.test.tsx` verifying click behavior.
+- **Verification**: `tsc` clean (exit code 0); Batch 5B test suite fully passing (58/58 tests).
+
+---
+
 ## Rollback of Usage-Limited Actions/Reactions/Bonus Actions for PCs (Completed)
 
 Fully rolled back the Usage-Limited Actions/Reactions/Bonus Actions feature (originally added across 4 stages — see prior entry). The feature turned out to be unnecessary: the pre-existing Class Resource Tracker (`resourcePools.ts` and its UI) already covers the same underlying need — tracking a limited number of uses that reset on rest — so the dedicated per-Action tracking system was redundant.

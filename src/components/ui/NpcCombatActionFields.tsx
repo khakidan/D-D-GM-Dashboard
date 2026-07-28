@@ -30,6 +30,10 @@ export interface NpcCombatActionFieldsProps {
   dcAbilities?: AbilityName[];
   onDcAbilitiesChange?: (val: AbilityName[]) => void;
 
+  // New props for Atk Automation
+  atkAbility?: AbilityName;
+  onAtkAbilityChange?: (val: AbilityName | undefined) => void;
+
   // Typed props
   recharge?: string;
   onRechargeChange?: (val: string | undefined) => void;
@@ -64,6 +68,9 @@ export function NpcCombatActionFields({
   dcAbilities,
   onDcAbilitiesChange,
 
+  atkAbility,
+  onAtkAbilityChange,
+
   recharge,
   onRechargeChange,
   rangeValue,
@@ -82,6 +89,13 @@ export function NpcCombatActionFields({
     
     const newDC = 8 + proficiencyBonus + modifierSum;
     onSaveDCChange(newDC);
+  };
+
+  const handleAutoFillAtk = () => {
+    if (atkAbility === undefined) return;
+    const modifier = calculateModifier(abilityScores[atkAbility]);
+    const newAtk = proficiencyBonus + modifier;
+    onAttackBonusChange(newAtk);
   };
 
   return (
@@ -136,17 +150,30 @@ export function NpcCombatActionFields({
       <div className="grid grid-cols-4 gap-2">
         <div>
           <label htmlFor={`${idPrefix}-atk`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Atk</label>
-          <input
-            id={`${idPrefix}-atk`}
-            type="number"
-            value={attackBonus !== undefined ? attackBonus : ''}
-            onChange={e => {
-              const val = e.target.value;
-              onAttackBonusChange(val !== '' ? parseInt(val) : undefined);
-            }}
-            className={inputClass}
-            placeholder="+N"
-          />
+          <div className="flex gap-1">
+            <input
+              id={`${idPrefix}-atk`}
+              type="number"
+              value={attackBonus !== undefined ? attackBonus : ''}
+              onChange={e => {
+                const val = e.target.value;
+                onAttackBonusChange(val !== '' ? parseInt(val) : undefined);
+              }}
+              className={inputClass}
+              placeholder="+N"
+            />
+            {onAtkAbilityChange && (
+              <button
+                type="button"
+                onClick={handleAutoFillAtk}
+                disabled={atkAbility === undefined}
+                className="px-2 bg-[#f9f8ff] border border-[#e2e8f0] rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50"
+                aria-label="Auto-fill Atk"
+              >
+                Auto
+              </button>
+            )}
+          </div>
         </div>
         <div>
           <label htmlFor={`${idPrefix}-dmg`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Dmg</label>
@@ -199,6 +226,17 @@ export function NpcCombatActionFields({
         </div>
       </div>
       
+      {onAtkAbilityChange && (
+        <div>
+          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Atk Basis</label>
+          <AbilitySelectChips
+            selected={atkAbility ? [atkAbility] : []}
+            onChange={val => onAtkAbilityChange(val[0])}
+            singleSelect
+          />
+        </div>
+      )}
+
       {onDcAbilitiesChange && (
         <div>
           <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC Basis</label>

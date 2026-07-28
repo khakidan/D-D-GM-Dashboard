@@ -47,6 +47,8 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
+        atkAbility={item.atkAbility}
+        onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
       />
     ),
 
@@ -76,6 +78,8 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
+        atkAbility={item.atkAbility}
+        onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
       />
     ),
 
@@ -105,6 +109,8 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         proficiencyBonus={proficiencyBonus}
         dcAbilities={item.dcAbilities}
         onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
+        atkAbility={item.atkAbility}
+        onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
       />
     ),
 

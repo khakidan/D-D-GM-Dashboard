@@ -71,6 +71,8 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
           damage: undefined,
           saveDC: undefined,
           saveType: undefined,
+          dcAbilities: undefined,
+          atkAbility: undefined,
           range: undefined,
           recharge: undefined,
         }}
@@ -89,6 +91,8 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
           damage: undefined,
           saveDC: undefined,
           saveType: undefined,
+          dcAbilities: undefined,
+          atkAbility: undefined,
           range: undefined,
           recharge: undefined,
         }}
@@ -107,6 +111,8 @@ export const NpcStatBlockTab: React.FC<NpcStatBlockTabProps> = ({
           damage: undefined,
           saveDC: undefined,
           saveType: undefined,
+          dcAbilities: undefined,
+          atkAbility: undefined,
           range: undefined,
           recharge: undefined,
         }}
