@@ -780,6 +780,14 @@ describe('CharacterCardExpanded', () => {
     expect(sensesInput).toBeInTheDocument();
     expect(languagesInput).toBeInTheDocument();
 
+    // Verify positioning: they should be in the right column container (space-y-6)
+    // integrated into the first grid's right column
+    const passiveHeader = screen.getByText('PASSIVE');
+    const rightColumn = passiveHeader.closest('.space-y-6');
+    expect(rightColumn).toContainElement(speedInput);
+    expect(rightColumn).toContainElement(sensesInput);
+    expect(rightColumn).toContainElement(languagesInput);
+
     expect(speedInput).toHaveValue('30 ft.');
     expect(sensesInput).toHaveValue('darkvision 60 ft.');
     expect(languagesInput).toHaveValue('Common');

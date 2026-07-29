@@ -420,6 +420,43 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                   />
                 </div>
 
+                {character.gmControlled && (
+                  <>
+                    <LabeledField label="Speed">
+                      <DebouncedInput
+                        type="text"
+                        value={character.speed || ''}
+                        onChange={(v) => onUpdate({ speed: v as string })}
+                        placeholder="e.g. 30 ft., fly 60 ft."
+                        className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50"
+                        disabled={isSyncing}
+                      />
+                    </LabeledField>
+
+                    <LabeledField label="Senses">
+                      <DebouncedInput
+                        type="text"
+                        value={character.senses || ''}
+                        onChange={(v) => onUpdate({ senses: v as string })}
+                        placeholder="e.g. darkvision 60 ft."
+                        className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50"
+                        disabled={isSyncing}
+                      />
+                    </LabeledField>
+
+                    <LabeledField label="Languages">
+                      <DebouncedInput
+                        type="text"
+                        value={character.languages || ''}
+                        onChange={(v) => onUpdate({ languages: v as string })}
+                        placeholder="e.g. Common"
+                        className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50"
+                        disabled={isSyncing}
+                      />
+                    </LabeledField>
+                  </>
+                )}
+
                 <CharacterResourceSection
                   conditions={character.conditions || ''}
                   onConditionsChange={(v) => onUpdate({ conditions: v })}
@@ -570,41 +607,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
 
         {character.gmControlled && (
           <div className="space-y-4 pl-4 border-l border-stone-100">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-              <LabeledField label="Speed">
-                <DebouncedInput
-                  type="text"
-                  value={character.speed || ''}
-                  onChange={(v) => onUpdate({ speed: v as string })}
-                  placeholder="e.g. 30 ft., fly 60 ft."
-                  className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50"
-                  disabled={isSyncing}
-                />
-              </LabeledField>
-
-              <LabeledField label="Senses">
-                <DebouncedInput
-                  type="text"
-                  value={character.senses || ''}
-                  onChange={(v) => onUpdate({ senses: v as string })}
-                  placeholder="e.g. darkvision 60 ft."
-                  className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50"
-                  disabled={isSyncing}
-                />
-              </LabeledField>
-
-              <LabeledField label="Languages">
-                <DebouncedInput
-                  type="text"
-                  value={character.languages || ''}
-                  onChange={(v) => onUpdate({ languages: v as string })}
-                  placeholder="e.g. Common"
-                  className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50"
-                  disabled={isSyncing}
-                />
-              </LabeledField>
-            </div>
-
             <div className="space-y-4 pt-4 border-t border-[#e2e8f0]/40">
               <NpcListEditor<NpcTrait>
                 title="Traits"

@@ -183,7 +183,7 @@ export function NpcCombatActionFields({
         </div>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {/* Attack Card */}
         <div className="bg-[#f9f8ff] border border-[#e2e8f0] p-2 rounded-xl space-y-2">
           <div className="text-[10px] font-bold uppercase tracking-wider text-[#8d8db9] px-1">Attack</div>

@@ -2,6 +2,26 @@
 
 ---
 
+## PC/NPC Card Redesign — Visual Correction Bugfix Pass (Completed)
+
+Corrected two visual positioning and layout issues identified via direct inspection that were not caught by automated tests.
+
+- **PC Card Layout Correction (CharacterCardExpanded.tsx)**:
+  - Relocated the `Speed`, `Senses`, and `Languages` input fields from their standalone grid block into the right column of the main stat grid.
+  - They are now integrated into the `space-y-6` right-column container, appearing in the sequence: `Passive Perception` → `Spellcasting` → `Speed` (if GM controlled) → `Senses` (if GM controlled) → `Languages` (if GM controlled) → `Conditions/Immunities`.
+  - Removed the redundant standalone 3-column grid below the checkboxes.
+  - Updated `CharacterCardExpanded.test.tsx` to verify the new DOM position of these fields within the right-column container.
+- **Combat Action Grid Correction (NpcCombatActionFields.tsx)**:
+  - Restored the 3-column grid layout for Attack, Damage, and Saving Throw cards.
+  - Changed the container from `flex flex-col` to an unconditional `grid grid-cols-3 gap-3`, ensuring a clean horizontal alignment across all action items regardless of viewport.
+- **Verification**:
+  - `tsc -p tsconfig.build.json --noEmit` clean.
+  - Batch 6A (PartyTab): 76/76 passed.
+  - Batch 8 (UI): 85/85 passed.
+  - Batch 6C (NpcLibrary): 43/43 passed.
+
+---
+
 ## PC/NPC Card Redesign — Stage 6: NPC Card Stat Row, Ability Table, & Grid Layout (Completed)
 
 Completed Stage 6 (the final stage) of the comprehensive PC/NPC Card layout overhaul. This stage applies the compact stat row, editable ability scores table, and two-column grid layout for saves, skills, passive senses, spellcasting, speed, senses, and languages to `NpcCard.tsx`, bringing `NpcCard` into visual and functional parity with `CharacterCardExpanded.tsx`.
