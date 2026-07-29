@@ -183,47 +183,64 @@ export function NpcCombatActionFields({
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
-        <div>
-          <label htmlFor={`${idPrefix}-atk`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Atk</label>
-          <div className="flex gap-1">
-            <input
-              id={`${idPrefix}-atk`}
-              type="number"
-              value={attackBonus !== undefined ? attackBonus : ''}
-              onChange={e => {
-                const val = e.target.value;
-                if (onAttackBonusChange) onAttackBonusChange(val !== '' ? parseInt(val) : undefined, false);
-              }}
-              className={inputClass}
-              placeholder="+N"
-            />
-            {onAtkAbilityChange && (
-              <button
-                type="button"
-                onClick={handleAutoFillAtk}
-                disabled={atkAbility === undefined}
-                className={cn(
-                  "px-2 bg-[#f9f8ff] border rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50 flex items-center gap-1",
-                  isAtkStale ? "border-[#f59e0b] text-[#b45309] bg-[#fffbeb]" : "border-[#e2e8f0]"
-                )}
-                aria-label="Auto-fill Atk"
-              >
-                Auto
-                {isAtkStale && (
-                  <span
-                    data-testid="stale-indicator"
-                    className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
-                    title="Value is stale — click Auto to refresh"
-                  />
-                )}
-              </button>
-            )}
+      <div className="flex flex-col gap-3">
+        {/* Attack Card */}
+        <div className="bg-[#f9f8ff] border border-[#e2e8f0] p-2 rounded-xl space-y-2">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-[#8d8db9] px-1">Attack</div>
+          <div>
+            <label htmlFor={`${idPrefix}-atk`} className="sr-only">Atk</label>
+            <div className="flex gap-1">
+              <input
+                id={`${idPrefix}-atk`}
+                type="number"
+                value={attackBonus !== undefined ? attackBonus : ''}
+                onChange={e => {
+                  const val = e.target.value;
+                  if (onAttackBonusChange) onAttackBonusChange(val !== '' ? parseInt(val) : undefined, false);
+                }}
+                className={inputClass}
+                placeholder="+N"
+                aria-label="Attack Bonus"
+              />
+              {onAtkAbilityChange && (
+                <button
+                  type="button"
+                  onClick={handleAutoFillAtk}
+                  disabled={atkAbility === undefined}
+                  className={cn(
+                    "px-2 bg-[#ffffff] border rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50 flex items-center gap-1",
+                    isAtkStale ? "border-[#f59e0b] text-[#b45309] bg-[#fffbeb]" : "border-[#e2e8f0]"
+                  )}
+                  aria-label="Auto-fill Atk"
+                >
+                  Auto
+                  {isAtkStale && (
+                    <span
+                      data-testid="stale-indicator"
+                      className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
+                      title="Value is stale — click Auto to refresh"
+                    />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
+          {onAtkAbilityChange && (
+            <div>
+              <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Atk Basis</label>
+              <AbilitySelectChips
+                selected={atkAbility ? [atkAbility] : []}
+                onChange={val => onAtkAbilityChange(val[0])}
+                singleSelect
+              />
+            </div>
+          )}
         </div>
-        <div>
+
+        {/* Damage Card */}
+        <div className="bg-[#f9f8ff] border border-[#e2e8f0] p-2 rounded-xl space-y-2 flex flex-col">
           <div className="flex items-center justify-between px-1">
-            <label htmlFor={`${idPrefix}-dmg`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase">Dmg</label>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#8d8db9]">Damage</div>
             {onDamageComponentsChange && (
               <button
                 type="button"
@@ -244,94 +261,94 @@ export function NpcCombatActionFields({
               </button>
             )}
           </div>
-          <input
-            id={`${idPrefix}-dmg`}
-            type="text"
-            value={damage || ''}
-            onChange={e => onDamageChange(e.target.value || undefined)}
-            className={inputClass}
-            placeholder={damagePlaceholder}
-            disabled={isStructuredMode}
-          />
-        </div>
-        <div>
-          <label htmlFor={`${idPrefix}-dc`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC</label>
-          <div className="flex gap-1">
+          <div>
+            <label htmlFor={`${idPrefix}-dmg`} className="sr-only">Dmg</label>
             <input
-              id={`${idPrefix}-dc`}
-              type="number"
-              value={saveDC !== undefined ? saveDC : ''}
-              onChange={e => {
-                const val = e.target.value;
-                onSaveDCChange(val !== '' ? parseInt(val) : undefined, false);
-              }}
+              id={`${idPrefix}-dmg`}
+              type="text"
+              value={damage || ''}
+              onChange={e => onDamageChange(e.target.value || undefined)}
               className={inputClass}
-              placeholder="DC"
+              placeholder={damagePlaceholder}
+              disabled={isStructuredMode}
+              aria-label="Damage"
             />
-            {onDcAbilitiesChange && (
-              <button
-                type="button"
-                onClick={handleAutoFillDC}
-                disabled={!dcAbilities || dcAbilities.length === 0}
-                className={cn(
-                  "px-2 bg-[#f9f8ff] border rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50 flex items-center gap-1",
-                  isDcStale ? "border-[#f59e0b] text-[#b45309] bg-[#fffbeb]" : "border-[#e2e8f0]"
-                )}
-                aria-label="Auto-fill DC"
-              >
-                Auto
-                {isDcStale && (
-                  <span
-                    data-testid="stale-indicator"
-                    className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
-                    title="Value is stale — click Auto to refresh"
-                  />
-                )}
-              </button>
-            )}
           </div>
+          {isStructuredMode && onDamageComponentsChange && damageComponents && (
+            <DamageComponentsBuilder
+              idPrefix={idPrefix}
+              components={damageComponents}
+              onChange={(newComponents) => {
+                onDamageComponentsChange(newComponents);
+              }}
+              abilityScores={abilityScores}
+            />
+          )}
         </div>
-        <div>
-          <label htmlFor={`${idPrefix}-save`} className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Save</label>
-          <input
-            id={`${idPrefix}-save`}
-            type="text"
-            value={saveType || ''}
-            onChange={e => onSaveTypeChange(e.target.value || undefined)}
-            className={inputClass}
-            placeholder="Con"
-          />
+
+        {/* Saving Throw Card */}
+        <div className="bg-[#f9f8ff] border border-[#e2e8f0] p-2 rounded-xl space-y-2">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-[#8d8db9] px-1">Saving throw</div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label htmlFor={`${idPrefix}-dc`} className="sr-only">DC</label>
+              <div className="flex gap-1">
+                <input
+                  id={`${idPrefix}-dc`}
+                  type="number"
+                  value={saveDC !== undefined ? saveDC : ''}
+                  onChange={e => {
+                    const val = e.target.value;
+                    onSaveDCChange(val !== '' ? parseInt(val) : undefined, false);
+                  }}
+                  className={inputClass}
+                  placeholder="DC"
+                  aria-label="Save DC"
+                />
+                {onDcAbilitiesChange && (
+                  <button
+                    type="button"
+                    onClick={handleAutoFillDC}
+                    disabled={!dcAbilities || dcAbilities.length === 0}
+                    className={cn(
+                      "px-2 bg-[#ffffff] border rounded text-[10px] uppercase font-bold text-[#8d8db9] hover:border-[#2563eb] disabled:opacity-50 flex items-center gap-1",
+                      isDcStale ? "border-[#f59e0b] text-[#b45309] bg-[#fffbeb]" : "border-[#e2e8f0]"
+                    )}
+                    aria-label="Auto-fill DC"
+                  >
+                    Auto
+                    {isDcStale && (
+                      <span
+                        data-testid="stale-indicator"
+                        className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] inline-block"
+                        title="Value is stale — click Auto to refresh"
+                      />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+            <div>
+              <label htmlFor={`${idPrefix}-save`} className="sr-only">Save</label>
+              <input
+                id={`${idPrefix}-save`}
+                type="text"
+                value={saveType || ''}
+                onChange={e => onSaveTypeChange(e.target.value || undefined)}
+                className={inputClass}
+                placeholder="Con"
+                aria-label="Save Type"
+              />
+            </div>
+          </div>
+          {onDcAbilitiesChange && (
+            <div>
+              <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC Basis</label>
+              <AbilitySelectChips selected={dcAbilities || []} onChange={onDcAbilitiesChange} />
+            </div>
+          )}
         </div>
       </div>
-
-      {isStructuredMode && onDamageComponentsChange && damageComponents && (
-        <DamageComponentsBuilder
-          idPrefix={idPrefix}
-          components={damageComponents}
-          onChange={(newComponents) => {
-            onDamageComponentsChange(newComponents);
-          }}
-          abilityScores={abilityScores}
-        />
-      )}
-      
-      {onAtkAbilityChange && (
-        <div>
-          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">Atk Basis</label>
-          <AbilitySelectChips
-            selected={atkAbility ? [atkAbility] : []}
-            onChange={val => onAtkAbilityChange(val[0])}
-            singleSelect
-          />
-        </div>
-      )}
-
-      {onDcAbilitiesChange && (
-        <div>
-          <label className="block text-[10px] font-semibold text-[#8d8db9] uppercase px-1">DC Basis</label>
-          <AbilitySelectChips selected={dcAbilities || []} onChange={onDcAbilitiesChange} />
-        </div>
-      )}
 
       {onRangeValueChange !== undefined ? (
         <div>

@@ -91,6 +91,8 @@ export const CharacterCard: React.FC<CharacterCardProps> = React.memo(function C
         playerName={character.playerName}
         statuses={statuses}
         className={""}
+        characterClass={character.class || ""}
+        onUpdateCharacterClass={(val) => onUpdate({ class: val })}
         healthStatus={healthStatus}
         isActive={character.statusId === 1}
         isDeceased={character.statusId === 3}

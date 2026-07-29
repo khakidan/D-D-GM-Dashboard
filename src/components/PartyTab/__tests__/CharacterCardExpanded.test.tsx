@@ -14,6 +14,70 @@ vi.mock('sonner', () => ({
 }));
 
 describe('CharacterCardExpanded', () => {
+
+  it('identifies stale values in legendaryActionsList and recalculates them (Stage 5 Parity)', () => {
+    // Stage 5 Parity check: legendaryActionsList should be checked for stale auto-computed values,
+    // just like actions/reactions/bonusActions.
+    const initialLegendary = [{
+      name: 'Tail Attack',
+      description: '...',
+      attackBonus: 5, // STALE (should be prof 2 + str 4 = 6)
+      atkAutoComputed: true,
+      atkAbility: 'STR' as const
+    }];
+    const mockPcWithLegendary = {
+      ...defaultCharacter,
+      id: 'pc-stale-legendary',
+      abilityScores: JSON.stringify({ STR: 18, DEX: 14, CON: 14, INT: 10, WIS: 10, CHA: 10 }), // STR mod +4
+      proficiencies: JSON.stringify({ proficiencyBonus: 2 }), // Prof +2 -> Atk = 6
+      legendaryActionsList: JSON.stringify(initialLegendary)
+    };
+    
+    let updateCalls: any[] = [];
+    const onUpdate = (updates: Partial<any>) => {
+      updateCalls.push(updates);
+    };
+
+    render(
+      <CharacterCardExpanded
+        character={mockPcWithLegendary}
+        isSyncing={false}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
+    // Edit ability score to trigger stale check. 18 -> 20 (STR mod +5, Atk = 7)
+    // Wait, the test is checking that if we change STR, it checks legendaryActionsList.
+    // The initial value is already stale, but let's change STR to 20 to trigger handleStatBlockChange.
+    const strInput = screen.getByLabelText('STR score');
+    fireEvent.change(strInput, { target: { value: '20' } });
+    fireEvent.blur(strInput);
+
+    // Expect the toast to show
+    expect(toast).toHaveBeenCalledWith(
+      '1 action value is out of date.',
+      expect.objectContaining({
+        action: expect.objectContaining({
+          label: 'Recalculate',
+          onClick: expect.any(Function),
+        }),
+      })
+    );
+
+    // Call the Recalculate action's onClick handler
+    const toastCall = vi.mocked(toast).mock.calls.find(call => call[0] === '1 action value is out of date.');
+    const actionObj = (toastCall?.[1] as any)?.action;
+    actionObj.onClick();
+
+    // Verify legendaryActionsList was updated
+    // updateCalls[1] is the recalculate call
+    const lastUpdate = updateCalls[updateCalls.length - 1];
+    expect(lastUpdate.legendaryActionsList).toBeDefined();
+    const parsedLegendary = JSON.parse(lastUpdate.legendaryActionsList);
+    expect(parsedLegendary[0].attackBonus).toBe(7); // prof 2 + STR 5 = 7
+  });
+
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
@@ -431,6 +495,307 @@ describe('CharacterCardExpanded', () => {
     expect(callArg.abilityScores).toBeDefined();
     const recalculatedActions = JSON.parse(callArg.actions);
     expect(recalculatedActions[0].attackBonus).toBe(4);
+  });
+
+  it('verifies the relocated Class field side-effects inside SpellcastingStatsRow', () => {
+    // Class-related side-effects: changing the class to "Wizard" should display INT spellcasting stats
+    const { rerender } = render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          class: 'Wizard',
+          abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 16, WIS: 10, CHA: 10 }), // INT +3
+        }}
+      />
+    );
+    // Wizard spellcasting is based on INT. With level 2, prof bonus is +2. Save DC = 8 + 2 + 3 = 13.
+    expect(screen.getByText(/Spell Save DC:/i)).toHaveTextContent('13');
+
+    // Rerender as Cleric (WIS based). With WIS 10 (mod 0), Save DC = 8 + 2 + 0 = 10.
+    rerender(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          class: 'Cleric',
+          abilityScores: JSON.stringify({ STR: 10, DEX: 10, CON: 10, INT: 16, WIS: 10, CHA: 10 }),
+        }}
+      />
+    );
+    expect(screen.getByText(/Spell Save DC:/i)).toHaveTextContent('10');
+  });
+
+  it('verifies the new stat row\'s 5 fields (LEVEL, AC, HP, TEMP, MAX) with updates and side-effects', () => {
+    const onUpdateMock = vi.fn();
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={defaultCharacter}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // LEVEL
+    const levelInput = screen.getByText('LEVEL').nextElementSibling as HTMLInputElement;
+    expect(levelInput.value).toBe('2');
+    fireEvent.change(levelInput, { target: { value: '4' } });
+    fireEvent.blur(levelInput);
+    expect(onUpdateMock).toHaveBeenCalledWith({ level: 4 });
+
+    // AC
+    onUpdateMock.mockClear();
+    const acInput = screen.getByText('AC').nextElementSibling as HTMLInputElement;
+    expect(acInput.value).toBe('15');
+    fireEvent.change(acInput, { target: { value: '18' } });
+    fireEvent.blur(acInput);
+    expect(onUpdateMock).toHaveBeenCalledWith({ ac: 18 });
+
+    // HP (currentHp)
+    onUpdateMock.mockClear();
+    const hpInput = screen.getByText('HP').nextElementSibling as HTMLInputElement;
+    expect(hpInput.value).toBe('20');
+    fireEvent.change(hpInput, { target: { value: '12' } });
+    fireEvent.blur(hpInput);
+    expect(onUpdateMock).toHaveBeenCalledWith({ currentHp: 12 });
+
+    // TEMP (tempHp)
+    onUpdateMock.mockClear();
+    const tempInput = screen.getByText('TEMP').nextElementSibling as HTMLInputElement;
+    expect(tempInput.value).toBe('0');
+    fireEvent.change(tempInput, { target: { value: '5' } });
+    fireEvent.blur(tempInput);
+    expect(onUpdateMock).toHaveBeenCalledWith({ tempHp: 5 });
+
+    // MAX (maxHp)
+    onUpdateMock.mockClear();
+    const maxInput = screen.getByText('MAX').nextElementSibling as HTMLInputElement;
+    expect(maxInput.value).toBe('20');
+    fireEvent.change(maxInput, { target: { value: '25' } });
+    fireEvent.blur(maxInput);
+    expect(onUpdateMock).toHaveBeenCalledWith({ maxHp: 25 });
+  });
+
+  it('verifies the ability score table\'s 1-30 clamp/commit behavior on blur', () => {
+    const onUpdateMock = vi.fn();
+    render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          abilityScores: JSON.stringify({ STR: 15, DEX: 10, CON: 10, INT: 10, WIS: 10, CHA: 10 }),
+        }}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    const strInput = screen.getByLabelText('STR score');
+
+    // Clamp high value to 30
+    fireEvent.change(strInput, { target: { value: '35' } });
+    fireEvent.blur(strInput);
+    const strCall = onUpdateMock.mock.calls.find(call => call[0].abilityScores);
+    expect(strCall).toBeDefined();
+    const parsedScoresHigh = JSON.parse(strCall![0].abilityScores);
+    expect(parsedScoresHigh.STR).toBe(30);
+
+    // Clamp low value to 1
+    onUpdateMock.mockClear();
+    fireEvent.change(strInput, { target: { value: '0' } });
+    fireEvent.blur(strInput);
+    const strCallLow = onUpdateMock.mock.calls.find(call => call[0].abilityScores);
+    expect(strCallLow).toBeDefined();
+    const parsedScoresLow = JSON.parse(strCallLow![0].abilityScores);
+    expect(parsedScoresLow.STR).toBe(1);
+  });
+
+  it('verifies PROF is represented as plain read-only text and has no edit triggers', () => {
+    render(<CharacterCardExpanded {...defaultProps} character={defaultCharacter} />);
+    
+    // Check if plain text PROF +2 is present
+    const profElement = screen.getByText('PROF +2');
+    expect(profElement).toBeInTheDocument();
+    
+    // Verify it's a div (plain text) and not an input
+    expect(profElement.tagName).toBe('DIV');
+    expect(screen.queryByLabelText('PROF')).not.toBeInTheDocument();
+  });
+
+  it('verifies Skills expanded checkbox and Expertise star toggle behavior', () => {
+    const onUpdateMock = vi.fn();
+    const { rerender } = render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          proficiencies: JSON.stringify({
+            savingThrows: [],
+            skills: { Athletics: 'none' },
+            jackOfAllTrades: false,
+          }),
+        }}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // 1. Click "Show all skills" to expand the list
+    const expandBtn = screen.getByRole('button', { name: /show all skills/i });
+    fireEvent.click(expandBtn);
+
+    // Find the Athletics skill checkbox and star button by element ID
+    const athleticsChk = document.getElementById('skill-chk-athletics') as HTMLInputElement;
+    const athleticsStar = document.getElementById('skill-exp-athletics') as HTMLButtonElement;
+
+    expect(athleticsChk).toBeInTheDocument();
+    expect(athleticsStar).toBeInTheDocument();
+    expect(athleticsChk.checked).toBe(false);
+
+    // 2. Toggle proficiency (Checkbox clicked)
+    fireEvent.click(athleticsChk);
+    expect(onUpdateMock).toHaveBeenCalled();
+    const skillsCall1 = JSON.parse(onUpdateMock.mock.calls[0][0].proficiencies).skills;
+    expect(skillsCall1.Athletics).toBe('proficient');
+
+    // Rerender with 'proficient' Athletics to test the star expertise behavior
+    onUpdateMock.mockClear();
+    rerender(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          proficiencies: JSON.stringify({
+            savingThrows: [],
+            skills: { Athletics: 'proficient' },
+            jackOfAllTrades: false,
+          }),
+        }}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    // Star should render as '☆' (ready for expertise toggle)
+    const starBtnProf = document.getElementById('skill-exp-athletics') as HTMLButtonElement;
+    expect(starBtnProf).toBeInTheDocument();
+    expect(starBtnProf.textContent).toBe('☆');
+
+    // 3. Toggle expertise (Star clicked)
+    fireEvent.click(starBtnProf);
+    expect(onUpdateMock).toHaveBeenCalled();
+    const skillsCall2 = JSON.parse(onUpdateMock.mock.calls[0][0].proficiencies).skills;
+    expect(skillsCall2.Athletics).toBe('expertise');
+
+    // Rerender with 'expertise' Athletics to test turning expertise off back to proficient
+    onUpdateMock.mockClear();
+    rerender(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          proficiencies: JSON.stringify({
+            savingThrows: [],
+            skills: { Athletics: 'expertise' },
+            jackOfAllTrades: false,
+          }),
+        }}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    const starBtnExp = document.getElementById('skill-exp-athletics') as HTMLButtonElement;
+    expect(starBtnExp).toBeInTheDocument();
+    expect(starBtnExp.textContent).toBe('★');
+    expect(screen.getByText('(exp)')).toBeInTheDocument();
+
+    // 4. Click Star button again (demotes to proficient)
+    fireEvent.click(starBtnExp);
+    expect(onUpdateMock).toHaveBeenCalled();
+    const skillsCall3 = JSON.parse(onUpdateMock.mock.calls[0][0].proficiencies).skills;
+    expect(skillsCall3.Athletics).toBe('proficient');
+  });
+
+  it('renders Hit-Dice, Resources, and IRV sections, and supports column direction', () => {
+    const { container } = render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          resistances: 'fire',
+          immunities: 'cold',
+          vulnerabilities: 'poison',
+        }}
+      />
+    );
+
+    // Verify sections are present
+    expect(screen.getByText('Hit Dice')).toBeInTheDocument();
+    expect(screen.getByText('Class Resource Trackers')).toBeInTheDocument();
+    expect(screen.getByText('Resistances')).toBeInTheDocument();
+    expect(screen.getByText('Immunities')).toBeInTheDocument();
+    expect(screen.getByText('Vulnerabilities')).toBeInTheDocument();
+
+    // Verify the grid structure exists (e.g. md:grid-cols-2 is applied)
+    const gridDiv = container.querySelector('.grid-cols-1.md\\:grid-cols-2');
+    expect(gridDiv).toBeInTheDocument();
+  });
+
+  it('renders Speed, Senses, and Languages gated inputs only when gmControlled is true and handles changes', () => {
+    const onUpdateMock = vi.fn();
+
+    // Render with gmControlled: false (gated fields should NOT be rendered)
+    const { rerender } = render(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          gmControlled: false,
+        }}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    expect(screen.queryByPlaceholderText('e.g. 30 ft., fly 60 ft.')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('e.g. darkvision 60 ft.')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('e.g. Common')).not.toBeInTheDocument();
+
+    // Rerender with gmControlled: true (gated fields should be present)
+    rerender(
+      <CharacterCardExpanded
+        {...defaultProps}
+        character={{
+          ...defaultCharacter,
+          gmControlled: true,
+          speed: '30 ft.',
+          senses: 'darkvision 60 ft.',
+          languages: 'Common',
+        }}
+        onUpdate={onUpdateMock}
+      />
+    );
+
+    const speedInput = screen.getByPlaceholderText('e.g. 30 ft., fly 60 ft.');
+    const sensesInput = screen.getByPlaceholderText('e.g. darkvision 60 ft.');
+    const languagesInput = screen.getByPlaceholderText('e.g. Common');
+
+    expect(speedInput).toBeInTheDocument();
+    expect(sensesInput).toBeInTheDocument();
+    expect(languagesInput).toBeInTheDocument();
+
+    expect(speedInput).toHaveValue('30 ft.');
+    expect(sensesInput).toHaveValue('darkvision 60 ft.');
+    expect(languagesInput).toHaveValue('Common');
+
+    // Trigger changes
+    fireEvent.change(speedInput, { target: { value: '40 ft.' } });
+    fireEvent.blur(speedInput);
+    expect(onUpdateMock).toHaveBeenCalledWith({ speed: '40 ft.' });
+
+    fireEvent.change(sensesInput, { target: { value: 'tremorsense 30 ft.' } });
+    fireEvent.blur(sensesInput);
+    expect(onUpdateMock).toHaveBeenCalledWith({ senses: 'tremorsense 30 ft.' });
+
+    fireEvent.change(languagesInput, { target: { value: 'Elvish' } });
+    fireEvent.blur(languagesInput);
+    expect(onUpdateMock).toHaveBeenCalledWith({ languages: 'Elvish' });
   });
 });
 

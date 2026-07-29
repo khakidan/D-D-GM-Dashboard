@@ -8,7 +8,6 @@ import { CardNumberInput } from '../ui/CardNumberInput';
 import { DebouncedTextarea } from '../ui/DebouncedTextarea';
 import { NpcListEditor } from '../ui/NpcListEditor';
 import { Button } from '../ui/Button';
-import { StatTile } from '../ui/StatTile';
 import { ExpandableContent } from '../ui/ExpandableContent';
 import { LabeledField } from '../ui/LabeledField';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
@@ -18,12 +17,25 @@ import { createNpcListRenderers } from '../ui/npcListFieldRenderers';
 import { NpcCardHeader } from './NpcCardHeader';
 import { IrvSection } from '../ui/IrvSection';
 import { NpcLegendarySection } from './NpcLegendarySection';
-import { StatBlock } from '../ui/StatBlock';
+import { StatBlockScoresTable } from '../ui/StatBlockScoresTable';
+import { StatBlockSaves } from '../ui/StatBlockSaves';
+import { StatBlockPassive } from '../ui/StatBlockPassive';
+import { StatBlockSkills } from '../ui/StatBlockSkills';
 import { SpellcastingStatsRow } from '../ui/SpellcastingStatsRow';
 import { serializeSpellcastingAbility } from '../../lib/spellcasting';
 import { toast } from 'sonner';
 import { findStaleAutomatedValues, recalculateAutomatedValues } from '../../lib/automation';
-import { parseAbilityScores, parseProficiencies, serializeAbilityScores, serializeProficiencies, proficiencyBonusFromCR, syncProficiencyBonusToCR } from '../../lib/abilityScores';
+import {
+  parseAbilityScores,
+  parseProficiencies,
+  serializeAbilityScores,
+  serializeProficiencies,
+  proficiencyBonusFromCR,
+  syncProficiencyBonusToCR,
+  AbilityScores,
+  AbilityName,
+  SkillName,
+} from '../../lib/abilityScores';
 
 export interface NpcCardProps {
   npc: NPC;
@@ -98,6 +110,159 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
     proficiencyBonusFromCR(npc.challengeRating)
   ), [parsedScores, npc.challengeRating]);
 
+  const handleCrChange = (v: string) => {
+    const crVal = v;
+    const newProfBonus = proficiencyBonusFromCR(crVal);
+    if (npc.autoRefreshMechanics) {
+      const updatedProfs = syncProficiencyBonusToCR(npc.proficiencies, crVal);
+      onUpdate({
+        challengeRating: crVal,
+        proficiencies: updatedProfs,
+        actions: JSON.stringify(recalculateAutomatedValues(actions, parsedScores, newProfBonus)),
+        reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedScores, newProfBonus)),
+        bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedScores, newProfBonus)),
+        legendaryActionsList: JSON.stringify(recalculateAutomatedValues(legendaryActions, parsedScores, newProfBonus)),
+      });
+    } else {
+      const updatedProfs = syncProficiencyBonusToCR(npc.proficiencies, crVal);
+      onUpdate({
+        challengeRating: crVal,
+        proficiencies: updatedProfs,
+      });
+      const staleCount =
+        findStaleAutomatedValues(actions, parsedScores, newProfBonus) +
+        findStaleAutomatedValues(reactions, parsedScores, newProfBonus) +
+        findStaleAutomatedValues(bonusActions, parsedScores, newProfBonus) +
+        findStaleAutomatedValues(legendaryActions, parsedScores, newProfBonus);
+      if (staleCount > 0) {
+        toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
+          action: {
+            label: 'Recalculate',
+            onClick: () => {
+              onUpdate({
+                actions: JSON.stringify(recalculateAutomatedValues(actions, parsedScores, newProfBonus)),
+                reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedScores, newProfBonus)),
+                bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedScores, newProfBonus)),
+                legendaryActionsList: JSON.stringify(recalculateAutomatedValues(legendaryActions, parsedScores, newProfBonus)),
+              });
+            },
+          },
+        });
+      }
+    }
+  };
+
+  const handleStatBlockChange = (scores: AbilityScores, profs: any) => {
+    const profBonus = proficiencyBonusFromCR(npc.challengeRating);
+    if (npc.autoRefreshMechanics) {
+      onUpdate({
+        abilityScores: serializeAbilityScores(scores),
+        proficiencies: serializeProficiencies(profs),
+        actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
+        reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
+        bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
+        legendaryActionsList: JSON.stringify(recalculateAutomatedValues(legendaryActions, scores, profBonus)),
+      });
+    } else {
+      onUpdate({
+        abilityScores: serializeAbilityScores(scores),
+        proficiencies: serializeProficiencies(profs),
+      });
+      const staleCount =
+        findStaleAutomatedValues(actions, scores, profBonus) +
+        findStaleAutomatedValues(reactions, scores, profBonus) +
+        findStaleAutomatedValues(bonusActions, scores, profBonus) +
+        findStaleAutomatedValues(legendaryActions, scores, profBonus);
+      if (staleCount > 0) {
+        toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
+          action: {
+            label: 'Recalculate',
+            onClick: () => {
+              onUpdate({
+                actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
+                reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
+                bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
+                legendaryActionsList: JSON.stringify(recalculateAutomatedValues(legendaryActions, scores, profBonus)),
+              });
+            },
+          },
+        });
+      }
+    }
+  };
+
+  const handleAbilityChange = (ability: AbilityName, value: number) => {
+    handleStatBlockChange(
+      { ...parsedScores, [ability]: value },
+      parsedProfs
+    );
+  };
+
+  const handleSavingThrowToggle = (ability: AbilityName) => {
+    const isProf = parsedProfs.savingThrows.includes(ability);
+    handleStatBlockChange(parsedScores, {
+      ...parsedProfs,
+      savingThrows: isProf
+        ? parsedProfs.savingThrows.filter((a) => a !== ability)
+        : [...parsedProfs.savingThrows, ability],
+    });
+  };
+
+  const handlePassiveBonusChange = (key: 'perception' | 'insight' | 'investigation', valueStr: string) => {
+    const val = parseInt(valueStr, 10);
+    handleStatBlockChange(parsedScores, {
+      ...parsedProfs,
+      passiveBonuses: {
+        ...parsedProfs.passiveBonuses,
+        [key]: isNaN(val) ? 0 : Math.max(-10, Math.min(10, val)),
+      },
+    });
+  };
+
+  const handleSkillCycle = (skill: SkillName) => {
+    const currentProf = parsedProfs.skills[skill] ?? 'none';
+    const nextProf = currentProf === 'none' ? 'proficient' : currentProf === 'proficient' ? 'expertise' : 'none';
+    const updatedSkills = { ...parsedProfs.skills };
+    if (nextProf === 'none') delete updatedSkills[skill];
+    else updatedSkills[skill] = nextProf;
+    handleStatBlockChange(parsedScores, {
+      ...parsedProfs,
+      skills: updatedSkills,
+    });
+  };
+
+  const handleSkillToggle = (skill: SkillName) => {
+    const currentProf = parsedProfs.skills[skill] ?? 'none';
+    const nextProf = currentProf === 'none' ? 'proficient' : 'none';
+    const updatedSkills = { ...parsedProfs.skills };
+    if (nextProf === 'none') delete updatedSkills[skill];
+    else updatedSkills[skill] = nextProf;
+    handleStatBlockChange(parsedScores, {
+      ...parsedProfs,
+      skills: updatedSkills,
+    });
+  };
+
+  const handleSkillChange = (skill: SkillName, value: 'none' | 'proficient' | 'expertise') => {
+    const updatedSkills = { ...parsedProfs.skills };
+    if (value === 'none') {
+      delete updatedSkills[skill];
+    } else {
+      updatedSkills[skill] = value;
+    }
+    handleStatBlockChange(parsedScores, {
+      ...parsedProfs,
+      skills: updatedSkills,
+    });
+  };
+
+  const handleJackOfAllTradesToggle = () => {
+    handleStatBlockChange(parsedScores, {
+      ...parsedProfs,
+      jackOfAllTrades: !parsedProfs.jackOfAllTrades,
+    });
+  };
+
   return (
     <CardShell
       syncing={isSyncing}
@@ -144,150 +309,135 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
       )}
 
       <ExpandableContent isExpanded={isExpanded}>
-        <div className="p-6 flex flex-col gap-6">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-3">
-            <StatTile label="AC">
-              <CardNumberInput
-                value={npc.ac}
-                onChange={v => onUpdate({ ac: v })}
-                fallback={0}
-                min={0}
-                className="text-lg font-bold text-[#0f172a] w-full text-center bg-transparent border-none focus:ring-0 p-0 disabled:opacity-50"
-                disabled={isSyncing}
-              />
-            </StatTile>
-            <StatTile label="Max HP">
-              <CardNumberInput
-                value={npc.maxHp}
-                onChange={v => onUpdate({ maxHp: v })}
-                fallback={1}
-                min={1}
-                className="text-lg font-bold text-[#0f172a] w-full text-center bg-transparent border-none focus:ring-0 p-0 disabled:opacity-50"
-                disabled={isSyncing}
-              />
-            </StatTile>
-            <StatTile label="CR" className="col-span-2 sm:col-span-1">
-              <DebouncedInput
-                type="text"
-                value={npc.challengeRating || ''}
-                onFocus={(e) => (e.target as HTMLInputElement).select()}
-                onChange={(v) => {
-                  const crVal = v as string;
-                  const newProfBonus = proficiencyBonusFromCR(crVal);
-                  if (npc.autoRefreshMechanics) {
-                    const updatedProfs = syncProficiencyBonusToCR(npc.proficiencies, crVal);
-                    onUpdate({
-                      challengeRating: crVal,
-                      proficiencies: updatedProfs,
-                      actions: JSON.stringify(recalculateAutomatedValues(actions, parsedScores, newProfBonus)),
-                      reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedScores, newProfBonus)),
-                      bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedScores, newProfBonus)),
-                    });
-                  } else {
-                    const updatedProfs = syncProficiencyBonusToCR(npc.proficiencies, crVal);
-                    onUpdate({
-                      challengeRating: crVal,
-                      proficiencies: updatedProfs,
-                    });
-                    const staleCount =
-                      findStaleAutomatedValues(actions, parsedScores, newProfBonus) +
-                      findStaleAutomatedValues(reactions, parsedScores, newProfBonus) +
-                      findStaleAutomatedValues(bonusActions, parsedScores, newProfBonus);
-                    if (staleCount > 0) {
-                      toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
-                        action: {
-                          label: 'Recalculate',
-                          onClick: () => {
-                            onUpdate({
-                              actions: JSON.stringify(recalculateAutomatedValues(actions, parsedScores, newProfBonus)),
-                              reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedScores, newProfBonus)),
-                              bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedScores, newProfBonus)),
-                            });
-                          },
-                        },
-                      });
-                    }
-                  }
-                }}
-                className="text-lg font-bold text-[#0f172a] w-full text-center bg-transparent border-none focus:ring-0 p-0 disabled:opacity-50"
-                placeholder="—"
-                disabled={isSyncing}
-              />
-            </StatTile>
+        <div className="p-6 flex flex-col gap-6 font-sans">
+          {/* Compact Stat Row */}
+          <div className="flex items-center justify-between pb-3 border-b border-[#e2e8f0] font-sans -mt-2">
+            {/* Left Side: Plain Text Proficiency */}
+            <div className="text-xs font-bold text-[#8d8db9] uppercase tracking-wider">
+              PROF +{proficiencyBonusFromCR(npc.challengeRating)}
+            </div>
+
+            {/* Right Side: Grouped inputs: CR [box], AC [box], MAX HP [box] */}
+            <div className="flex items-center gap-3 sm:gap-4">
+              {/* CR */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-[#8d8db9] uppercase tracking-wider">CR</span>
+                <DebouncedInput
+                  type="text"
+                  value={npc.challengeRating || ''}
+                  onFocus={(e) => (e.target as HTMLInputElement).select()}
+                  onChange={(v) => handleCrChange(v as string)}
+                  className="w-12 text-xs font-bold text-[#0f172a] text-center bg-[#f9f8ff] border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] rounded py-1 px-0.5 outline-none transition-all disabled:opacity-50"
+                  placeholder="—"
+                  disabled={isSyncing}
+                />
+              </div>
+
+              {/* AC */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-[#8d8db9] uppercase tracking-wider">AC</span>
+                <CardNumberInput
+                  value={npc.ac || 0}
+                  onChange={v => onUpdate({ ac: v })}
+                  fallback={0}
+                  min={0}
+                  className="w-11 text-xs font-bold text-[#0f172a] text-center bg-[#f9f8ff] border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] rounded py-1 px-0.5 outline-none transition-all disabled:opacity-50"
+                  disabled={isSyncing}
+                />
+              </div>
+
+              {/* MAX HP */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-[#8d8db9] uppercase tracking-wider">MAX HP</span>
+                <CardNumberInput
+                  value={npc.maxHp || 1}
+                  onChange={v => onUpdate({ maxHp: v })}
+                  fallback={1}
+                  min={1}
+                  className="w-12 text-xs font-bold text-[#0f172a] text-center bg-[#f9f8ff] border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] rounded py-1 px-0.5 outline-none transition-all disabled:opacity-50"
+                  disabled={isSyncing}
+                />
+              </div>
+            </div>
           </div>
 
-          <StatBlock
-            abilityScores={parsedScores}
-            proficiencies={parsedProfs}
-            readOnly={false}
-            onChange={(scores, profs) => {
-              const profBonus = proficiencyBonusFromCR(npc.challengeRating);
-              if (npc.autoRefreshMechanics) {
-                onUpdate({
-                  abilityScores: serializeAbilityScores(scores),
-                  proficiencies: serializeProficiencies(profs),
-                  actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
-                  reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
-                  bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
-                });
-              } else {
-                onUpdate({
-                  abilityScores: serializeAbilityScores(scores),
-                  proficiencies: serializeProficiencies(profs),
-                });
-                const staleCount =
-                  findStaleAutomatedValues(actions, scores, profBonus) +
-                  findStaleAutomatedValues(reactions, scores, profBonus) +
-                  findStaleAutomatedValues(bonusActions, scores, profBonus);
-                if (staleCount > 0) {
-                  toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
-                    action: {
-                      label: 'Recalculate',
-                      onClick: () => {
-                        onUpdate({
-                          actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
-                          reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
-                          bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
-                        });
-                      },
-                    },
-                  });
-                }
-              }
-            }}
-          />
+          <div className="space-y-6">
+            <StatBlockScoresTable
+              abilityScores={parsedScores}
+              onScoreChange={handleAbilityChange}
+            />
 
-          <SpellcastingStatsRow
-            abilityScores={parsedScores}
-            profBonus={proficiencyBonusFromCR(npc.challengeRating)}
-            className={undefined}
-            overrideAbility={parsedProfs.spellcastingAbility}
-            onOverrideChange={(ability) => {
-              const updated = { ...parsedProfs };
-              if (ability === undefined) {
-                delete updated.spellcastingAbility;
-              } else {
-                updated.spellcastingAbility = ability;
-              }
-              onUpdate({
-                proficiencies: serializeProficiencies(updated),
-                spellcastingAbility: serializeSpellcastingAbility(ability),
-              });
-            }}
-          />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#e2e8f0]/40">
+              {/* Left Column: Saves + Skills */}
+              <div className="space-y-6">
+                <StatBlockSaves
+                  abilityScores={parsedScores}
+                  savingThrows={parsedProfs.savingThrows}
+                  effectiveProfBonus={proficiencyBonusFromCR(npc.challengeRating)}
+                  readOnly={false}
+                  onToggle={handleSavingThrowToggle}
+                />
+                <StatBlockSkills
+                  abilityScores={parsedScores}
+                  skills={parsedProfs.skills}
+                  jackOfAllTrades={parsedProfs.jackOfAllTrades}
+                  effectiveProfBonus={proficiencyBonusFromCR(npc.challengeRating)}
+                  readOnly={false}
+                  onSkillCycle={handleSkillCycle}
+                  onSkillToggle={handleSkillToggle}
+                  onSkillChange={handleSkillChange}
+                  onJackOfAllTradesToggle={handleJackOfAllTradesToggle}
+                />
+              </div>
 
-          <LabeledField label="Speed">
-            <DebouncedInput type="text" value={npc.speed || ''} onChange={(v) => onUpdate({ speed: v as string })} placeholder="e.g. 30 ft., fly 60 ft." className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50" disabled={isSyncing} />
-          </LabeledField>
+              {/* Right Column: Passive + Spellcasting + Speed + Senses + Languages */}
+              <div className="space-y-6">
+                <StatBlockPassive
+                  abilityScores={parsedScores}
+                  proficiencies={parsedProfs}
+                  effectiveProfBonus={proficiencyBonusFromCR(npc.challengeRating)}
+                  readOnly={false}
+                  onPassiveBonusChange={handlePassiveBonusChange}
+                />
 
-          <LabeledField label="Senses">
-            <DebouncedInput type="text" value={npc.senses || ''} onChange={(v) => onUpdate({ senses: v as string })} placeholder="e.g. darkvision 60 ft." className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50" disabled={isSyncing} />
-          </LabeledField>
+                <div className="space-y-2">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-stone-600">
+                    Spellcasting
+                  </div>
+                  <SpellcastingStatsRow
+                    abilityScores={parsedScores}
+                    profBonus={proficiencyBonusFromCR(npc.challengeRating)}
+                    className={undefined}
+                    overrideAbility={parsedProfs.spellcastingAbility}
+                    onOverrideChange={(ability) => {
+                      const updated = { ...parsedProfs };
+                      if (ability === undefined) {
+                        delete updated.spellcastingAbility;
+                      } else {
+                        updated.spellcastingAbility = ability;
+                      }
+                      onUpdate({
+                        proficiencies: serializeProficiencies(updated),
+                        spellcastingAbility: serializeSpellcastingAbility(ability),
+                      });
+                    }}
+                  />
+                </div>
 
-          <LabeledField label="Languages">
-            <DebouncedInput type="text" value={npc.languages || ''} onChange={(v) => onUpdate({ languages: v as string })} placeholder="e.g. Common" className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50" disabled={isSyncing} />
-          </LabeledField>
+                <LabeledField label="Speed">
+                  <DebouncedInput type="text" value={npc.speed || ''} onChange={(v) => onUpdate({ speed: v as string })} placeholder="e.g. 30 ft., fly 60 ft." className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50" disabled={isSyncing} />
+                </LabeledField>
+
+                <LabeledField label="Senses">
+                  <DebouncedInput type="text" value={npc.senses || ''} onChange={(v) => onUpdate({ senses: v as string })} placeholder="e.g. darkvision 60 ft." className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50" disabled={isSyncing} />
+                </LabeledField>
+
+                <LabeledField label="Languages">
+                  <DebouncedInput type="text" value={npc.languages || ''} onChange={(v) => onUpdate({ languages: v as string })} placeholder="e.g. Common" className="w-full text-xs text-[#0f172a] bg-[#ffffff] p-3 rounded-lg border border-[#e2e8f0] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all placeholder:text-[#cccbcb] disabled:opacity-50" disabled={isSyncing} />
+                </LabeledField>
+              </div>
+            </div>
+          </div>
 
           <IrvSection
             resistances={npc.resistances || ''}
@@ -455,10 +605,6 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
     </CardShell>
   );
 }, (prevProps, nextProps) => {
-  // Same reasoning as CharacterCard.tsx: NpcLibraryTab.tsx creates fresh callbacks
-  // every render, but every state-update path in useNpcLibrary.ts uses
-  // .map(n => matches ? {...n, ...updates} : n), preserving the same object
-  // reference for every NPC that wasn't actually changed.
   return (
     prevProps.npc === nextProps.npc &&
     prevProps.isSyncing === nextProps.isSyncing &&

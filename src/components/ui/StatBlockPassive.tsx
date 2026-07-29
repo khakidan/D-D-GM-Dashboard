@@ -51,9 +51,9 @@ export const StatBlockPassive: React.FC<StatBlockPassiveProps> = ({
           </button>
 
           {passiveBonusExpanded && (
-            <div className="grid grid-cols-3 gap-2 mt-1.5 p-2 bg-stone-800/40 border border-stone-700/50 rounded" id="passive-bonuses-inputs">
+            <div className="grid grid-cols-3 gap-2 mt-1.5 p-2 bg-[#f9f8ff] border border-[#e2e8f0] rounded" id="passive-bonuses-inputs">
               <div>
-                <label htmlFor="passive-bonus-perception-input" className="text-[10px] text-white font-bold block mb-0.5">Perception</label>
+                <label htmlFor="passive-bonus-perception-input" className="text-[10px] text-[#8d8db9] font-bold block mb-0.5 uppercase">Perception</label>
                 <input
                   type="number"
                   min="-10"
@@ -61,12 +61,12 @@ export const StatBlockPassive: React.FC<StatBlockPassiveProps> = ({
                   value={proficiencies.passiveBonuses?.perception ?? 0}
                   onChange={(e) => onPassiveBonusChange('perception', e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  className="w-full text-xs bg-stone-800 border border-stone-600 rounded text-stone-200 text-center py-0.5 outline-none focus:border-[#2563eb]"
+                  className="w-full text-xs font-bold text-[#0f172a] text-center bg-white border border-[#e2e8f0] rounded py-0.5 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all"
                   id="passive-bonus-perception-input"
                 />
               </div>
               <div>
-                <label htmlFor="passive-bonus-insight-input" className="text-[10px] text-white font-bold block mb-0.5">Insight</label>
+                <label htmlFor="passive-bonus-insight-input" className="text-[10px] text-[#8d8db9] font-bold block mb-0.5 uppercase">Insight</label>
                 <input
                   type="number"
                   min="-10"
@@ -74,12 +74,12 @@ export const StatBlockPassive: React.FC<StatBlockPassiveProps> = ({
                   value={proficiencies.passiveBonuses?.insight ?? 0}
                   onChange={(e) => onPassiveBonusChange('insight', e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  className="w-full text-xs bg-stone-800 border border-stone-600 rounded text-stone-200 text-center py-0.5 outline-none focus:border-[#2563eb]"
+                  className="w-full text-xs font-bold text-[#0f172a] text-center bg-white border border-[#e2e8f0] rounded py-0.5 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all"
                   id="passive-bonus-insight-input"
                 />
               </div>
               <div>
-                <label htmlFor="passive-bonus-investigation-input" className="text-[10px] text-white font-bold block mb-0.5">Investigation</label>
+                <label htmlFor="passive-bonus-investigation-input" className="text-[10px] text-[#8d8db9] font-bold block mb-0.5 uppercase">Investigation</label>
                 <input
                   type="number"
                   min="-10"
@@ -87,7 +87,7 @@ export const StatBlockPassive: React.FC<StatBlockPassiveProps> = ({
                   value={proficiencies.passiveBonuses?.investigation ?? 0}
                   onChange={(e) => onPassiveBonusChange('investigation', e.target.value)}
                   onFocus={(e) => e.target.select()}
-                  className="w-full text-xs bg-stone-800 border border-stone-600 rounded text-stone-200 text-center py-0.5 outline-none focus:border-[#2563eb]"
+                  className="w-full text-xs font-bold text-[#0f172a] text-center bg-white border border-[#e2e8f0] rounded py-0.5 focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none transition-all"
                   id="passive-bonus-investigation-input"
                 />
               </div>

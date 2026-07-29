@@ -7,7 +7,7 @@ import {
   Proficiencies,
   proficiencyBonusFromLevel,
 } from '../../lib/abilityScores';
-import { StatBlockScores } from './StatBlockScores';
+import { StatBlockScoresTable } from './StatBlockScoresTable';
 import { StatBlockSaves } from './StatBlockSaves';
 import { StatBlockPassive } from './StatBlockPassive';
 import { StatBlockSkills } from './StatBlockSkills';
@@ -38,11 +38,6 @@ export const StatBlock: React.FC<StatBlockProps> = ({
     onChange({ ...abilityScores, [ability]: isNaN(score) ? 10 : Math.max(1, Math.min(30, score)) }, proficiencies);
   };
 
-  const handleProfBonusOverrideChange = (value: number | undefined) => {
-    if (readOnly || !onChange) return;
-    onChange(abilityScores, { ...proficiencies, proficiencyBonus: value ?? 0 });
-  };
-
   const handleSavingThrowToggle = (ability: AbilityName) => {
     if (readOnly || !onChange) return;
     const isProf = proficiencies.savingThrows.includes(ability);
@@ -71,6 +66,14 @@ export const StatBlock: React.FC<StatBlockProps> = ({
     onChange(abilityScores, { ...proficiencies, skills: updatedSkills });
   };
 
+  const handleSkillChange = (skill: SkillName, value: 'none' | 'proficient' | 'expertise') => {
+    if (readOnly || !onChange) return;
+    const updatedSkills = { ...proficiencies.skills };
+    if (value === 'none') delete updatedSkills[skill];
+    else updatedSkills[skill] = value;
+    onChange(abilityScores, { ...proficiencies, skills: updatedSkills });
+  };
+
   const handleJackOfAllTradesToggle = () => {
     if (readOnly || !onChange) return;
     onChange(abilityScores, { ...proficiencies, jackOfAllTrades: !proficiencies.jackOfAllTrades });
@@ -78,14 +81,9 @@ export const StatBlock: React.FC<StatBlockProps> = ({
 
   return (
     <div className="space-y-3 text-stone-800 font-sans" id="statblock-container">
-      <StatBlockScores
+      <StatBlockScoresTable
         abilityScores={abilityScores}
-        effectiveProfBonus={effectiveProfBonus}
-        characterLevel={characterLevel}
-        proficiencyBonusOverride={proficiencies.proficiencyBonus}
-        readOnly={readOnly}
-        onAbilityChange={handleAbilityChange}
-        onProfBonusOverrideChange={handleProfBonusOverrideChange}
+        onScoreChange={readOnly || !onChange ? undefined : (ability, value) => handleAbilityChange(ability, String(value))}
       />
       <StatBlockSaves
         abilityScores={abilityScores}
@@ -108,6 +106,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
         effectiveProfBonus={effectiveProfBonus}
         readOnly={readOnly}
         onSkillCycle={handleSkillCycle}
+        onSkillChange={handleSkillChange}
         onJackOfAllTradesToggle={handleJackOfAllTradesToggle}
       />
     </div>

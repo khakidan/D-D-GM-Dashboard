@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
-import { formatBonus } from './StatBlockScores';
+import { formatBonus } from '../../lib/stringUtils';
 
 export interface StatTileProps {
   label: string;

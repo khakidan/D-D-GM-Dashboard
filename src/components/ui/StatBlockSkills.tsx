@@ -8,8 +8,9 @@ import {
   ALL_SKILLS,
   SKILL_ABILITY_MAP,
   getSkillBonus,
+  abilitiesInOrder,
 } from '../../lib/abilityScores';
-import { formatBonus, abilitiesInOrder } from './StatBlockScores';
+import { formatBonus } from '../../lib/stringUtils';
 import { IconButton } from './IconButton';
 
 export interface StatBlockSkillsProps {
@@ -19,6 +20,8 @@ export interface StatBlockSkillsProps {
   effectiveProfBonus: number;
   readOnly: boolean;
   onSkillCycle: (skill: SkillName) => void;
+  onSkillToggle?: (skill: SkillName) => void;
+  onSkillChange?: (skill: SkillName, value: 'none' | 'proficient' | 'expertise') => void;
   onJackOfAllTradesToggle: () => void;
 }
 
@@ -39,6 +42,8 @@ export const StatBlockSkills: React.FC<StatBlockSkillsProps> = ({
   effectiveProfBonus,
   readOnly,
   onSkillCycle,
+  onSkillToggle,
+  onSkillChange,
   onJackOfAllTradesToggle,
 }) => {
   const [skillsExpanded, setSkillsExpanded] = useState(false);
@@ -50,18 +55,10 @@ export const StatBlockSkills: React.FC<StatBlockSkillsProps> = ({
   return (
     <div id="skills-section">
       {/* Section header row */}
-      <div className="flex items-center justify-between pb-1.5">
+      <div className="flex items-center justify-between pb-1.5 border-b border-[#e2e8f0]/40 mb-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">
           Skills
         </span>
-        {!readOnly && (
-          <IconButton
-            icon={skillsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            onClick={() => setSkillsExpanded(!skillsExpanded)}
-            id="skills-expand-btn"
-            aria-label={skillsExpanded ? "Collapse skills" : "Expand skills"}
-          />
-        )}
       </div>
 
       {/* COLLAPSED View */}
@@ -83,7 +80,7 @@ export const StatBlockSkills: React.FC<StatBlockSkillsProps> = ({
 
               return (
                 <div key={skill} className="flex items-center gap-1.5 py-0.5" id={`skill-collapsed-${skill.toLowerCase().replace(/\s+/g, '-')}`}>
-                   <span className="text-[#2563eb] font-bold">●</span>
+                  <span className="text-[#2563eb] font-bold">●</span>
                   <span className="text-xs text-stone-800 font-medium">
                     {skill}
                     {prof === 'expertise' && (
@@ -118,68 +115,86 @@ export const StatBlockSkills: React.FC<StatBlockSkillsProps> = ({
                   const prof = skills[skill] ?? 'none';
                   const score = abilityScores[ability];
                   const bonus = getSkillBonus(score, prof, effectiveProfBonus, jackOfAllTrades);
-
-                  // Indicator display
-                  const renderIndicator = () => {
-                    if (readOnly) {
-                      return (
-                        <span
-                          className={prof !== 'none' ? 'text-[#2563eb]' : 'text-[#8d8db9]'}
-                          id={`skill-expanded-indicator-${skill.toLowerCase().replace(/\s+/g, '-')}`}
-                        >
-                          {prof !== 'none' ? '●' : '○'}
-                        </span>
-                      );
-                    }
-
-                    // 3-state cycle button
-                    const cycleIndicator = prof === 'none' ? '○' : prof === 'proficient' ? '●' : '★';
-                    const cycleClass =
-                      prof === 'none'
-                        ? 'text-[#8d8db9] hover:text-[#0f172a]'
-                        : prof === 'proficient'
-                        ? 'text-[#2563eb]'
-                        : 'text-[#567eff]';
-
-                    return (
-                      <button
-                        type="button"
-                        onClick={() => onSkillCycle(skill)}
-                        className={`${cycleClass} font-bold text-center px-0.5 select-none hover:bg-stone-100 rounded transition-colors w-5 h-5 flex items-center justify-center outline-none cursor-pointer`}
-                        id={`skill-cycle-btn-${skill.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        {cycleIndicator}
-                      </button>
-                    );
-                  };
+                  const isProf = prof === 'proficient' || prof === 'expertise';
+                  const isExpert = prof === 'expertise';
 
                   return (
                     <div
                       key={skill}
-                      className="flex items-center gap-1.5 py-0.5 pl-0.5 -ml-0.5 rounded"
+                      className="flex items-center gap-2 py-0.5 rounded pl-0.5"
                       id={`skill-row-${skill.toLowerCase().replace(/\s+/g, '-')}`}
                     >
-                      {renderIndicator()}
-
-                      <span
-                        className={`text-xs ${
-                          prof !== 'none' ? 'text-stone-800 font-semibold' : 'text-stone-600'
+                      <input
+                        type="checkbox"
+                        id={`skill-chk-${skill.toLowerCase().replace(/\s+/g, '-')}`}
+                        checked={isProf}
+                        onChange={() => {
+                          if (onSkillChange) {
+                            onSkillChange(skill, isProf ? 'none' : 'proficient');
+                          } else if (onSkillToggle) {
+                            onSkillToggle(skill);
+                          } else {
+                            if (isProf) {
+                              if (isExpert) {
+                                onSkillCycle(skill);
+                              } else {
+                                onSkillCycle(skill);
+                                onSkillCycle(skill);
+                              }
+                            } else {
+                              onSkillCycle(skill);
+                            }
+                          }
+                        }}
+                        className="rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb] w-4 h-4 cursor-pointer"
+                      />
+                      <button
+                        type="button"
+                        id={`skill-exp-${skill.toLowerCase().replace(/\s+/g, '-')}`}
+                        onClick={() => {
+                          if (onSkillChange) {
+                            onSkillChange(skill, isExpert ? 'proficient' : 'expertise');
+                          } else {
+                            if (isExpert) {
+                              onSkillCycle(skill);
+                              onSkillCycle(skill);
+                            } else if (isProf) {
+                              onSkillCycle(skill);
+                            } else {
+                              onSkillCycle(skill);
+                              onSkillCycle(skill);
+                            }
+                          }
+                        }}
+                        className={`p-0.5 rounded cursor-pointer transition-colors focus:outline-none ${
+                          isExpert ? 'text-amber-500 hover:text-amber-600' : 'text-stone-300 hover:text-stone-400'
+                        }`}
+                        title={isExpert ? "Remove Expertise" : "Add Expertise"}
+                      >
+                        <span className="text-sm select-none font-bold">
+                          {isExpert ? '★' : '☆'}
+                        </span>
+                      </button>
+                      <label
+                        htmlFor={`skill-chk-${skill.toLowerCase().replace(/\s+/g, '-')}`}
+                        className={`text-xs select-none cursor-pointer ${
+                          isProf ? 'text-stone-800 font-semibold' : 'text-stone-400 font-normal'
                         }`}
                         id={`skill-label-${skill.toLowerCase().replace(/\s+/g, '-')}`}
                       >
                         {skill}
-                        {prof === 'expertise' && (
+                        {isExpert && (
                           <span className="text-[10px] text-[#567eff] font-semibold ml-0.5">
                             (exp)
                           </span>
                         )}
-                      </span>
+                      </label>
 
                       <div className="flex-1" />
 
                       <span
                         className={`text-xs font-semibold ${
-                          prof !== 'none' ? 'text-[#2563eb]' : 'text-stone-600'
+                          isProf ? 'text-[#2563eb]' : 'text-stone-400 font-normal'
                         }`}
                         id={`skill-bonus-${skill.toLowerCase().replace(/\s+/g, '-')}`}
                       >
@@ -190,25 +205,36 @@ export const StatBlockSkills: React.FC<StatBlockSkillsProps> = ({
                 })}
               </div>
             ))}
+        </div>
+      )}
 
-          {/* Jack of All Trades Checkbox (edit mode only) */}
-          {!readOnly && (
-            <div className="flex items-center gap-1.5 pt-1.5 border-t border-stone-200" id="jack-of-trades-row">
-              <input
-                type="checkbox"
-                id="jack-of-all-trades-chk"
-                checked={jackOfAllTrades}
-                onChange={onJackOfAllTradesToggle}
-                className="rounded border-stone-400 text-[#2563eb] focus:ring-[#2563eb]/30 w-4 h-4"
-              />
-              <label
-                htmlFor="jack-of-all-trades-chk"
-                className="text-xs text-stone-600 select-none cursor-pointer font-medium"
-              >
-                Jack of All Trades (½ proficiency to non-proficient skills)
-              </label>
-            </div>
-          )}
+      {/* Toggle button and Jack of All Trades row */}
+      {!readOnly && (
+        <div className="space-y-2 mt-2">
+          <button
+            type="button"
+            onClick={() => setSkillsExpanded(!skillsExpanded)}
+            className="text-xs text-[#2563eb] hover:underline cursor-pointer block text-left font-medium"
+            id="skills-toggle-btn"
+          >
+            {skillsExpanded ? 'Show fewer skills' : 'Show all skills'}
+          </button>
+
+          <div className="flex items-center gap-1.5 pt-1.5 border-t border-[#e2e8f0]/40" id="jack-of-trades-row">
+            <input
+              type="checkbox"
+              id="jack-of-all-trades-chk"
+              checked={jackOfAllTrades}
+              onChange={onJackOfAllTradesToggle}
+              className="rounded border-[#e2e8f0] text-[#2563eb] focus:ring-[#2563eb]/30 w-4 h-4 cursor-pointer"
+            />
+            <label
+              htmlFor="jack-of-all-trades-chk"
+              className="text-xs text-stone-600 select-none cursor-pointer font-medium"
+            >
+              Jack of All Trades (½ proficiency to non-proficient skills)
+            </label>
+          </div>
         </div>
       )}
     </div>

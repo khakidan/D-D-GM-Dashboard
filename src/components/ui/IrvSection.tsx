@@ -10,6 +10,7 @@ export interface IrvSectionProps {
   placeholders: { resistances: string; immunities: string; vulnerabilities: string };
   gap?: string; // defaults to 'gap-4'
   compact?: boolean;
+  direction?: 'row' | 'column';
 }
 
 export const IrvSection: React.FC<IrvSectionProps> = ({
@@ -21,9 +22,14 @@ export const IrvSection: React.FC<IrvSectionProps> = ({
   placeholders,
   gap = 'gap-4',
   compact,
+  direction = 'row',
 }) => {
+  const gridClasses = direction === 'column' 
+    ? `grid grid-cols-1 ${gap}`
+    : `grid grid-cols-1 sm:grid-cols-3 ${gap}`;
+
   return (
-    <div id="irv-section-container" className={`grid grid-cols-1 sm:grid-cols-3 ${gap}`}>
+    <div id="irv-section-container" className={gridClasses}>
       <IrvMultiSelect
         label={labels.resistances}
         value={resistances || ''}

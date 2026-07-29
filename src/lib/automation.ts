@@ -1,5 +1,5 @@
 import { calculateModifier, AbilityScores } from "./abilityScores";
-import type { NpcAction, DamageComponent } from "../types";
+import type { NpcAction, NpcReaction, NpcLegendaryAction, DamageComponent } from "../types";
 import type { AbilityName } from "./abilityFundamentals";
 
 export function compileDamageComponents(components: DamageComponent[]): string {
@@ -69,7 +69,7 @@ export function findStaleAutomatedValues<T extends {
   return staleCount;
 }
 
-export function recalculateAutomatedValues<T extends NpcAction>(
+export function recalculateAutomatedValues<T extends NpcAction | NpcReaction | NpcLegendaryAction>(
   items: T[],
   abilityScores: AbilityScores,
   proficiencyBonus: number

@@ -39,7 +39,11 @@ export interface Character {
   actions?: string;
   reactions?: string;
   bonusActions?: string;
+  legendaryActionsList?: string;
   autoRefreshMechanics?: boolean;
+  speed?: string;
+  senses?: string;
+  languages?: string;
 }
 
 export interface NpcTrait {
@@ -100,8 +104,11 @@ export interface NpcLegendaryAction {
   damageComponents?: DamageComponent[];
   saveDC?: number;
   saveType?: string;
+  range?: string;
   dcAbilities?: AbilityName[];
   atkAbility?: AbilityName;
+  dcAutoComputed?: boolean;
+  atkAutoComputed?: boolean;
   _key?: string;
 }
 

@@ -21,6 +21,8 @@ export interface CharacterCardHeaderProps {
   playerName: string;
   statuses: Record<string, string>;
   className?: string; // Character's D&D class badge or other styling class
+  characterClass?: string;
+  onUpdateCharacterClass?: (val: string) => void;
   healthStatus: { label: string; color: string };
   isActive: boolean;
   isDeceased: boolean;
@@ -44,6 +46,8 @@ export const CharacterCardHeader: React.FC<CharacterCardHeaderProps> = ({
   playerName,
   statuses,
   className,
+  characterClass,
+  onUpdateCharacterClass,
   healthStatus,
   isActive,
   isDeceased,
@@ -62,8 +66,8 @@ export const CharacterCardHeader: React.FC<CharacterCardHeaderProps> = ({
   return (
     <div className="p-4 flex items-center justify-between gap-3 px-5">
       <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-6">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-1.5 min-w-0 shrink-0">
             <DebouncedInput 
               value={characterName}
               onChange={(v) => onUpdateCharacterName?.(v as string)}
@@ -78,6 +82,14 @@ export const CharacterCardHeader: React.FC<CharacterCardHeaderProps> = ({
               <Skull className="w-4 h-4 text-[#8d8db9] shrink-0" />
             )}
           </div>
+          <div className="hidden sm:block text-[#8d8db9]/30 shrink-0">|</div>
+          <DebouncedInput 
+            value={characterClass || ''}
+            onChange={(v) => onUpdateCharacterClass?.(v as string)}
+            className="text-xs text-slate-800 font-semibold bg-transparent border border-transparent rounded hover:bg-[#f9f8ff] focus:bg-white focus:border-[#2563eb] focus:ring-1 focus:ring-[#2563eb] outline-none px-2 py-1 -ml-2 transition-all placeholder:text-[#8d8db9]/30 disabled:opacity-50 w-auto max-w-[150px] truncate"
+            placeholder="Class"
+            disabled={isSyncing}
+          />
           <div className="hidden sm:block text-[#8d8db9]/30 shrink-0">|</div>
           <DebouncedInput 
             value={playerName}

@@ -753,4 +753,65 @@ describe('NpcCombatActionFields Component', () => {
     // Stale indicators should no longer be present
     expect(screen.queryByTestId('stale-indicator')).not.toBeInTheDocument();
   });
+
+  it('supports Auto-fill Atk/DC and damage builder toggle for Legendary Actions (with cost prop)', () => {
+    const customScores = { STR: 18, DEX: 14, CON: 16, INT: 10, WIS: 12, CHA: 8 }; // STR mod +4, DEX mod +2
+    const profBonus = 3;
+    const onAttackBonusChange = vi.fn();
+    const onSaveDCChange = vi.fn();
+    const onAtkAbilityChange = vi.fn();
+    const onDcAbilitiesChange = vi.fn();
+    const onDamageComponentsChange = vi.fn();
+    const onCostChange = vi.fn();
+
+    render(
+      <NpcCombatActionFields
+        idPrefix="test-legendary-automation"
+        name="Tail Sweep"
+        onNameChange={vi.fn()}
+        namePlaceholder="Action name"
+        attackBonus={undefined}
+        onAttackBonusChange={onAttackBonusChange}
+        atkAbility="STR"
+        onAtkAbilityChange={onAtkAbilityChange}
+        saveDC={undefined}
+        onSaveDCChange={onSaveDCChange}
+        dcAbilities={['DEX']}
+        onDcAbilitiesChange={onDcAbilitiesChange}
+        damage=""
+        onDamageChange={vi.fn()}
+        damageComponents={[]}
+        onDamageComponentsChange={onDamageComponentsChange}
+        saveType="Dex"
+        onSaveTypeChange={vi.fn()}
+        description="Sweeps tail."
+        onDescriptionChange={vi.fn()}
+        descriptionRows={2}
+        cost={2}
+        onCostChange={onCostChange}
+        abilityScores={customScores}
+        proficiencyBonus={profBonus}
+      />
+    );
+
+    // Verify Cost input and Atk/DC basis chips are all present together
+    expect(screen.getByText('Cost')).toBeInTheDocument();
+    expect(screen.getByText('Atk Basis')).toBeInTheDocument();
+    expect(screen.getByText('DC Basis')).toBeInTheDocument();
+
+    // Auto-fill Atk button: prof 3 + STR mod 4 = +7
+    const autoAtkBtn = screen.getByLabelText('Auto-fill Atk');
+    fireEvent.click(autoAtkBtn);
+    expect(onAttackBonusChange).toHaveBeenLastCalledWith(7, true);
+
+    // Auto-fill Save DC button: 8 + prof 3 + DEX mod 2 = 13
+    const autoDcBtn = screen.getByLabelText('Auto-fill DC');
+    fireEvent.click(autoDcBtn);
+    expect(onSaveDCChange).toHaveBeenLastCalledWith(13, true);
+
+    // Damage builder toggle works
+    const toggleBuilderBtn = screen.getByRole('button', { name: /Toggle damage builder/i });
+    fireEvent.click(toggleBuilderBtn);
+    expect(screen.getByText('Damage Components')).toBeInTheDocument();
+  });
 });

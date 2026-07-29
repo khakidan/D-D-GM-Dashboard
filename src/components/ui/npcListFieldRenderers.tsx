@@ -3,6 +3,7 @@ import { NpcSimpleFieldEditor } from './NpcSimpleFieldEditor';
 import { NpcCombatActionFields } from './NpcCombatActionFields';
 import { DEFAULT_ABILITY_SCORES, AbilityScores } from '../../lib/abilityScores';
 import { compileDamageComponents } from '../../lib/automation';
+
 import type { 
   NpcTrait, 
   NpcAction, 
@@ -21,7 +22,6 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         onDescriptionChange={description => onChange({ ...item, description })}
       />
     ),
-
     renderActionFields: (item: NpcAction, index: number, onChange: (updated: NpcAction) => void) => (
       <NpcCombatActionFields
         idPrefix={`${idPrefix}-action-${index}`}
@@ -58,7 +58,6 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         })}
       />
     ),
-
     renderReactionFields: (item: NpcReaction, index: number, onChange: (updated: NpcReaction) => void) => (
       <NpcCombatActionFields
         idPrefix={`${idPrefix}-reaction-${index}`}
@@ -95,7 +94,6 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         })}
       />
     ),
-
     renderBonusActionFields: (item: NpcAction, index: number, onChange: (updated: NpcAction) => void) => (
       <NpcCombatActionFields
         idPrefix={`${idPrefix}-bonus-${index}`}
@@ -132,7 +130,6 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         })}
       />
     ),
-
     renderLegendaryActionFields: (item: NpcLegendaryAction, index: number, onChange: (updated: NpcLegendaryAction) => void) => (
       <NpcCombatActionFields
         idPrefix={`${idPrefix}-legendary-${index}`}
@@ -150,11 +147,23 @@ export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityS
         onSaveDCChange={(val, isAuto) => onChange({ ...item, saveDC: val, ...(isAuto !== undefined && { dcAutoComputed: isAuto }) })}
         saveType={item.saveType}
         onSaveTypeChange={val => onChange({ ...item, saveType: val })}
+        rangeValue={item.range}
+        onRangeValueChange={val => onChange({ ...item, range: val })}
         description={item.description}
         onDescriptionChange={description => onChange({ ...item, description })}
         descriptionRows={4}
         abilityScores={abilityScores}
         proficiencyBonus={proficiencyBonus}
+        dcAbilities={item.dcAbilities}
+        onDcAbilitiesChange={val => onChange({ ...item, dcAbilities: val })}
+        dcAutoComputed={item.dcAutoComputed}
+        atkAbility={item.atkAbility}
+        onAtkAbilityChange={val => onChange({ ...item, atkAbility: val })}
+        atkAutoComputed={item.atkAutoComputed}
+        damageComponents={item.damageComponents}
+        onDamageComponentsChange={val => onChange({ ...item, damageComponents: val,
+          damage: val ? compileDamageComponents(val) : item.damage
+        })}
       />
     ),
   };

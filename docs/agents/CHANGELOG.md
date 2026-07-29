@@ -2,6 +2,86 @@
 
 ---
 
+## PC/NPC Card Redesign — Stage 6: NPC Card Stat Row, Ability Table, & Grid Layout (Completed)
+
+Completed Stage 6 (the final stage) of the comprehensive PC/NPC Card layout overhaul. This stage applies the compact stat row, editable ability scores table, and two-column grid layout for saves, skills, passive senses, spellcasting, speed, senses, and languages to `NpcCard.tsx`, bringing `NpcCard` into visual and functional parity with `CharacterCardExpanded.tsx`.
+
+- **Compact Stat Row**:
+  - Replaced the three sprawling vertical `StatTile` boxes (AC, Max HP, CR) with a single compact, horizontal top row.
+  - Left Side: Plain-text `PROF +N` derived from the NPC's Challenge Rating.
+  - Right Side: Grouped, bordered input boxes in exact order: `CR [box]`, `AC [box]`, `MAX HP [box]`.
+- **Editable Ability Score Table**:
+  - Replaced the monolithic `<StatBlock>` call with `StatBlockScoresTable.tsx` in editable mode (`onScoreChange`). Ability scores can now be edited directly within the card table.
+- **Unified Two-Column Grid Layout**:
+  - Arranged the core stat sub-components into a responsive `grid grid-cols-1 md:grid-cols-2 gap-6`:
+    - **Left Column**: `StatBlockSaves` (saving throw toggles & computed modifiers) and `StatBlockSkills` (skill proficiency & expertise cycling).
+    - **Right Column**: `StatBlockPassive` (passive senses & feat/item bonus overrides), `SpellcastingStatsRow` (spellcasting ability selector & stats), and relocated `Speed`, `Senses`, and `Languages` input fields.
+- **Clean Alignment**:
+  - Maintained unchanged header (`NpcCardHeader.tsx`), `IrvSection`, `Notes`, `autoRefreshMechanics` checkbox, and list editors for Traits, Actions, Reactions, Bonus Actions, and Legendary Actions.
+- **Verification & Test Coverage**:
+  - Ran `tsc -p tsconfig.build.json --noEmit` cleanly with 0 errors.
+  - Added 4 new tests to `NpcCard.test.tsx` (bringing NpcCard test count from 18 to 22, and Batch 6C total from 39 to 43 passed tests):
+    - Ability score 1-30 clamping/commit on blur/enter test.
+    - Skill proficiency checkbox and expertise star button toggling test using `onSkillChange`.
+    - Speed, Senses, and Languages input rendering and blur commit event handling test.
+    - IRV section rendering confirmation test for Resists, Immune, and Vuln labels and items.
+  - Ran Batch 6C (`NpcLibraryTab` tests): 6 passed, 43 passed.
+  - Ran Batch 8 (`ui` tests): 9 passed, 85 passed.
+  - Ran Batch 6A (`PartyTab` tests): 9 passed, 76 passed.
+
+---
+
+## PC/NPC Card Redesign — Stage 5: Legendary Action Automation Parity & Reversal (Completed)
+
+Completed Stage 5 of the PC/NPC Card redesign, establishing full automation parity for Legendary Actions across PCs and NPCs.
+
+- **Legendary Action Automation Parity**:
+  - Updated `NpcLegendaryAction` interface in `src/types.ts` with automation fields: `dcAbilities`, `atkAbility`, `dcAutoComputed`, `atkAutoComputed`, and `damageComponents`.
+  - Updated `renderLegendaryActionFields` in `npcListFieldRenderers.tsx` to pass `abilityScores`, `proficiencyBonus`, and automation state handlers to `NpcCombatActionFields`.
+  - Extended `findStaleAutomatedValues()` and `recalculateAutomatedValues()` in `src/lib/automation.ts` to accept `NpcLegendaryAction` items.
+  - Wired `legendaryActionsList` into stale-value detection and bulk recalculation flows in both `CharacterCardExpanded.tsx` and `NpcCard.tsx`.
+- **Test Coverage & Verification**:
+  - Added new unit test in `NpcCombatActionFields.test.tsx` verifying Auto-fill Atk, Auto-fill DC, and Damage Components builder toggle for Legendary Actions with real hand-checkable math.
+  - Verified `tsc -p tsconfig.build.json --noEmit` exited cleanly with 0 errors.
+  - Verified all 12 test batches individually, passing all 1,056 tests across the suite.
+
+---
+
+## PC/NPC Card Redesign — Stage 2: Saves, Skills, Passive, Spellcasting, and Conditions Grid (Completed)
+
+Completed Stage 2 of the comprehensive PC/NPC Card layout overhaul. This stage restructures the core saving throws, skill proficiencies, passive senses, spellcasting controls, and condition tracking into a highly compact, dual-column layout on the PC card.
+
+- **Unified Dual-Column Layout**: Integrated individual stat sub-components into a structured, responsive `grid grid-cols-1 md:grid-cols-2 gap-6` that is placed directly below the editable ability score table:
+  - **Left Column — Saves & Skills**:
+    - **Saving Throws (`StatBlockSaves`)**: Renders all 6 saving throws in a clean, two-column sub-grid (STR/INT, DEX/WIS, CON/CHA) with active interactive toggle dots and computed modifiers.
+    - **Skills (`StatBlockSkills`)**: Refactored to feature both a default flat list of proficient/expert skills and an expandable "Show all skills" toggle. When expanded, the full 5e skill list grouped under ability subheadings is rendered. Built direct checkbox-based proficiency editing and interactive expertise-cycling alongside the Jack of All Trades toggle.
+  - **Right Column — Passive, Spellcasting, & Conditions**:
+    - **Passive Senses (`StatBlockPassive`)**: Preserves the `Perception`, `Insight`, and `Investigation` flat line and its expandable `± Feat/item bonuses` section.
+    - **Pre-existing Contrast Bug Fix**: Corrected a dark-theme legacy contrast bug where expanded passive override input boxes were rendered with a dark background and illegible dark text, swapping them to use standard light input styling (`bg-[#f9f8ff] border-[#e2e8f0] text-slate-900 focus:bg-white focus:border-[#2563eb]`).
+    - **Spellcasting Row (`SpellcastingStatsRow`)**: Relocated the spellcasting ability override dropdown directly below the passive senses panel.
+    - **Conditions Section (`CharacterResourceSection`)**: Relocated the interactive condition tracker and list of active condition chips to sit directly underneath the spellcasting dropdown, and completely removed its lower duplicate to maintain a clean, single-source-of-truth visual state.
+- **Verification & Test Coverage**: Fully verified end-to-end functionality and regression safety (tsc checks compiled perfectly with 0 errors, Batch 6A tests passed 68/68, Batch 6C tests passed 36/36, and Batch 8 tests passed 84/84).
+
+---
+
+## PC/NPC Card Redesign — Stage 1: Header Class Relocation, Compact Stat Row, and Editable Ability Score Table (Completed)
+
+Completed Stage 1 of the comprehensive PC/NPC Card layout overhaul. This stage establishes the unified, highly scannable structure of the character cards by removing sprawling visual boxes, relocating key metadata, and providing elegant, inline editing patterns.
+
+- **Header Class Relocation**: The editable free-text `Class` field has been relocated from its original standalone block deep in the card into the header row of `CharacterCardExpanded.tsx`. It now sits beautifully in-line between the character's name and the active status elements, preserving its full editability and helpful multi-class placeholder.
+- **New Compact Stat Row**: Replaced the five separate sprawling vertical `StatTile` boxes (AC, Level, Max HP, HP, Temp) with a single inline row directly below the header.
+  - Left-aligned: The `PROF +N` derived plain-text label and modifier bonus.
+  - Right-aligned: Grouped edit boxes for `LEVEL`, `AC`, `HP`, `TEMP`, and `MAX` using the clean `CardNumberInput` editing pattern.
+  - Slashes/Dividers: Framed with a clean, low-contrast bottom divider to establish rhythm.
+- **Editable Ability Score Table**: Replaced the six individual vertical `StatTile` boxes with a single unified horizontal table.
+  - Shared Component: Extended the existing `StatBlockScoresTable.tsx` component with an `onScoreChange` callback.
+  - Inline Inputs: When editable, the scores render as clean, low-contrast text inputs with local buffered state, committing on Blur or Enter.
+  - Safety & Boundaries: Added strict validation clamping scores to D&D standard 1-30.
+- **Manual Proficiency Override Deletion**: Deleted `StatBlockScores.tsx` (previously Section B) and completely removed the manual proficiency override input. `PROF +N` is now purely derived from level or CR, preventing stale overrides and simplifying the mechanics engine.
+- **Verification & Test Updates**: Updated relevant test cases in `CharacterCardExpanded.test.tsx` and other test files to align with the new layout, ensuring the exact same robust test coverage (1043 tests passing in total, verified tsc clean).
+
+---
+
 ## "Back to Encounters" Header Button Styling Fix
 
 - Updated the "Back to Encounters" button in `CombatHeader.tsx` to use the standard `Button` component with `intent="secondary"` and an `ArrowLeft` icon from `lucide-react`, matching the established design system and styling of every other button across the application.
