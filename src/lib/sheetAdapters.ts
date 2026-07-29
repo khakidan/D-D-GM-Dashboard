@@ -53,6 +53,7 @@ export function mapCharacterRowToCharacter(
     actions,
     reactions,
     bonusActions,
+    autoRefreshMechanics,
   ] = data;
 
   let syncedProficiencies = proficiencies ?? JSON.stringify(DEFAULT_PROFICIENCIES);
@@ -98,6 +99,7 @@ export function mapCharacterRowToCharacter(
     proficiencies: syncedProficiencies,
     spellcastingAbility: spellcastingAbility ?? '',
     gmControlled: gmControlled ?? false,
+    autoRefreshMechanics: autoRefreshMechanics ?? false,
     traits: traits ?? '[]',
     actions: actions ?? '[]',
     reactions: reactions ?? '[]',
@@ -133,6 +135,7 @@ export function mapNpcRowToNpc(
     legendaryActionsList,
     spellcastingAbility,
     bonusActions,
+    autoRefreshMechanics,
   ] = data;
 
   let syncedProficiencies = proficiencies ?? JSON.stringify(DEFAULT_PROFICIENCIES);
@@ -177,6 +180,7 @@ export function mapNpcRowToNpc(
     legendaryActionsList: legendaryActionsList ?? '[]',
     spellcastingAbility: spellcastingAbility ?? '',
     bonusActions: bonusActions ?? '[]',
+    autoRefreshMechanics: autoRefreshMechanics ?? false,
   };
 }
 

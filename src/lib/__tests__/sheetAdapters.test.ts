@@ -66,6 +66,7 @@ describe('sheetAdapters', () => {
         '[]',                     // [28] actions
         '[]',                     // [29] reactions
         '[]',                     // [30] bonusActions
+        true,                     // [31] autoRefreshMechanics
       ];
 
       const character = mapCharacterRowToCharacter(data, 2, mockStatuses);
@@ -101,6 +102,7 @@ describe('sheetAdapters', () => {
         proficiencies: '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
         spellcastingAbility: '',
         gmControlled: false,
+        autoRefreshMechanics: true,
         traits: '[]',
         actions: '[]',
         reactions: '[]',
@@ -314,6 +316,7 @@ describe('sheetAdapters', () => {
         '[]',                     // [20] legendaryActionsList
         '',                       // [21] spellcastingAbility
         '[]',                     // [22] bonusActions
+        true,                     // [23] autoRefreshMechanics
       ];
 
       const npc = mapNpcRowToNpc(data, 5);
@@ -342,6 +345,7 @@ describe('sheetAdapters', () => {
         legendaryActionsList: '[]',
         spellcastingAbility: '',
         bonusActions: '[]',
+        autoRefreshMechanics: true,
       });
     });
   });
@@ -632,24 +636,25 @@ describe('Legacy Row Parsing', () => {
     ] as any as NpcRowData;
 
     const npc = mapNpcRowToNpc(npcData, 3);
+    expect(npc.bonusActions).toBe('[]');
   });
 
-  describe('Legacy Row Parsing', () => {
-    it('parses legacy Character and NPC rows (missing bonusActions) correctly, defaulting to []', () => {
-      const charData = [
-        'char-legacy', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]',
-        '{"STR":10}', '{"skills":{}}', '', false, '[]', '[]', '[]'
-      ] as any as CharacterRowData;
-      
-      const character = mapCharacterRowToCharacter(charData, 2, { '1': 'Active' });
-      expect(character.bonusActions).toBe('[]');
+  it('parses legacy Character and NPC rows (missing autoRefreshMechanics) correctly, defaulting to false', () => {
+    // 31-element character row (missing autoRefreshMechanics at index 31)
+    const charData = [
+      'char-legacy', 'Player', 'Hero', 10, 10, 0, 10, '', 10, 1, 1, '', '', '', '', 0, 0, 0, 0, '', '', '{}', '[]',
+      '{"STR":10}', '{"skills":{}}', '', false, '[]', '[]', '[]', '[]'
+    ] as any as CharacterRowData;
+    
+    const character = mapCharacterRowToCharacter(charData, 2, { '1': 'Active' });
+    expect(character.autoRefreshMechanics).toBe(false);
 
-      const npcData = [
-        'npc-legacy', 'Goblin', 12, 7, '', '', '', '', 0, 0, '', '{"STR":10}', '{"skills":{}}', '', '', '', '', '[]', '[]', '[]', '[]', ''
-      ] as any as NpcRowData;
+    // 23-element NPC row (missing autoRefreshMechanics at index 23)
+    const npcData = [
+      'npc-legacy', 'Goblin', 12, 7, '', '', '', '', 0, 0, '', '{"STR":10}', '{"skills":{}}', '', '', '', '', '[]', '[]', '[]', '[]', '', '[]'
+    ] as any as NpcRowData;
 
-      const npc = mapNpcRowToNpc(npcData, 3);
-      expect(npc.bonusActions).toBe('[]');
-    });
+    const npc = mapNpcRowToNpc(npcData, 3);
+    expect(npc.autoRefreshMechanics).toBe(false);
   });
 });

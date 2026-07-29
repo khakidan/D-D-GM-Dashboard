@@ -2,6 +2,34 @@
 
 ---
 
+## Character & NPC Persistence — `autoRefreshMechanics` Support (Completed)
+
+Integrated full read/write persistence for the "Auto-refresh action mechanics" checkbox across both Characters and NPCs, ensuring the opt-in automation setting survives page reloads and persists in the underlying Google Sheets database.
+
+- **Schema Update**:
+  - Appended `Auto_Refresh_Mechanics` to `CHARACTER_HEADERS` and `NPC_HEADERS` in `sheetSchemas.ts`.
+  - Updated `SHEET_RANGES` in `constants.ts` to `A2:AF` for Characters and `A2:X` for NPCs.
+  - Added boolean-coerced `autoRefreshMechanics` to `CharacterRowSchema` and `NpcRowSchema`.
+- **Read Path Integration**:
+  - Updated `mapCharacterRowToCharacter` and `mapNpcRowToNpc` in `sheetAdapters.ts` to parse the new column.
+  - Implemented robust fallback to `false` for legacy rows missing the new column, preventing data-load errors.
+- **Write Path Integration**:
+  - Updated `addCharacterDB`/`updateCharacterDB` in `characters.ts` to write to the new last column (Range `A:AF`).
+  - Updated `addNpcDB`/`updateNpcFullDB` in `npcs.ts` to write to the new last column (Range `A:X`).
+  - Added `autoRefreshMechanics` to the `handleUpdate` whitelist in `usePartyCharacterCrud.ts` to allow sync events to reach the database.
+  - Wired `autoRefreshMechanics` into the creation flow in `useNpcLibrary.ts`.
+- **Documentation**:
+  - Updated `docs/agents/schema.md` with the new column definitions and counts.
+  - Updated `docs/agents/testing-batches.md` with a new verified test baseline.
+- **Verification & Test Coverage**:
+  - Ran `tsc -p tsconfig.build.json --noEmit` cleanly.
+  - Added new test cases to `sheetAdapters.test.ts` for legacy fallback and successful mapping.
+  - Updated `characters.test.ts` and `npcs.test.ts` to verify 32-column and 24-column row-data parity.
+  - Updated `sheetSchemas.test.ts` to align with the new column counts.
+  - Final test baseline: **1059 tests passed** (Batch 1: 508, Batch 2: 57, Batch 3: 62).
+
+---
+
 ## PC Card Redesign — Legendary Actions Removal (Completed)
 
 Removed the unintended "Legendary Actions" section from the PC card (`CharacterCardExpanded.tsx`). Legendary Actions are a D&D 5e boss-monster-only mechanic and their presence on the PC card was identified as scope creep from Stage 5.

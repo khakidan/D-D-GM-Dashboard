@@ -106,9 +106,10 @@ export async function addCharacterDB(
       sanitizeString(character.actions || '[]'),
       sanitizeString(character.reactions || '[]'),
       sanitizeString(character.bonusActions || '[]'),
+      character.autoRefreshMechanics ? 'TRUE' : 'FALSE',
     ];
 
-    await appendSheetData(resolvedId, 'Characters!A:AE', [rowData]);
+    await appendSheetData(resolvedId, 'Characters!A:AF', [rowData]);
     return {
       ...character,
       id: finalId,
@@ -124,6 +125,7 @@ export async function addCharacterDB(
       proficiencies: finalProficiencies,
       spellcastingAbility: character.spellcastingAbility ?? finalSpellcastingAbility,
       gmControlled: character.gmControlled ?? false,
+      autoRefreshMechanics: character.autoRefreshMechanics ?? false,
       traits: character.traits ?? '[]',
       actions: character.actions ?? '[]',
       reactions: character.reactions ?? '[]',
@@ -197,10 +199,11 @@ export async function updateCharacterDB(
       sanitizeString(character.actions ?? fullState.actions ?? '[]'),
       sanitizeString(character.reactions ?? fullState.reactions ?? '[]'),
       sanitizeString(character.bonusActions ?? fullState.bonusActions ?? '[]'),
+      (character.autoRefreshMechanics ?? fullState.autoRefreshMechanics) ? 'TRUE' : 'FALSE',
     ];
 
     const a1Row = charRowIdx + 1;
-    queueWriteResolved(resolvedId, `Characters!A${a1Row}:AE${a1Row}`, [rowData]);
+    queueWriteResolved(resolvedId, `Characters!A${a1Row}:AF${a1Row}`, [rowData]);
   } catch (err) {
     console.error('[DB] updateCharacterDB failed:', err);
     throw err;

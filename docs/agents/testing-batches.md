@@ -2,9 +2,9 @@
 Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 batch counts individually after any change — never report only a combined total).
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 1061 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+**Current baseline: 1059 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
 - **Batch 1: 508 tests.**
-- **Batch 2: 57 tests.** Not touched this session — see baseline.
+- **Batch 2: 57 tests.**
 - **Batch 3: 62 tests.** Not touched this session — see baseline.
 - **Batch 4: 11 tests.**
 - **Batch 5A: 65 tests.**

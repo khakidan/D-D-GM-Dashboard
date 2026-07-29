@@ -50,6 +50,8 @@ export function useNpcLibrary() {
         reactions: newNpcData.reactions ?? '[]',
         legendaryActionsList: newNpcData.legendaryActionsList ?? '[]',
         spellcastingAbility: newNpcData.spellcastingAbility ?? '',
+        bonusActions: newNpcData.bonusActions ?? '[]',
+        autoRefreshMechanics: newNpcData.autoRefreshMechanics ?? false,
       });
       // Replace temp with real
       updateState(prev => ({

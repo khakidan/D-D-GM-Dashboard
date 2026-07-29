@@ -28,7 +28,7 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 
 ## Google Sheets Schema
 
-### Characters (A2:AE — 31 columns)
+### Characters (A2:AF — 32 columns)
 
 | Col | Index | Field | Notes |
 |-----|-------|-------|-------|
@@ -63,10 +63,11 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 | AC | 28 | actions | JSON: `NpcAction[]`, default `[]`. Same shape/precedent as NPCs' own `actions` column. Deliberately excludes any Legendary Action concept — that's NPC/monster-only. |
 | AD | 29 | reactions | JSON: `NpcReaction[]`, default `[]`. Same shape/precedent as NPCs' own `reactions` column. |
 | AE | 30 | bonusActions | JSON: `NpcAction[]`, default `[]`. Same shape/precedent as NPCs' own `bonusActions` column. |
+| AF | 31 | autoRefreshMechanics | `TRUE`/`FALSE` string, default `FALSE`. Persistence for the "Auto-refresh action mechanics" checkbox. |
 
 Note: `gmControlled`/`traits`/`actions`/`reactions`/`bonusActions` reuse the exact same `NpcTrait`/`NpcAction`/`NpcReaction` TypeScript interfaces already defined for NPCs (see the NPCs section below) — no separate PC-specific types exist. Unlike NPCs, PCs never have a Legendary Actions equivalent; that data doesn't apply to player characters and is intentionally absent from this schema.
 
-### NPCs (A2:W — 23 columns)
+### NPCs (A2:X — 24 columns)
 
 **Templates only — no "current" combat state.** NPC templates in this sheet represent a reusable stat block (used when adding an NPC to any encounter); they have no HP/temp-HP/conditions of their own. All per-instance combat state (current HP, temp HP, conditions, legendary actions remaining, recharge state) lives in `Encounter_Combatants`, scoped to that specific combatant instance in that specific encounter. See the "NPC Template vs. Combat-Instance State Isolation" entry in `CHANGELOG.md` for the full history of this design.
 
@@ -95,6 +96,7 @@ Note: `gmControlled`/`traits`/`actions`/`reactions`/`bonusActions` reuse the exa
 | U | 20 | legendaryActionsList | JSON: NpcLegendaryAction[] |
 | V | 21 | spellcastingAbility | String |
 | W | 22 | bonusActions | JSON: NpcAction[] |
+| X | 23 | autoRefreshMechanics | `TRUE`/`FALSE` string, default `FALSE`. Persistence for the "Auto-refresh action mechanics" checkbox. |
 
 **NPC TypeScript interfaces** (in src/types.ts):
 
@@ -249,7 +251,7 @@ IDs: 1=Easy, 2=Medium, 3=Hard, 4=Deadly
 
 The following fields are accepted by `handleUpdate` and write to the sheet:
 
-`playerName`, `characterName`, `class`, `ac`, `maxHp`, `tempHp`, `currentHp`, `conditions`, `passivePerception`, `level`, `statusId`, `notes`, `resistances`, `immunities`, `vulnerabilities`, `tempAc`, `deathSavesFails`, `deathSavesSuccesses`, `hitDiceConfig`, `hitDiceUsed`, `resourcePools`, `abilityScores`, `proficiencies`, `spellcastingAbility`, `gmControlled`, `traits`, `actions`, `bonusActions`, `reactions`
+`playerName`, `characterName`, `class`, `ac`, `maxHp`, `tempHp`, `currentHp`, `conditions`, `passivePerception`, `level`, `statusId`, `notes`, `resistances`, `immunities`, `vulnerabilities`, `tempAc`, `deathSavesFails`, `deathSavesSuccesses`, `hitDiceConfig`, `hitDiceUsed`, `resourcePools`, `abilityScores`, `proficiencies`, `spellcastingAbility`, `gmControlled`, `traits`, `actions`, `bonusActions`, `reactions`, `autoRefreshMechanics`
 
 **Any field not in this list is silently dropped from sheet sync** — the in-memory Zustand store still updates, but the change never reaches the sheet, with no error shown to the GM. This is the exact failure mode `usePartyCharacterCrud.test.ts`'s "GM Controlled Fields" test exists to guard against for the 4 newest fields.
 

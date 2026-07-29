@@ -11,7 +11,7 @@ export const CHARACTER_HEADERS = [
   'Death_Saves_Successes', 'Class',
   'Hit_Dice_Config', 'Hit_Dice_Used', 'Resource_Pools',
   'Ability_Scores', 'Proficiencies', 'Spellcasting_Ability',
-  'GM_Controlled', 'Traits', 'Actions', 'Reactions', 'Bonus_Actions'
+  'GM_Controlled', 'Traits', 'Actions', 'Reactions', 'Bonus_Actions', 'Auto_Refresh_Mechanics'
 ] as const;
 
 export const NPC_HEADERS = [
@@ -21,7 +21,7 @@ export const NPC_HEADERS = [
   'Recharge_Abilities', 'Ability_Scores', 'Proficiencies',
   'Speed', 'Senses', 'Languages', 'Challenge_Rating',
   'Traits', 'Actions', 'Reactions', 'Legendary_Actions_List',
-  'Spellcasting_Ability', 'Bonus_Actions'
+  'Spellcasting_Ability', 'Bonus_Actions', 'Auto_Refresh_Mechanics'
 ] as const;
 
 export const ENCOUNTER_HEADERS = [
@@ -117,6 +117,7 @@ export const CharacterRowSchema = z.preprocess(padRow(CHARACTER_HEADERS.length),
   stringDefault('[]'),                 // [28] actions
   stringDefault('[]'),                 // [29] reactions
   stringDefault('[]'),                 // [30] bonusActions
+  z.any().transform(val => val === 'TRUE' || val === true || val === 'true'), // [31] autoRefreshMechanics
 ]));
 
 export const NpcRowSchema = z.preprocess(padRow(NPC_HEADERS.length), z.tuple([
@@ -143,6 +144,7 @@ export const NpcRowSchema = z.preprocess(padRow(NPC_HEADERS.length), z.tuple([
   stringDefault('[]'),                 // [20] legendaryActionsList
   stringDefault(''),                   // [21] spellcastingAbility
   stringDefault('[]'),                 // [22] bonusActions
+  z.any().transform(val => val === 'TRUE' || val === true || val === 'true'), // [23] autoRefreshMechanics
 ]));
 
 export const EncounterRowSchema = z.preprocess(padRow(ENCOUNTER_HEADERS.length), z.tuple([

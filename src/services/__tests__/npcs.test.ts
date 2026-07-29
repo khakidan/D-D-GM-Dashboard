@@ -55,18 +55,19 @@ const npcData = {
     vi.clearAllMocks();
   });
 
-  it('writes exactly 23 values to NPCs!A:W', async () => {
+  it('writes exactly 24 values to NPCs!A:X', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
     await addNpcDB(npcData as any);
     expect(writeQueue.queueWrite).not.toHaveBeenCalled();
     expect(sheetsService.appendSheetData).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'NPCs!A:W',
+      'NPCs!A:X',
       expect.any(Array)
     );
     const appendCall = vi.mocked(sheetsService.appendSheetData).mock.calls[0];
     const row = appendCall[2][0] as any[];
-    expect(row).toHaveLength(23);
+    expect(row).toHaveLength(24);
+    expect(row[23]).toBe('FALSE');
   });
 
   it('writes new stat block fields at correct indices (13–21)', async () => {
@@ -161,14 +162,14 @@ describe('updateNpcFullDB — row array integrity', () => {
     expect(row[18]).toBe('[{"name":"Bite","recharge":"Recharge 5-6"}]');
   });
 
-  it('writes to NPCs!A{row}:W{row}', async () => {
+  it('writes to NPCs!A{row}:X{row}', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({
       values: [['other'], ['other'], ['101']],
     });
     await updateNpcFullDB(npc as any);
     expect(writeQueue.queueWrite).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'NPCs!A4:W4',
+      'NPCs!A4:X4',
       expect.any(Array)
     );
   });
