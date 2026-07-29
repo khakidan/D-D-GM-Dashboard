@@ -299,48 +299,54 @@ export function CombatantCardExpanded({
       {/* 7. Reference Content: Traits, Actions, etc. */}
       {showReferenceContent && (
         <div className="space-y-4 pt-2">
-          {traits.length > 0 && (
-            <NpcStatBlockSection
-              title="Traits"
-              items={traits.map(t => ({
-                name: t.name,
-                description: t.description,
-              }))}
-            />
-          )}
+          <div data-testid="reference-content-grid" className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+            <div className="space-y-4">
+              {traits.length > 0 && (
+                <NpcStatBlockSection
+                  title="Traits"
+                  items={traits.map(t => ({
+                    name: t.name,
+                    description: t.description,
+                  }))}
+                />
+              )}
 
-          {actions.length > 0 && (
-            <NpcStatBlockSection
-              title="Actions"
-              items={actions.map(a => ({
-                name: a.name,
-                description: a.description,
-                meta: formatActionMeta(a),
-              }))}
-            />
-          )}
+              {bonusActions.length > 0 && (
+                <NpcStatBlockSection
+                  title="Bonus Actions"
+                  items={bonusActions.map(ba => ({
+                    name: ba.name,
+                    description: ba.description,
+                    meta: formatActionMeta(ba),
+                  }))}
+                />
+              )}
+            </div>
 
-          {bonusActions.length > 0 && (
-            <NpcStatBlockSection
-              title="Bonus Actions"
-              items={bonusActions.map(ba => ({
-                name: ba.name,
-                description: ba.description,
-                meta: formatActionMeta(ba),
-              }))}
-            />
-          )}
+            <div className="space-y-4">
+              {actions.length > 0 && (
+                <NpcStatBlockSection
+                  title="Actions"
+                  items={actions.map(a => ({
+                    name: a.name,
+                    description: a.description,
+                    meta: formatActionMeta(a),
+                  }))}
+                />
+              )}
 
-          {reactions.length > 0 && (
-            <NpcStatBlockSection
-              title="Reactions"
-              items={reactions.map(r => ({
-                name: r.name,
-                description: r.description,
-                meta: formatActionMeta(r),
-              }))}
-            />
-          )}
+              {reactions.length > 0 && (
+                <NpcStatBlockSection
+                  title="Reactions"
+                  items={reactions.map(r => ({
+                    name: r.name,
+                    description: r.description,
+                    meta: formatActionMeta(r),
+                  }))}
+                />
+              )}
+            </div>
+          </div>
 
           {/* 8. Legendary Section */}
           {c.type === 'npc' && (c.legendaryActions || c.legendaryResistances) && (

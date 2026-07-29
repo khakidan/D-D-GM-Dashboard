@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { CombatantCard } from '../CombatantCard';
 import type { Combatant } from '../../../types';
@@ -431,6 +431,34 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     expect(screen.queryByRole('button', { name: /▶ Stat Block/i })).not.toBeInTheDocument();
     expect(screen.getByText('Test Trait')).toBeInTheDocument();
     expect(screen.getByText('Test Description')).toBeInTheDocument();
+  });
+
+  it('renders reference content in a 2-column grid when expanded', () => {
+    const npc = makeCombatant({
+      id: 'npc-grid',
+      type: 'npc',
+      name: 'Grid NPC',
+      traits: JSON.stringify([{ name: 'Trait 1', description: 'Desc 1' }]),
+      actions: JSON.stringify([{ name: 'Action 1', description: 'Desc 1' }]),
+      bonusActions: JSON.stringify([{ name: 'Bonus 1', description: 'Desc 1' }]),
+      reactions: JSON.stringify([{ name: 'Reaction 1', description: 'Desc 1' }]),
+    });
+
+    render(<CombatantCard {...defaultProps} c={npc} />);
+
+    const grid = screen.getByTestId('reference-content-grid');
+    expect(grid).toHaveClass('grid', 'grid-cols-1', 'md:grid-cols-2');
+
+    const columns = grid.children;
+    expect(columns).toHaveLength(2);
+
+    // Traits and Bonus Actions should be in the first column
+    expect(within(columns[0] as HTMLElement).getByText('Traits')).toBeInTheDocument();
+    expect(within(columns[0] as HTMLElement).getByText('Bonus Actions')).toBeInTheDocument();
+
+    // Actions and Reactions should be in the second column
+    expect(within(columns[1] as HTMLElement).getByText('Actions')).toBeInTheDocument();
+    expect(within(columns[1] as HTMLElement).getByText('Reactions')).toBeInTheDocument();
   });
 
   it('does not render reference content (traits) for a PC combatant when gmControlled is false', () => {
