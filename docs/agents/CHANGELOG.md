@@ -2,6 +2,27 @@
 
 ---
 
+## PC Card Redesign — Legendary Actions Removal (Completed)
+
+Removed the unintended "Legendary Actions" section from the PC card (`CharacterCardExpanded.tsx`). Legendary Actions are a D&D 5e boss-monster-only mechanic and their presence on the PC card was identified as scope creep from Stage 5.
+
+- **CharacterCardExpanded.tsx**:
+  - Removed `legendaryActionsList` memo and `renderLegendaryActionFields` destructuring.
+  - Removed `legendaryActionsList` from all `onUpdate` calls in `Level` and `handleStatBlockChange`.
+  - Removed `legendaryActionsList` from stale-check calculations (`findStaleAutomatedValues`).
+  - Removed the `NpcListEditor` JSX block for Legendary Actions.
+  - Removed the unused `NpcLegendaryAction` import.
+- **Testing**:
+  - Removed the stale-check test for legendary actions in `CharacterCardExpanded.test.tsx`.
+  - Verified no other tests in `CharacterCardExpanded.test.tsx` or `NewPlayerDialog.test.tsx` referenced the removed section.
+- **Verification**:
+  - `tsc -p tsconfig.build.json --noEmit` clean.
+  - Batch 6A (PartyTab): 75/75 passed (down from 76 due to test removal).
+  - Batch 6C (NpcLibrary): 43/43 passed (Legendary Actions functionality on `NpcCard.tsx` confirmed unaffected).
+  - Batch 8 (UI): 85/85 passed.
+
+---
+
 ## PC/NPC Card Redesign — Visual Correction Bugfix Pass (Completed)
 
 Corrected two visual positioning and layout issues identified via direct inspection that were not caught by automated tests.

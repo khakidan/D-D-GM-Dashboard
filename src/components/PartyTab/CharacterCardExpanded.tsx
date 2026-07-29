@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
-import { Character, NpcTrait, NpcAction, NpcReaction, NpcLegendaryAction } from '../../types';
+import { Character, NpcTrait, NpcAction, NpcReaction } from '../../types';
 import { cn } from '../../lib/utils';
 import { DebouncedInput } from '../ui/DebouncedInput';
 import { CardNumberInput } from '../ui/CardNumberInput';
@@ -79,15 +79,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
     }
   }, [character.bonusActions]);
 
-  const legendaryActionsList = React.useMemo(() => {
-    try {
-      const parsed = JSON.parse((character as any).legendaryActionsList || '[]');
-      return Array.isArray(parsed) ? (parsed as NpcLegendaryAction[]) : [];
-    } catch {
-      return [] as NpcLegendaryAction[];
-    }
-  }, [(character as any).legendaryActionsList]);
-
 
   const parsedAbilityScores = 
     parseAbilityScores(character.abilityScores);
@@ -99,7 +90,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
     renderActionFields,
     renderReactionFields,
     renderBonusActionFields,
-    renderLegendaryActionFields,
   } = React.useMemo(() => createNpcListRenderers(
     'char-card',
     parsedAbilityScores,
@@ -151,15 +141,13 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                     actions: JSON.stringify(recalculateAutomatedValues(actions, parsedAbilityScores, newProfBonus)),
                     reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedAbilityScores, newProfBonus)),
                     bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedAbilityScores, newProfBonus)),
-                    legendaryActionsList: JSON.stringify(recalculateAutomatedValues(legendaryActionsList, parsedAbilityScores, newProfBonus)),
                   });
                 } else {
                   onUpdate({ level: v });
                   const staleCount =
                     findStaleAutomatedValues(actions, parsedAbilityScores, newProfBonus) +
                     findStaleAutomatedValues(reactions, parsedAbilityScores, newProfBonus) +
-                    findStaleAutomatedValues(bonusActions, parsedAbilityScores, newProfBonus) +
-                    findStaleAutomatedValues(legendaryActionsList, parsedAbilityScores, newProfBonus);
+                    findStaleAutomatedValues(bonusActions, parsedAbilityScores, newProfBonus);
                   if (staleCount > 0) {
                     toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
                       action: {
@@ -169,7 +157,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                             actions: JSON.stringify(recalculateAutomatedValues(actions, parsedAbilityScores, newProfBonus)),
                             reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedAbilityScores, newProfBonus)),
                             bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedAbilityScores, newProfBonus)),
-                            legendaryActionsList: JSON.stringify(recalculateAutomatedValues(legendaryActionsList, parsedAbilityScores, newProfBonus)),
                           });
                         },
                       },
@@ -254,7 +241,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
               actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
               reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
               bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
-              legendaryActionsList: JSON.stringify(recalculateAutomatedValues(legendaryActionsList, scores, profBonus)),
             });
           } else {
             onUpdate({
@@ -264,8 +250,7 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
             const staleCount =
               findStaleAutomatedValues(actions, scores, profBonus) +
               findStaleAutomatedValues(reactions, scores, profBonus) +
-              findStaleAutomatedValues(bonusActions, scores, profBonus) +
-              findStaleAutomatedValues(legendaryActionsList, scores, profBonus);
+              findStaleAutomatedValues(bonusActions, scores, profBonus);
             if (staleCount > 0) {
               toast(`${staleCount} action value${staleCount === 1 ? ' is' : 's are'} out of date.`, {
                 action: {
@@ -275,7 +260,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
                       actions: JSON.stringify(recalculateAutomatedValues(actions, scores, profBonus)),
                       reactions: JSON.stringify(recalculateAutomatedValues(reactions, scores, profBonus)),
                       bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, scores, profBonus)),
-                      legendaryActionsList: JSON.stringify(recalculateAutomatedValues(legendaryActionsList, scores, profBonus)),
                     });
                   },
                 },
@@ -695,30 +679,6 @@ export const CharacterCardExpanded: React.FC<CharacterCardExpandedProps> = ({
               />
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-[#e2e8f0]/40">
-              <NpcListEditor<NpcLegendaryAction>
-                title="Legendary Actions"
-                items={legendaryActionsList}
-                defaultExpanded={legendaryActionsList.length > 0}
-                emptyItem={{
-                  name: '',
-                  description: '',
-                  cost: 1,
-                  attackBonus: undefined,
-                  damage: undefined,
-                  saveDC: undefined,
-                  saveType: undefined,
-                  dcAbilities: undefined,
-                  atkAbility: undefined,
-                  damageComponents: undefined,
-                  range: undefined,
-                }}
-                renderFields={renderLegendaryActionFields}
-                onChange={(updated) =>
-                  onUpdate({ legendaryActionsList: JSON.stringify(updated) })
-                }
-              />
-            </div>
           </div>
         )}
       </div>

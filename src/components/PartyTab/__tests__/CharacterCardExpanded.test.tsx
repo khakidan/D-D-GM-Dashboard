@@ -15,69 +15,6 @@ vi.mock('sonner', () => ({
 
 describe('CharacterCardExpanded', () => {
 
-  it('identifies stale values in legendaryActionsList and recalculates them (Stage 5 Parity)', () => {
-    // Stage 5 Parity check: legendaryActionsList should be checked for stale auto-computed values,
-    // just like actions/reactions/bonusActions.
-    const initialLegendary = [{
-      name: 'Tail Attack',
-      description: '...',
-      attackBonus: 5, // STALE (should be prof 2 + str 4 = 6)
-      atkAutoComputed: true,
-      atkAbility: 'STR' as const
-    }];
-    const mockPcWithLegendary = {
-      ...defaultCharacter,
-      id: 'pc-stale-legendary',
-      abilityScores: JSON.stringify({ STR: 18, DEX: 14, CON: 14, INT: 10, WIS: 10, CHA: 10 }), // STR mod +4
-      proficiencies: JSON.stringify({ proficiencyBonus: 2 }), // Prof +2 -> Atk = 6
-      legendaryActionsList: JSON.stringify(initialLegendary)
-    };
-    
-    let updateCalls: any[] = [];
-    const onUpdate = (updates: Partial<any>) => {
-      updateCalls.push(updates);
-    };
-
-    render(
-      <CharacterCardExpanded
-        character={mockPcWithLegendary}
-        isSyncing={false}
-        onUpdate={onUpdate}
-        onDelete={vi.fn()}
-      />
-    );
-
-    // Edit ability score to trigger stale check. 18 -> 20 (STR mod +5, Atk = 7)
-    // Wait, the test is checking that if we change STR, it checks legendaryActionsList.
-    // The initial value is already stale, but let's change STR to 20 to trigger handleStatBlockChange.
-    const strInput = screen.getByLabelText('STR score');
-    fireEvent.change(strInput, { target: { value: '20' } });
-    fireEvent.blur(strInput);
-
-    // Expect the toast to show
-    expect(toast).toHaveBeenCalledWith(
-      '1 action value is out of date.',
-      expect.objectContaining({
-        action: expect.objectContaining({
-          label: 'Recalculate',
-          onClick: expect.any(Function),
-        }),
-      })
-    );
-
-    // Call the Recalculate action's onClick handler
-    const toastCall = vi.mocked(toast).mock.calls.find(call => call[0] === '1 action value is out of date.');
-    const actionObj = (toastCall?.[1] as any)?.action;
-    actionObj.onClick();
-
-    // Verify legendaryActionsList was updated
-    // updateCalls[1] is the recalculate call
-    const lastUpdate = updateCalls[updateCalls.length - 1];
-    expect(lastUpdate.legendaryActionsList).toBeDefined();
-    const parsedLegendary = JSON.parse(lastUpdate.legendaryActionsList);
-    expect(parsedLegendary[0].attackBonus).toBe(7); // prof 2 + STR 5 = 7
-  });
-
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
