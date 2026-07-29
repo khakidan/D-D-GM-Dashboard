@@ -10,6 +10,7 @@ import {
   parseProficiencies,
   serializeAbilityScores,
   serializeProficiencies,
+  syncProficiencyBonusToCR,
   DEFAULT_ABILITY_SCORES,
   DEFAULT_PROFICIENCIES
 } from '../abilityScores';
@@ -222,6 +223,49 @@ describe('Ability Scores & Proficiencies Utilities', () => {
       const res = serializeProficiencies(DEFAULT_PROFICIENCIES);
       expect(typeof res).toBe('string');
       expect(JSON.parse(res)).toEqual(DEFAULT_PROFICIENCIES);
+    });
+  });
+
+  describe('syncProficiencyBonusToCR', () => {
+    it('returns exact same input string reference when proficiency bonus already matches CR', () => {
+      // CR 1 has prof bonus 2, DEFAULT_PROFICIENCIES has proficiencyBonus: 2
+      const profsStr = serializeProficiencies(DEFAULT_PROFICIENCIES);
+      const result = syncProficiencyBonusToCR(profsStr, '1');
+      expect(result).toBe(profsStr);
+    });
+
+    it('correctly handles fractional CR strings like 1/4 or 1/2', () => {
+      const profs = { ...DEFAULT_PROFICIENCIES, proficiencyBonus: 4 };
+      const profsStr = serializeProficiencies(profs);
+      // CR 1/4 has proficiencyBonus 2
+      const result = syncProficiencyBonusToCR(profsStr, '1/4');
+      const parsed = parseProficiencies(result);
+      expect(parsed.proficiencyBonus).toBe(2);
+    });
+
+    it('returns input proficiencies unchanged when CR is empty or falsy', () => {
+      const profsStr = serializeProficiencies(DEFAULT_PROFICIENCIES);
+      expect(syncProficiencyBonusToCR(profsStr, '')).toBe(profsStr);
+      expect(syncProficiencyBonusToCR(profsStr, undefined as any)).toBe(profsStr);
+    });
+
+    it('updates proficiencyBonus and preserves other proficiency fields when CR changes', () => {
+      const customProfs = {
+        proficiencyBonus: 2,
+        jackOfAllTrades: true,
+        savingThrows: ['DEX', 'WIS'],
+        skills: { Acrobatics: 'expertise' as const },
+        passiveBonuses: { perception: 1, insight: 2, investigation: 3 }
+      };
+      const profsStr = serializeProficiencies(customProfs);
+      // Change CR to 13 (proficiencyBonus 5)
+      const result = syncProficiencyBonusToCR(profsStr, '13');
+      const parsed = parseProficiencies(result);
+      expect(parsed.proficiencyBonus).toBe(5);
+      expect(parsed.jackOfAllTrades).toBe(true);
+      expect(parsed.savingThrows).toEqual(['DEX', 'WIS']);
+      expect(parsed.skills).toEqual({ Acrobatics: 'expertise' });
+      expect(parsed.passiveBonuses).toEqual({ perception: 1, insight: 2, investigation: 3 });
     });
   });
 });

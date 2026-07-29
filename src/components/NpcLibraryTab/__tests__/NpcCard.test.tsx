@@ -738,5 +738,62 @@ describe('NpcCard', () => {
     const recalculatedActions = JSON.parse(updatedNpcUpdates.actions);
     expect(recalculatedActions[0].attackBonus).toBe(5);
   });
+
+  it('syncs proficiencyBonus when challengeRating changes and preserves other proficiency fields with exactly one onUpdate call', () => {
+    const initialProficiencies = {
+      proficiencyBonus: 2,
+      savingThrows: ['STR', 'CON'],
+      skills: { Perception: 'proficient' },
+      passiveBonuses: { perception: 2, insight: 0, investigation: 0 },
+    };
+    const mockNpc: NPC = {
+      id: 'npc-cr-sync',
+      name: 'Dragon',
+      ac: 18,
+      maxHp: 200,
+      notes: '',
+      abilityScores: JSON.stringify({ STR: 20, DEX: 10, CON: 18, INT: 14, WIS: 14, CHA: 18 }),
+      proficiencies: JSON.stringify(initialProficiencies),
+      speed: '40ft.',
+      senses: '',
+      languages: '',
+      challengeRating: '1',
+      traits: '[]',
+      actions: '[]',
+      reactions: '[]',
+      legendaryActionsList: '[]',
+      autoRefreshMechanics: false,
+    };
+
+    let updateCalls: any[] = [];
+    const onUpdate = (updates: Partial<NPC>) => {
+      updateCalls.push(updates);
+    };
+
+    render(
+      <NpcCard
+        npc={mockNpc}
+        isSyncing={false}
+        isExpanded={true}
+        onToggleExpand={vi.fn()}
+        onUpdate={onUpdate}
+        onDelete={vi.fn()}
+      />
+    );
+
+    const crInput = screen.getByDisplayValue('1');
+    fireEvent.change(crInput, { target: { value: '10' } });
+    fireEvent.blur(crInput);
+
+    expect(updateCalls.length).toBe(1);
+    expect(updateCalls[0].challengeRating).toBe('10');
+    expect(updateCalls[0].proficiencies).toBeDefined();
+
+    const updatedProfs = JSON.parse(updateCalls[0].proficiencies);
+    expect(updatedProfs.proficiencyBonus).toBe(4); // CR 10 prof bonus is 4
+    expect(updatedProfs.savingThrows).toEqual(['STR', 'CON']);
+    expect(updatedProfs.skills).toEqual({ Perception: 'proficient' });
+    expect(updatedProfs.passiveBonuses).toEqual({ perception: 2, insight: 0, investigation: 0 });
+  });
 });
 

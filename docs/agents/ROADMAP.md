@@ -17,7 +17,7 @@ None.
 
 ### 🟡 UI Refactor
 
-# GM Dashboard — PC/NPC Card Redesign (Full Locked Scope)
+#### GM Dashboard — PC/NPC Card Redesign (Full Locked Scope)
 
 This entry replaces and consolidates every prior fragmented note on this topic. It covers three related, staged pieces of work: **(1)** the PC card (`CharacterCardExpanded.tsx`), **(2)** the shared Action/Reaction/Bonus Action/Legendary Action field editor (`NpcCombatActionFields.tsx`), and **(3)** the NPC card (`NpcCard.tsx`). The goal across all three: replace the current sprawling, heavily-boxed, hard-to-scan layout with a compact, gridded layout that reuses patterns already proven and shipped in `CombatantCardExpanded.tsx` (see `file-reference.md`), while remaining fully editable (unlike the combatant card, which is read-only).
 
@@ -27,7 +27,7 @@ Reference screenshots and locked interactive mockups for all three pieces are at
 
 ---
 
-## Part 1 — PC Card (`CharacterCardExpanded.tsx`)
+##### Part 1 — PC Card (`CharacterCardExpanded.tsx`)
 
 **Header:** Keep the existing layout as-is, with one addition — move the `Class` field up into the header row. The `Class` field is currently a separate `<LabeledField label="Class"><DebouncedInput ... /></LabeledField>` block further down the card; it must be RELOCATED into the header (not duplicated — remove the original block once relocated) and remain a fully editable free-text field there (its current placeholder is "e.g. Barbarian or Barbarian / Fighter" — it is not a fixed enum, so it can't become a static label the way `GM` is). Resulting header order: `[Name] | [CLASS] | [GM] ... [Active status pill] [Level Up button] | [expand/collapse chevron]`. Do not restructure, merge, or remove any other header element.
 
@@ -56,7 +56,7 @@ Reference screenshots and locked interactive mockups for all three pieces are at
 
 ---
 
-## Part 2 — Action / Reaction / Bonus Action / Legendary Action Editor (`NpcCombatActionFields.tsx`)
+##### Part 2 — Action / Reaction / Bonus Action / Legendary Action Editor (`NpcCombatActionFields.tsx`)
 
 This is the shared field editor used by `renderActionFields`, `renderReactionFields`, `renderBonusActionFields`, AND (see reversal below) `renderLegendaryActionFields` in `npcListFieldRenderers.tsx`. It currently crams ATK/DMG/DC/SAVE into one row, with the "ATK BASIS"/"DC BASIS" chip rows disconnected further down the form, and the Damage Components builder duplicating the DMG field above it. This redesign groups mechanically-related fields into three self-contained cards.
 
@@ -82,7 +82,7 @@ This is the shared field editor used by `renderActionFields`, `renderReactionFie
 
 ---
 
-## Part 3 — NPC Card (`NpcCard.tsx`)
+##### Part 3 — NPC Card (`NpcCard.tsx`)
 
 Same overall approach as the PC card, adapted for what NPCs actually have. **Header stays unchanged** (existing `NpcCardHeader.tsx` pattern — not part of this redesign).
 
@@ -105,9 +105,25 @@ Same overall approach as the PC card, adapted for what NPCs actually have. **Hea
 **Actions/Reactions/Bonus Actions/Legendary Actions:** use the redesigned editor from Part 2 above — no NPC-specific differences beyond what Part 2 already specifies.
 
 - **[CORRECTION to Part 2's Locked Layout, point 3]** Legendary Actions DO get a `Range` field after all — this replaces the earlier statement that they don't. Real 5e legendary actions frequently have their own standalone area/range independent of the parent action they might reuse (e.g. a "Wing Attack" hitting everything within 15 feet, a "Tail Sweep" with its own reach) — there is no rules-based reason to exclude Range from Legendary Actions, and doing so was very likely the same kind of oversight as the automation-parity gap already being corrected above, not a deliberate design choice. Add a `range?: string` field to `NpcLegendaryAction` in `types.ts` (it doesn't have one today), and wire `renderLegendaryActionFields` to pass `rangeValue`/`onRangeValueChange` to `NpcCombatActionFields` the same way the other three renderers already do. The Range field renders in the same position as the other three types — full-width, directly below the three-card Attack/Damage/Saving-Throw grid, above Description.
+
+- **[PREREQUISITE — COMPLETE AND VERIFIED]** ✅ Fixed and tested: `syncProficiencyBonusToCR()` (new pure helper in `src/lib/abilityScores.ts`) is now wired into `NpcCard.tsx`'s CR-change handler in both branches, merged into the same single `onUpdate` call as `challengeRating` (no race condition). `useNpcCrAutomation.ts` refactored to call the same helper, `NewPlayerDialog.tsx`'s creation-time behavior unchanged. Verified: `tsc` clean, Batch 1 508/508 (includes 4 new direct unit tests for the helper), Batch 6C 36/36 (includes a dedicated single-`onUpdate`-call regression test). The override removal below is now unblocked and safe.
+- **Only once that prerequisite is verified**, the Proficiency Bonus manual override input (`ProficiencyOverrideInput` in `StatBlockScores.tsx`) is removed entirely — for both PCs and NPCs, no exceptions. `PROF +N` becomes purely derived, non-editable display text in the new compact stat row on both cards (PCs: `proficiencyBonusFromLevel(character.level)`; NPCs: `proficiencyBonusFromCR(npc.challengeRating)`). No manual override path remains anywhere in the app after this.
+
 ---
 
-## Implementation discipline (applies to all three parts)
+##### Investigation Findings — Locked (from pre-Stage-1 investigation)
+
+These are confirmed facts about the real current code, gathered before Stage 1 begins, to prevent re-investigation or incorrect assumptions:
+
+- **The real ability-score editing mechanism is NOT `CardNumberInput` or `StatBlockScoresTable.tsx`.** It's `StatBlock.tsx` → `StatBlockScores.tsx`, which contains its own local `AbilityScoreInput` component (buffered local state, commits on blur/Enter, clamped 1-30) rendered inside 6 `StatTile` boxes via `flex flex-wrap`. `StatBlockScoresTable.tsx` (the read-only bordered-table component referenced in Part 1's "Ability score table" section) is a *different*, currently unused-for-editing component. Stage 1 must build an editable variant of `StatBlockScoresTable.tsx` (recommended: add an optional `onScoreChange?: (ability: AbilityName, value: number) => void` prop, replacing the static score `<div>` with an input when present) that replicates `AbilityScoreInput`'s exact buffered-commit + 1-30 clamp behavior — then use that new editable table to replace `StatBlockScores.tsx`'s current `StatTile`-grid rendering (SECTION A) inside `StatBlock.tsx`.
+- **`StatBlockScores.tsx` also currently owns the entire Proficiency Bonus row** (SECTION B — display value + the `ProficiencyOverrideInput` now being removed per the locked decision above). Once the override is removed, SECTION B should be deleted from `StatBlockScores.tsx`/`StatBlock.tsx` entirely — `PROF` moves out and becomes a directly-computed value rendered in the new compact stat row inside `CharacterCardExpanded.tsx` (`proficiencyBonusFromLevel(character.level)`) and, later in Part 3, `NpcCard.tsx` (`proficiencyBonusFromCR(npc.challengeRating)`). No ternary/override-branch logic is needed anymore — `NpcCard.tsx` already renders `<StatBlock>` without a `characterLevel` prop, and that's fine to leave as-is since NPCs never derived PROF from level in the first place.
+- **`StatBlockPassive.tsx`'s dark-background contrast bug root cause is confirmed**, not just suspected: the expanded override panel is hardcoded with `bg-stone-800/40 border-stone-700/50`, and each input has `bg-stone-800 border-stone-600 text-stone-200` — genuine leftover dark-theme Tailwind classes never updated to this app's light theme. Straightforward fix: swap to standard light input styling matching the rest of this file.
+- **`IrvSection.tsx` confirmed to have no `direction`/`layout` prop today** — it's hardcoded `grid grid-cols-1 sm:grid-cols-3` (a responsive breakpoint collapse, not an on-demand layout switch). A new prop is needed (e.g. `direction?: 'row' | 'column'`, default `'row'` preserving today's behavior for the NPC card's unchanged usage in Part 3, `'column'` forcing `grid-cols-1` unconditionally for the PC card's new vertical IRV stack in Part 1).
+- **`CardNumberInput.tsx`'s real prop shape is confirmed**: `value, onChange, fallback=0, min, max, className, disabled, title, placeholder` — matches what Part 1's stat row section already assumes, no discrepancy.
+
+---
+
+##### Implementation discipline (applies to all three parts)
 
 Expected multi-stage effort — implement and verify in this order, following the same staged discipline used for every prior feature this session (investigate real current code first, lock each stage's design, verify with raw terminal test output before moving to the next stage, never accept "tests passed" without literal output):
 

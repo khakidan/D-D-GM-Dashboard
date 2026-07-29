@@ -110,6 +110,27 @@ export function proficiencyBonusFromCR(
   return 9; // CR 29-30
 }
 
+export function syncProficiencyBonusToCR(
+  proficiencies: string,
+  challengeRating: string
+): string {
+  if (!challengeRating) return proficiencies;
+  try {
+    const profBonus = proficiencyBonusFromCR(challengeRating);
+    const parsed = parseProficiencies(proficiencies);
+    if (parsed.proficiencyBonus === profBonus) {
+      return proficiencies;
+    }
+    const updated = {
+      ...parsed,
+      proficiencyBonus: profBonus,
+    };
+    return serializeProficiencies(updated);
+  } catch {
+    return proficiencies;
+  }
+}
+
 // modifier + profBonus if proficient
 // modifier only if not proficient
 export function getSavingThrowBonus(

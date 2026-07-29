@@ -23,7 +23,7 @@ import { SpellcastingStatsRow } from '../ui/SpellcastingStatsRow';
 import { serializeSpellcastingAbility } from '../../lib/spellcasting';
 import { toast } from 'sonner';
 import { findStaleAutomatedValues, recalculateAutomatedValues } from '../../lib/automation';
-import { parseAbilityScores, parseProficiencies, serializeAbilityScores, serializeProficiencies, proficiencyBonusFromCR } from '../../lib/abilityScores';
+import { parseAbilityScores, parseProficiencies, serializeAbilityScores, serializeProficiencies, proficiencyBonusFromCR, syncProficiencyBonusToCR } from '../../lib/abilityScores';
 
 export interface NpcCardProps {
   npc: NPC;
@@ -176,14 +176,20 @@ export const NpcCard: React.FC<NpcCardProps> = React.memo(function NpcCard({
                   const crVal = v as string;
                   const newProfBonus = proficiencyBonusFromCR(crVal);
                   if (npc.autoRefreshMechanics) {
+                    const updatedProfs = syncProficiencyBonusToCR(npc.proficiencies, crVal);
                     onUpdate({
                       challengeRating: crVal,
+                      proficiencies: updatedProfs,
                       actions: JSON.stringify(recalculateAutomatedValues(actions, parsedScores, newProfBonus)),
                       reactions: JSON.stringify(recalculateAutomatedValues(reactions, parsedScores, newProfBonus)),
                       bonusActions: JSON.stringify(recalculateAutomatedValues(bonusActions, parsedScores, newProfBonus)),
                     });
                   } else {
-                    onUpdate({ challengeRating: crVal });
+                    const updatedProfs = syncProficiencyBonusToCR(npc.proficiencies, crVal);
+                    onUpdate({
+                      challengeRating: crVal,
+                      proficiencies: updatedProfs,
+                    });
                     const staleCount =
                       findStaleAutomatedValues(actions, parsedScores, newProfBonus) +
                       findStaleAutomatedValues(reactions, parsedScores, newProfBonus) +

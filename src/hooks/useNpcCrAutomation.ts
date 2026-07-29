@@ -1,9 +1,5 @@
 import { useEffect } from 'react';
-import {
-  parseProficiencies,
-  serializeProficiencies,
-  proficiencyBonusFromCR,
-} from '../lib/abilityScores';
+import { syncProficiencyBonusToCR } from '../lib/abilityScores';
 
 interface UseNpcCrAutomationParams {
   challengeRating: string;
@@ -19,15 +15,10 @@ export function useNpcCrAutomation({
   useEffect(() => {
     if (!challengeRating) return;
     try {
-      const profBonus = proficiencyBonusFromCR(challengeRating);
-      const parsed = parseProficiencies(proficiencies);
-      if (parsed.proficiencyBonus === profBonus) return; // already correct, no update
-
-      const updated = {
-        ...parsed,
-        proficiencyBonus: profBonus,
-      };
-      onChange(serializeProficiencies(updated));
+      const updated = syncProficiencyBonusToCR(proficiencies, challengeRating);
+      if (updated !== proficiencies) {
+        onChange(updated);
+      }
     } catch {
       // silently ignore invalid CR strings
     }
