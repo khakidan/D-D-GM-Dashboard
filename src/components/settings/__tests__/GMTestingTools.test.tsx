@@ -2,33 +2,33 @@ import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useDashboardStore } from '../../hooks/dashboardStore';
-import { resolveActiveSpreadsheetId } from '../../services/sheetsService';
-import { fetchSpreadsheetMetadata, batchUpdateSpreadsheet } from '../../services/dbOperations/shared';
-import { updateNpcFullDB } from '../../services/dbOperations/npcs';
-import { reconstructChallengeRating } from '../../lib/challengeRatingRepair';
+import { useDashboardStore } from '../../../hooks/dashboardStore';
+import { resolveActiveSpreadsheetId } from '../../../services/sheetsService';
+import { fetchSpreadsheetMetadata, batchUpdateSpreadsheet } from '../../../services/dbOperations/shared';
+import { updateNpcFullDB } from '../../../services/dbOperations/npcs';
+import { reconstructChallengeRating } from '../../../lib/challengeRatingRepair';
 
 import { GMTestingTools } from '../GMTestingTools';
 
 
-vi.mock('../../hooks/dashboardStore', () => ({
+vi.mock('../../../hooks/dashboardStore', () => ({
   useDashboardStore: vi.fn(),
 }));
 
-vi.mock('../../services/sheetsService', () => ({
+vi.mock('../../../services/sheetsService', () => ({
   resolveActiveSpreadsheetId: vi.fn(),
 }));
 
-vi.mock('../../services/dbOperations/shared', () => ({
+vi.mock('../../../services/dbOperations/shared', () => ({
   fetchSpreadsheetMetadata: vi.fn(),
   batchUpdateSpreadsheet: vi.fn(),
 }));
 
-vi.mock('../../services/dbOperations/npcs', () => ({
+vi.mock('../../../services/dbOperations/npcs', () => ({
   updateNpcFullDB: vi.fn(),
 }));
 
-vi.mock('../../lib/challengeRatingRepair', () => ({
+vi.mock('../../../lib/challengeRatingRepair', () => ({
   reconstructChallengeRating: vi.fn(),
 }));
 

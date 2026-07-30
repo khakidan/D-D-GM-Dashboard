@@ -1,11 +1,11 @@
-// src/components/ReferenceDataSeeder.tsx
+// src/components/settings/ReferenceDataSeeder.tsx
 
 import { useState } from 'react';
 import { Database, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
-import { useReferenceDataSeeder } from '../hooks/useReferenceDataSeeder';
-import { Button } from './ui/Button';
-import { SettingsPanel } from './ui/SettingsPanel';
+import { useReferenceDataSeeder } from '../../hooks/useReferenceDataSeeder';
+import { Button } from '../ui/Button';
+import { SettingsPanel } from '../ui/SettingsPanel';
 
 interface ReferenceDataSeederProps {
   isGoogleConnected: boolean;

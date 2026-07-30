@@ -2,10 +2,10 @@ import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SettingsPage } from '../SettingsPage';
-import { useAppState } from '../../hooks/useAppState';
+import { useAppState } from '../../../hooks/useAppState';
 import { toast } from 'sonner';
 
-vi.mock('../../hooks/useAppState');
+vi.mock('../../../hooks/useAppState');
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),

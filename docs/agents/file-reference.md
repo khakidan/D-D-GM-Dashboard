@@ -114,7 +114,6 @@ Shared test data factories used across many test files. These are not tests them
 - `DiceRoller.tsx` — Floating dice-roller drawer. Parses dice notation (via `lib/diceRoller.ts`) and displays results. Uses `Accordion` for its expand/collapse drawer trigger. No dedicated test file exists for this component (confirmed directly — see `CHANGELOG.md`).
 - `CampaignSelector.tsx` — Pre-dashboard launcher for campaign create/connect/switch.
 - `PlayerView.tsx` — Cross-tab broadcast view for a second monitor.
-- `ReferenceDataSeeder.tsx` — Settings page button that one-time seeds the Conditions and Spells sheet tabs from the Open5e public API (SRD content). Manual trigger only, idempotent (checks for existing data before writing).
 - `ReferenceDetailDialog.tsx` — Modal shown when a condition or spell is selected from Command Palette search. Displays spell metadata (level, school, components, concentration/ritual badges) and renders the full description and `higherLevel` rules text using `react-markdown` with `remark-gfm`.
 - `CommandPalette.tsx` — Cmd+K global search. Searches Conditions and Spells reference data (shown after 2+ characters typed) in addition to navigation and action commands.
 - `AudioPanel.tsx` — `M` key modal with **Ambient**, **Soundboard**, and **Library** tabs.
@@ -124,14 +123,11 @@ Shared test data factories used across many test files. These are not tests them
 - `AudioLibraryDropzone.tsx` — Presentational drag-and-drop component for uploading audio files.
 - `MoodAssignmentPopover.tsx` — Popover component to assign and unassign ambient tracks to atmospheric moods.
 - `AudioFileRow.tsx` — Individual audio file row component; displays metadata, play/pause controls, mood badge, and delete button, composing `MoodAssignmentPopover`.
-- `SettingsPage.tsx` — Settings page layout with `SheetConnectionSettings` full width, Auth + Backup in a two-column grid (the Backup card itself wrapped in `SettingsPanel`), then `ReferenceDataSeeder` and `GMTestingTools` each full width.
 - `ErrorBoundary.tsx`
 - `GMDashboardDialogs.tsx`
 - `GMLoadingScreen.tsx`
-- `GMTestingTools.tsx`
 - `GlobalControls.tsx`
 - `ScrollToTop.tsx` — Dynamic "Scroll to top" floating button that appears on a container scrolled past a given threshold, providing a smooth scrollback.
-- `SheetConnectionSettings.tsx`
 - `SidebarIcon.tsx`
 - `SyncStatusIndicators.tsx`
 - `SyncingOverlay.tsx`
@@ -145,6 +141,13 @@ Shared test data factories used across many test files. These are not tests them
 - `InitiativeOverlay.tsx`
 - `RageOverlay.tsx`
 - `UnconsciousOverlay.tsx`
+
+### src/components/settings/
+
+- `SettingsPage.tsx` — Settings page layout with `SheetConnectionSettings` full width, Auth + Backup in a two-column grid (the Backup card itself wrapped in `SettingsPanel`), then `ReferenceDataSeeder` and `GMTestingTools` each full width.
+- `SheetConnectionSettings.tsx`
+- `GMTestingTools.tsx`
+- `ReferenceDataSeeder.tsx` — Settings page button that one-time seeds the Conditions and Spells sheet tabs from the Open5e public API (SRD content). Manual trigger only, idempotent (checks for existing data before writing).
 
 ### src/components/auth/
 

@@ -2,7 +2,7 @@ import { PartyTab } from './PartyTab';
 import { NpcLibraryTab } from './NpcLibraryTab';
 import { EncountersTab } from './EncountersTab';
 import { ActiveEncounterTab } from './ActiveEncounterTab';
-import { SettingsPage } from './SettingsPage';
+import { SettingsPage } from './settings/SettingsPage';
 import { ErrorBoundary } from './ErrorBoundary';
 import { toast } from 'sonner';
 

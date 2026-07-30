@@ -3,11 +3,11 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReferenceDataSeeder } from '../ReferenceDataSeeder';
-import { useReferenceDataSeeder } from '../../hooks/useReferenceDataSeeder';
+import { useReferenceDataSeeder } from '../../../hooks/useReferenceDataSeeder';
 import { toast } from 'sonner';
 
 // Mock dependencies
-vi.mock('../../hooks/useReferenceDataSeeder');
+vi.mock('../../../hooks/useReferenceDataSeeder');
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),

@@ -1,13 +1,13 @@
-// src/components/SettingsPage.tsx
+// src/components/settings/SettingsPage.tsx
 
 import { Settings, Upload, Download } from 'lucide-react';
-import { useSettings } from '../hooks/useSettings';
+import { useSettings } from '../../hooks/useSettings';
 import { SheetConnectionSettings } from './SheetConnectionSettings';
-import { AuthPortalSettings } from './auth/AuthPortalSettings';
+import { AuthPortalSettings } from '../auth/AuthPortalSettings';
 import { ReferenceDataSeeder } from './ReferenceDataSeeder';
 import { GMTestingTools } from './GMTestingTools';
-import { DashboardLayout } from './ui/DashboardLayout';
-import { SettingsPanel } from './ui/SettingsPanel';
+import { DashboardLayout } from '../ui/DashboardLayout';
+import { SettingsPanel } from '../ui/SettingsPanel';
 
 interface SettingsPageProps {
   isGoogleConnected: boolean;

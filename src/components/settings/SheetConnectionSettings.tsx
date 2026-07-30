@@ -1,9 +1,9 @@
-// src/components/SheetConnectionSettings.tsx
+// src/components/settings/SheetConnectionSettings.tsx
 
 import { useState } from 'react';
 import { Save, RotateCcw } from 'lucide-react';
-import { ConfirmationDialog } from './ui/ConfirmationDialog';
-import { SettingsPanel } from './ui/SettingsPanel';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { SettingsPanel } from '../ui/SettingsPanel';
 
 interface SheetConnectionSettingsProps {
   tempSpreadsheetId: string;

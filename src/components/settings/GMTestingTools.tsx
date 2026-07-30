@@ -1,14 +1,14 @@
-// src/components/GMTestingTools.tsx
+// src/components/settings/GMTestingTools.tsx
 
 import { Skull, Zap, Heart, Moon, Flame, Dice6, Wrench } from 'lucide-react';
 import { useState } from 'react';
-import { useDashboardStore } from '../hooks/dashboardStore';
-import { fetchSpreadsheetMetadata, batchUpdateSpreadsheet } from '../services/dbOperations/shared';
-import { updateNpcFullDB } from '../services/dbOperations/npcs';
-import { reconstructChallengeRating } from '../lib/challengeRatingRepair';
-import { resolveActiveSpreadsheetId } from '../services/sheetsService';
+import { useDashboardStore } from '../../hooks/dashboardStore';
+import { fetchSpreadsheetMetadata, batchUpdateSpreadsheet } from '../../services/dbOperations/shared';
+import { updateNpcFullDB } from '../../services/dbOperations/npcs';
+import { reconstructChallengeRating } from '../../lib/challengeRatingRepair';
+import { resolveActiveSpreadsheetId } from '../../services/sheetsService';
 import { toast } from 'sonner';
-import { SettingsPanel } from './ui/SettingsPanel';
+import { SettingsPanel } from '../ui/SettingsPanel';
 
 interface GMTestingToolsProps {
   fireDeathEvent: (payload: { characterName: string }) => void;

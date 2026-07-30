@@ -57,7 +57,7 @@ npx vitest run src/components/NpcLibraryTab/__tests__
 # BATCH 7B-1 — 21 tests
 npx vitest run src/components/__tests__/CommandPalette.test.tsx src/components/__tests__/ErrorBoundary.test.tsx src/components/__tests__/GMDashboard.test.tsx src/components/__tests__/GMDashboardSidebar.test.tsx src/components/__tests__/AudioLibrary.test.tsx src/components/__tests__/ScrollToTop.test.tsx
 # BATCH 7B-2 — 30 tests
-npx vitest run src/components/__tests__/CampaignSelector.test.tsx src/components/__tests__/GMTabContent.test.tsx src/components/__tests__/PlayerView.test.tsx src/components/__tests__/GMTestingTools.test.tsx src/components/__tests__/SheetConnectionSettings.test.tsx src/components/__tests__/ReferenceDataSeeder.test.tsx src/components/__tests__/SettingsPage.test.tsx
+npx vitest run src/components/__tests__/CampaignSelector.test.tsx src/components/__tests__/GMTabContent.test.tsx src/components/__tests__/PlayerView.test.tsx src/components/settings/__tests__/GMTestingTools.test.tsx src/components/settings/__tests__/SheetConnectionSettings.test.tsx src/components/settings/__tests__/ReferenceDataSeeder.test.tsx src/components/settings/__tests__/SettingsPage.test.tsx
 # BATCH 8 — 85 tests
 npx vitest run src/components/ui/__tests__
 # BATCH 9 — 16 tests
