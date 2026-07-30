@@ -20,7 +20,7 @@ describe('LongRestDialog', () => {
     expect(screen.getByText('Long Rest')).toBeInTheDocument();
     
     fireEvent.click(screen.getByRole('button', { name: /Apply Long Rest/i }));
-    expect(onConfirm).toHaveBeenCalled();
+    expect(onConfirm).toHaveBeenCalledWith(['1']);
   });
 
   it('persists selection across re-renders when characters array changes while open', () => {

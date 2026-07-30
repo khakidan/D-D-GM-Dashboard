@@ -20,6 +20,12 @@ describe('ShortRestDialog', () => {
     expect(screen.getByText('Short Rest')).toBeInTheDocument();
     
     fireEvent.click(screen.getByRole('button', { name: /Apply Short Rest/i }));
-    expect(onConfirm).toHaveBeenCalled();
+    expect(onConfirm).toHaveBeenCalledWith([
+      expect.objectContaining({
+        characterId: '1',
+        hpToAdd: 0,
+        newHitDiceUsed: '{}',
+      }),
+    ]);
   });
 });
