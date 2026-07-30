@@ -2,6 +2,27 @@
 
 ---
 
+## Test Quality Audit — Anti-Pattern Review Against testing-philosophy.md (In Progress)
+Systematic, folder-by-folder audit of every test file in the codebase against the three anti-patterns and Seam Test Standard defined in `testing-philosophy.md` (shallow call assertions, circular mock assertions, implementation-detail assertions). Conducted one folder at a time — matching `file-reference.md`'s structure and `testing-batches.md`'s batch groupings — with each finding fixed and independently verified via raw terminal output before moving to the next folder, per this project's standing verification discipline.
+
+**Folders completed — 7 of 11:**
+- **`src/components/PartyTab/__tests__` (Batch 6A):** 1 violation found and fixed. `LongRestDialog.test.tsx` and `ShortRestDialog.test.tsx` both had `expect(onConfirm).toHaveBeenCalled()` with no payload check — updated to verify the exact character-ID array (`LongRestDialog`) and the exact rest-payload object shape (`ShortRestDialog`), matching the real component's confirmed call signatures.
+- **`src/components/NpcLibraryTab/__tests__` (Batch 6C):** 1 violation found and fixed. `useNpcLibrary.test.ts`'s `handleAddNpc` test only checked `toHaveBeenCalled()` for both the DB call and the state updater — rewritten to verify the exact `addNpcDB` payload and to trace the real two-stage optimistic→final state transformation (temp ID → real DB-assigned ID).
+- **`src/components/EncountersTab/__tests__` (Batch 6B):** 1 violation found and fixed. `NewEncounterDialog.test.tsx`'s only test claimed in its own name to verify `onConfirm` payload data but never filled in any fields, clicked submit, or asserted on `onConfirm` at all — rewritten into a genuine Seam Test that fills the form and checks the exact `{ name, location, difficultyId }` object passed on submit.
+- **`src/components/ActiveEncounterTab/__tests__` (Batches 5A/5B):** 1 violation found and fixed (hooks batch, 5A). `useBatchActions.test.ts`'s test named "rolls back state when batch damage DB write fails" contained zero assertions and its own comment admitted it didn't verify what it claimed — investigation of the real `useBatchActions.ts` source confirmed no batch-level rollback exists for `handleApplyMultiDamage` (rollback happens one layer down, already covered by `useCombatantMutations.test.ts`); the real observable behavior is a `toast.error` call, so the test was renamed and rewritten to assert on that. Components batch (5B) reviewed with no violations found — strong Seam Test coverage throughout, including rigorous `React.memo` comparator tests across `CombatantCard.test.tsx`.
+- **`src/components/__tests__` (Batches 7B-1/7B-2):** 1 violation found and fixed. `SheetConnectionSettings.test.tsx`'s input-change test only checked `toHaveBeenCalled()`; a first-pass fix using `expect.stringContaining('n')` was rejected as still too weak (the substring would match almost any plausible/broken output). Investigation of the real controlled-input component revealed the input's displayed value stays pinned to the unchanging `tempSpreadsheetId` prop between keystrokes (since the mock setter never updates it), so `clear()` + typing `'x'` produces `'test-sheet-idx'`, not a naturally-accumulating string — confirmed by an initial failing run, then fixed with the exact traced value (`toHaveBeenLastCalledWith('test-sheet-idx')`).
+
+**Folders confirmed clean (no violations found):**
+- `src/components/ui/__tests__` — pending detailed review.
+
+**Recurring theme:** every violation found so far follows the same shape — a test whose name promises Seam Test–level verification but whose body only checks that a callback fired, not what it received. Each fix required tracing the real component/hook source (not assuming payload shapes) before writing the corrected assertion; two rounds needed re-investigation after an initial fix was found to be based on incorrect assumptions about real runtime behavior rather than confirmed source-code tracing.
+
+**Remaining folders (not yet audited):** `src/hooks/__tests__` (Batch 3), `src/lib/__tests__` (Batch 1, largest folder — 23 files), `src/server/__tests__` (Batch 4), `src/services/__tests__` (Batch 2).
+
+**Companion effort:** a parallel persistence audit (confirming every user-enterable field across the app actually round-trips to the Google Sheet, not just to the TypeScript interface/UI) is tracked separately — see the `autoRefreshMechanics` and PC `speed`/`senses`/`languages` persistence-gap entries above for the two real gaps already found and fixed via that effort. `PartyTab`'s persistence audit is complete (no further gaps found); `NpcLibraryTab`, `EncountersTab`, `ActiveEncounterTab`, and Settings remain.
+
+---
+
 ## Character Persistence — Speed, Senses, and Languages Support (Completed)
 
 Integrated full read/write persistence for PC Speed, Senses, and Languages, completing the 3-layer fix for missing data on GM-controlled PC combatant cards. This ensures that values typed into these fields on the PC card survive page reloads and persist in the underlying Google Sheets database.

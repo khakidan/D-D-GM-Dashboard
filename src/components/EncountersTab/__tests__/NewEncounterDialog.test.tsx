@@ -23,7 +23,25 @@ describe('NewEncounterDialog', () => {
 
   it('renders without crashing and calls onConfirm with encounter data when submitted', () => {
     const onConfirmMock = vi.fn();
-    const { container } = render(<NewEncounterDialog {...defaultProps} onConfirm={onConfirmMock} />);
-    expect(container).toBeInTheDocument();
+    render(<NewEncounterDialog {...defaultProps} onConfirm={onConfirmMock} />);
+
+    fireEvent.change(screen.getByPlaceholderText('e.g. Goblin Ambush'), {
+      target: { value: 'Goblin Raid' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('e.g. Whispering Woods'), {
+      target: { value: 'Goblin Cave' },
+    });
+    fireEvent.change(screen.getByLabelText(/difficulty/i), {
+      target: { value: '2' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Add Encounter/i }));
+
+    expect(onConfirmMock).toHaveBeenCalledOnce();
+    expect(onConfirmMock).toHaveBeenCalledWith({
+      name: 'Goblin Raid',
+      location: 'Goblin Cave',
+      difficultyId: 2,
+    });
   });
 });

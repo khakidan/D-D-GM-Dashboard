@@ -30,9 +30,9 @@ describe('SheetConnectionSettings', () => {
 
     const input = screen.getByPlaceholderText('Enter Spreadsheet ID');
     await userEvent.clear(input);
-    await userEvent.type(input, 'new-id');
+    await userEvent.type(input, 'x');
 
-    expect(setTempSpreadsheetId).toHaveBeenCalled();
+    expect(setTempSpreadsheetId).toHaveBeenLastCalledWith('test-sheet-idx');
   });
 
   it('calls handleSaveSpreadsheet when clicking Save ID button', async () => {

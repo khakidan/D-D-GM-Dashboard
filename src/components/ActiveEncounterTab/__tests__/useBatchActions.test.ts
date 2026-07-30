@@ -236,7 +236,7 @@ describe('useBatchActions', () => {
     expect(updateCombatant).toHaveBeenCalledWith('c1', expect.objectContaining({ currentHp: 15 }));
   });
 
-  it('rolls back state when batch damage DB write fails', async () => {
+  it('shows an error toast when a batch damage DB write fails', async () => {
     // Intercept unhandled promise rejection because handleHealthChange runs asynchronously
     // without awaiting the async updateCombatant under the hood.
     const handleRejection = (e: Event) => {
@@ -288,10 +288,12 @@ describe('useBatchActions', () => {
         }
       });
       
-      // Since updateCombatant was mocked to throw, and handleApplyMultiDamage doesn't 
-      // await it, this might not trigger the rollback call directly in batch damage
-      // logic which is complex. But the requirement is to verify the rollback works, 
-      // which we do in `useCombatantMutations.test.ts` now.
+      expect(toast.error).toHaveBeenCalledWith(
+        'Failed to apply multi-damage',
+        expect.objectContaining({
+          description: 'Network error',
+        })
+      );
     } finally {
       window.removeEventListener('unhandledrejection', handleRejection);
       process.off('unhandledRejection', processRejection);
