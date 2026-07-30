@@ -1,7 +1,7 @@
 import React from 'react';
 import { buildConditionSummary } from '../../lib/conditions';
 import { Combatant } from '../../types';
-import { Badge } from '../ui/Badge';
+import { Badge } from '../ui/inputs/Badge';
 import { parseCommaSeparatedList } from '../../lib/stringUtils';
 
 export interface CombatantCardBadgesProps {

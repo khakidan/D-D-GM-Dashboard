@@ -10,7 +10,7 @@ import {
 } from '../../lib/abilityScores';
 import { recalculateAutomatedValues } from '../../lib/automation';
 import { DialogShell } from '../ui/DialogShell';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 
 interface NewNpcDialogProps {
   isOpen: boolean;

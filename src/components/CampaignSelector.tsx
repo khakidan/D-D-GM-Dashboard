@@ -8,7 +8,7 @@ import {
   LogOut,
   FolderOpen
 } from 'lucide-react';
-import { Button } from './ui/Button';
+import { Button } from './ui/inputs/Button';
 import { Callout } from './ui/Callout';
 import { Campaign } from '../hooks/useCampaign';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';

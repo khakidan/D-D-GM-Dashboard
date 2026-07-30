@@ -3,7 +3,7 @@ import { Moon, Heart } from 'lucide-react';
 import { Character } from '../../types';
 import { getHitDiceStatus, getTotalHitDiceCount } from '../../lib/hitDice';
 import { DialogShell } from '../ui/DialogShell';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 
 interface LongRestDialogProps {
   isOpen: boolean;

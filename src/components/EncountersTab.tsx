@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppState } from '../hooks/useAppState';
 import { Swords, Plus } from 'lucide-react';
-import { Button } from './ui/Button';
+import { Button } from './ui/inputs/Button';
 import { Callout } from './ui/Callout';
 import { EmptyState } from './ui/EmptyState';
 import { useEncounters } from './EncountersTab/hooks/useEncounters';

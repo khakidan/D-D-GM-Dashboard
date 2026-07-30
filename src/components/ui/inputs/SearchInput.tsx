@@ -1,8 +1,8 @@
-// src/components/ui/SearchInput.tsx
+// src/components/ui/inputs/SearchInput.tsx
 
 import React from 'react';
 import { Search } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 import { DebouncedInput, DebouncedInputProps } from './DebouncedInput';
 
 export interface SearchInputProps extends Omit<DebouncedInputProps, 'size'> {

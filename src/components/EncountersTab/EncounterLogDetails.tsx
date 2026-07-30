@@ -3,7 +3,7 @@ import { Copy, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { EncounterLog, CombatEvent } from '../../lib/combatLog';
 import { CombatEventRow } from './CombatEventRow';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 import { Accordion } from '../ui/Accordion';
 import { Tabs } from '../ui/Tabs';
 import { TIMERS } from '../../lib/constants';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { IconButton } from '../IconButton';
-import { Button } from '../Button';
+import { IconButton } from '../inputs/IconButton';
+import { Button } from '../inputs/Button';
 import { ConfirmationDialog } from '../ConfirmationDialog';
 import { generateUuid } from '../../../lib/uuid';
 import { CardHeaderChevron } from '../CardHeaderChevron';

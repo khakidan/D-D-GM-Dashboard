@@ -2,8 +2,8 @@ import React from 'react';
 import { Zap, Shield } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Combatant } from '../../types';
-import { ToggleBadge } from '../ui/ToggleBadge';
-import { PipTracker } from '../ui/PipTracker';
+import { ToggleBadge } from '../ui/inputs/ToggleBadge';
+import { PipTracker } from '../ui/inputs/PipTracker';
 
 interface CombatantCompactIndicatorsProps {
   type: 'pc' | 'npc';

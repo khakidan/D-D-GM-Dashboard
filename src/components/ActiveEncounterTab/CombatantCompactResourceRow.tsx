@@ -1,7 +1,7 @@
 import React from 'react';
 import { Combatant, Character } from '../../types';
 import { parseResourcePools, spendResourcePip, recoverResourcePip, ResourcePool } from '../../lib/resourcePools';
-import { PipTracker } from '../ui/PipTracker';
+import { PipTracker } from '../ui/inputs/PipTracker';
 
 interface CombatantCompactResourceRowProps {
   c: Combatant;

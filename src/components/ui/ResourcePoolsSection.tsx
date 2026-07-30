@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Plus, Minus, Trash2, Edit2, Save, X, RotateCcw } from 'lucide-react';
 import { Character } from '../../types';
 import { cn } from '../../lib/utils';
-import { PipTracker } from './PipTracker';
-import { Badge } from './Badge';
+import { PipTracker } from './inputs/PipTracker';
+import { Badge } from './inputs/Badge';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import {
   parseResourcePools,

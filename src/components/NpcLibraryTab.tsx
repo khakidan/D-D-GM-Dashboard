@@ -5,7 +5,7 @@ import { useNpcLibrary } from './NpcLibraryTab/hooks/useNpcLibrary';
 import { BookOpen, Plus, Filter, X, Shield, Activity, Award } from 'lucide-react';
 import { Callout } from './ui/Callout';
 import { EmptyState } from './ui/EmptyState';
-import { SearchInput } from './ui/SearchInput';
+import { SearchInput } from './ui/inputs/SearchInput';
 import { cn } from '../lib/utils';
 import { NewNpcDialog } from './NpcLibraryTab/NewNpcDialog';
 import { NpcCard } from './NpcLibraryTab/NpcCard';

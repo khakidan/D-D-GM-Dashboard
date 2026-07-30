@@ -3,11 +3,11 @@ import { NPC, NpcTrait, NpcAction, NpcReaction, NpcLegendaryAction } from '../..
 import { Trash2, Zap, Shield as ShieldIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { CardShell } from '../ui/CardShell';
-import { DebouncedInput } from '../ui/DebouncedInput';
-import { CardNumberInput } from '../ui/CardNumberInput';
-import { DebouncedTextarea } from '../ui/DebouncedTextarea';
+import { DebouncedInput } from '../ui/inputs/DebouncedInput';
+import { CardNumberInput } from '../ui/inputs/CardNumberInput';
+import { DebouncedTextarea } from '../ui/inputs/DebouncedTextarea';
 import { NpcListEditor } from '../ui/npc-editor/NpcListEditor';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 import { ExpandableContent } from '../ui/ExpandableContent';
 import { LabeledField } from '../ui/LabeledField';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';

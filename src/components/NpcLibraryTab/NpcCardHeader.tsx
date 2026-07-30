@@ -1,8 +1,8 @@
 import React from 'react';
 import { Heart, Shield, Star } from 'lucide-react';
-import { DebouncedInput } from '../ui/DebouncedInput';
+import { DebouncedInput } from '../ui/inputs/DebouncedInput';
 import { CardHeaderChevron } from '../ui/CardHeaderChevron';
-import { Badge } from '../ui/Badge';
+import { Badge } from '../ui/inputs/Badge';
 
 export interface NpcCardHeaderProps {
   name: string;

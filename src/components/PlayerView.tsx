@@ -6,8 +6,8 @@ import { Skull, Heart, ShieldAlert, Shield, Swords, HeartCrack, ShieldCheck } fr
 import { motion } from "motion/react";
 import { EmptyState } from './ui/EmptyState';
 import { CardShell } from './ui/CardShell';
-import { Badge } from './ui/Badge';
-import { PipTracker } from './ui/PipTracker';
+import { Badge } from './ui/inputs/Badge';
+import { PipTracker } from './ui/inputs/PipTracker';
 
 const healthStatusMap: Record<string, 'emerald' | 'green' | 'yellow' | 'red' | 'gray'> = {
   Full: 'emerald',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Coffee, Loader2, Users, Plus, Moon, Heart } from 'lucide-react';
-import { Button } from './ui/Button';
+import { Button } from './ui/inputs/Button';
 import { Callout } from './ui/Callout';
 import { EmptyState } from './ui/EmptyState';
 import { useAppState } from '../hooks/useAppState';

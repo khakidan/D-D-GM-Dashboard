@@ -11,7 +11,7 @@ import {
   abilitiesInOrder,
 } from '../../../lib/abilityScores';
 import { formatBonus } from '../../../lib/stringUtils';
-import { IconButton } from '../IconButton';
+import { IconButton } from '../inputs/IconButton';
 
 export interface StatBlockSkillsProps {
   abilityScores: AbilityScores;

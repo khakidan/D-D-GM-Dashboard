@@ -4,9 +4,9 @@ import { Eye, RefreshCcw, Zap, Swords, HelpCircle, ArrowLeft } from 'lucide-reac
 import { Encounter, DamageType } from '../../types';
 import { cn } from '../../lib/utils';
 import { MultiTargetActionPanel } from './MultiTargetActionPanel';
-import { ToggleBadge } from '../ui/ToggleBadge';
+import { ToggleBadge } from '../ui/inputs/ToggleBadge';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 
 interface CombatHeaderProps {
   encounter?: Encounter;

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronUp } from 'lucide-react';
-import { IconButton } from './ui/IconButton';
+import { IconButton } from './ui/inputs/IconButton';
 
 interface ScrollToTopProps {
   containerId: string;

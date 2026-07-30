@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Database, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useReferenceDataSeeder } from '../../hooks/useReferenceDataSeeder';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 import { SettingsPanel } from '../ui/SettingsPanel';
 
 interface ReferenceDataSeederProps {

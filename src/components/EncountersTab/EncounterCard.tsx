@@ -5,10 +5,10 @@ import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
 import { CardShell } from '../ui/CardShell';
 import { TIMERS } from '../../lib/constants';
-import { DebouncedInput } from '../ui/DebouncedInput';
+import { DebouncedInput } from '../ui/inputs/DebouncedInput';
 import { EncounterLogModal } from './EncounterLogModal';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
+import { Badge } from '../ui/inputs/Badge';
+import { Button } from '../ui/inputs/Button';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 
 export interface EncounterCardProps {

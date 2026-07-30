@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Zap, ZapOff, Skull, HeartCrack, ShieldCheck } from 'lucide-react';
 import { AnimatedHpDisplay } from './AnimatedHpDisplay';
-import { CardNumberInput } from '../ui/CardNumberInput';
+import { CardNumberInput } from '../ui/inputs/CardNumberInput';
 import { CombatantCompactIndicators } from './CombatantCompactIndicators';
 import { CombatantHealthControls } from './CombatantHealthControls';
 import { CombatantCompactResourceRow } from './CombatantCompactResourceRow';
@@ -11,8 +11,8 @@ import { getHealthStatus, effectiveAc, effectiveMaxHp } from '../../lib/conditio
 import { CombatantCardBadges } from './CombatantCardBadges';
 import { DeathSaveTrackerDisplay } from './DeathSaveTrackerDisplay';
 import { ResourcePool } from '../../lib/resourcePools';
-import { Badge } from '../ui/Badge';
-import { ToggleBadge } from '../ui/ToggleBadge';
+import { Badge } from '../ui/inputs/Badge';
+import { ToggleBadge } from '../ui/inputs/ToggleBadge';
 import { CardHeaderChevron } from '../ui/CardHeaderChevron';
 import { parseAbilityScores, parseProficiencies, proficiencyBonusFromLevel, calculateModifier } from '../../lib/abilityScores';
 import { getEffectiveSpellcastingAbility, calculateSpellSaveDC, calculateSpellAttackBonus } from '../../lib/spellcasting';

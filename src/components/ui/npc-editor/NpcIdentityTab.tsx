@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '../../../lib/utils';
-import { DebouncedInput } from '../DebouncedInput';
+import { DebouncedInput } from '../inputs/DebouncedInput';
 import type { NpcFormData } from './NpcFormFields';
 
 interface NpcIdentityTabProps {

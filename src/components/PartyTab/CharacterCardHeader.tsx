@@ -1,9 +1,9 @@
 import React from 'react';
 import { ChevronDown, HeartCrack, Skull } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { DebouncedInput } from '../ui/DebouncedInput';
-import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
+import { DebouncedInput } from '../ui/inputs/DebouncedInput';
+import { Badge } from '../ui/inputs/Badge';
+import { Button } from '../ui/inputs/Button';
 import { CardHeaderChevron } from '../ui/CardHeaderChevron';
 
 const healthStatusMap: Record<string, 'emerald' | 'green' | 'yellow' | 'red' | 'gray' | 'blue'> = {

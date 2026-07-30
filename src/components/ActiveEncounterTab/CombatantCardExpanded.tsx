@@ -22,7 +22,7 @@ import { NpcStatBlockSection, formatActionMeta } from '../ui/stat-block/NpcStatB
 import { getEffectiveResistances } from '../../lib/combatLogic';
 import { CombatMechanicsSummary } from './CombatMechanicsSummary';
 import { CombatantIrvDisplay } from './CombatantIrvDisplay';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import { parseCommaSeparatedList } from '../../lib/stringUtils';
 

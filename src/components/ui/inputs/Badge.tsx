@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 
 export interface BadgeProps {
   color: 'slate' | 'pink' | 'orange' | 'yellow' | 'green' | 'gray' | 'red' | 'purple' | 'emerald' | 'amber' | 'blue';

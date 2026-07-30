@@ -1,5 +1,5 @@
 import React from 'react';
-import { DebouncedTextarea } from '../DebouncedTextarea';
+import { DebouncedTextarea } from '../inputs/DebouncedTextarea';
 import { AbilityName } from '../../../lib/abilityFundamentals';
 import { AbilityScores, calculateModifier } from '../../../lib/abilityScores';
 import { AbilitySelectChips } from '../AbilitySelectChips';

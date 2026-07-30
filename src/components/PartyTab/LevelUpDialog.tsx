@@ -10,7 +10,7 @@ import { LevelUpChecklist } from './LevelUpChecklist';
 import { LevelUpResourcePools } from './LevelUpResourcePools';
 import { useLevelUpAutomation } from '../../hooks/useLevelUpAutomation';
 import { DialogShell } from '../ui/DialogShell';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 import { SectionHeader } from '../ui/SectionHeader';
 
 

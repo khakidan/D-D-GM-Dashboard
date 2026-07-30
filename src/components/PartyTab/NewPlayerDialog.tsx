@@ -24,7 +24,7 @@ import { parseHitDiceConfig } from '../../lib/hitDice';
 import { ResourcePoolManager } from '../ui/ResourcePoolManager';
 import { usePlayerFormAutomation } from '../../hooks/usePlayerFormAutomation';
 import { DialogShell } from '../ui/DialogShell';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 import { Tabs } from '../ui/Tabs';
 import { NpcListEditor } from '../ui/npc-editor/NpcListEditor';
 import { createNpcListRenderers } from '../ui/npc-editor/npcListFieldRenderers';

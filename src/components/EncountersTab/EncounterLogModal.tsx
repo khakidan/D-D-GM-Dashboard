@@ -4,8 +4,8 @@ import { useEncounterLogs } from './hooks/useEncounterLogs';
 import { EncounterLog } from '../../lib/combatLog';
 import { EncounterLogDetails } from './EncounterLogDetails';
 import { DialogShell } from '../ui/DialogShell';
-import { IconButton } from '../ui/IconButton';
-import { Badge } from '../ui/Badge';
+import { IconButton } from '../ui/inputs/IconButton';
+import { Badge } from '../ui/inputs/Badge';
 import { Accordion } from '../ui/Accordion';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Play, Pause, Trash2 } from 'lucide-react';
 import { StoredAudioFile } from '../../lib/audioFileStore';
 import { MOODS, MoodId } from '../../lib/constants';
-import { IconButton } from '../ui/IconButton';
+import { IconButton } from '../ui/inputs/IconButton';
 import { MoodAssignmentPopover } from './MoodAssignmentPopover';
 
 interface AudioFileRowProps {

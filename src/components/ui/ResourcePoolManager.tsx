@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { IconButton } from './IconButton';
+import { IconButton } from './inputs/IconButton';
 import {
   ResourcePool,
   addResourcePool,

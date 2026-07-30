@@ -6,7 +6,7 @@ import { getHitDiceStatus, spendHitDice } from '../../lib/hitDice';
 import { parseDiceNotation, rollDice } from '../../lib/diceRoller';
 import { toast } from 'sonner';
 import { DialogShell } from '../ui/DialogShell';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 import { Accordion } from '../ui/Accordion';
 import { Callout } from '../ui/Callout';
 import { SectionHeader } from '../ui/SectionHeader';

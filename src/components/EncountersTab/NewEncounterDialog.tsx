@@ -3,7 +3,7 @@ import { Sword, MapPin, Trophy, Save } from 'lucide-react';
 import { DifficultyLevel } from '../../types';
 import { useFormState } from '../../hooks/useFormState';
 import { DialogShell } from '../ui/DialogShell';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/inputs/Button';
 import { LabeledField } from '../ui/LabeledField';
 
 interface NewEncounterDialogProps {
