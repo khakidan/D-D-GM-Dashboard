@@ -32,7 +32,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 6C | `src/components/NpcLibraryTab/__tests__` | 43 |
 | 7B-1 | Audio + main dashboard top-level components | 21 |
 | 7B-2 | Other top-level components | 30 |
-| 8 | `src/components/ui/__tests__` | 85 |
+| 8 | `src/components/ui` | 85 |
 | 9 | `src/components/auth/__tests__` | 16 |
 
 ```bash
@@ -59,7 +59,7 @@ npx vitest run src/components/__tests__/CommandPalette.test.tsx src/components/_
 # BATCH 7B-2 — 30 tests
 npx vitest run src/components/__tests__/CampaignSelector.test.tsx src/components/__tests__/GMTabContent.test.tsx src/components/__tests__/PlayerView.test.tsx src/components/settings/__tests__/GMTestingTools.test.tsx src/components/settings/__tests__/SheetConnectionSettings.test.tsx src/components/settings/__tests__/ReferenceDataSeeder.test.tsx src/components/settings/__tests__/SettingsPage.test.tsx
 # BATCH 8 — 85 tests
-npx vitest run src/components/ui/__tests__
+npx vitest run src/components/ui
 # BATCH 9 — 16 tests
 npx vitest run src/components/auth/__tests__
 ```

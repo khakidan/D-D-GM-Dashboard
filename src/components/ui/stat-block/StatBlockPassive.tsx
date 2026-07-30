@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AbilityScores, Proficiencies, getPassiveScore } from '../../lib/abilityScores';
+import { AbilityScores, Proficiencies, getPassiveScore } from '../../../lib/abilityScores';
 
 export interface StatBlockPassiveProps {
   abilityScores: AbilityScores;

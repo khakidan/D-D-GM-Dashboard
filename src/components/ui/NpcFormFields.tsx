@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '../../lib/utils';
-import { StatBlock } from '../ui/StatBlock';
+import { StatBlock } from './stat-block/StatBlock';
 import { Tabs } from './Tabs';
 import { NpcListEditor } from './NpcListEditor';
 import { NpcIdentityTab } from './NpcIdentityTab';

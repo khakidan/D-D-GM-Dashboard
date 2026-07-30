@@ -14,11 +14,11 @@ import {
   AbilityName,
   SkillName
 } from '../../lib/abilityScores';
-import { StatBlockScoresTable } from '../ui/StatBlockScoresTable';
-import { StatBlockSaves } from '../ui/StatBlockSaves';
-import { StatBlockPassive } from '../ui/StatBlockPassive';
-import { StatBlockSkills } from '../ui/StatBlockSkills';
-import { NpcStatBlockSection, formatActionMeta } from '../ui/NpcStatBlockSection';
+import { StatBlockScoresTable } from '../ui/stat-block/StatBlockScoresTable';
+import { StatBlockSaves } from '../ui/stat-block/StatBlockSaves';
+import { StatBlockPassive } from '../ui/stat-block/StatBlockPassive';
+import { StatBlockSkills } from '../ui/stat-block/StatBlockSkills';
+import { NpcStatBlockSection, formatActionMeta } from '../ui/stat-block/NpcStatBlockSection';
 import { getEffectiveResistances } from '../../lib/combatLogic';
 import { CombatMechanicsSummary } from './CombatMechanicsSummary';
 import { CombatantIrvDisplay } from './CombatantIrvDisplay';

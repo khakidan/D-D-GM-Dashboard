@@ -3,7 +3,7 @@ import { UserPlus } from 'lucide-react';
 import { Character, NpcTrait, NpcAction, NpcReaction } from '../../types';
 import { cn } from '../../lib/utils';
 import { useFormState } from '../../hooks/useFormState';
-import { StatBlock } from '../ui/StatBlock';
+import { StatBlock } from '../ui/stat-block/StatBlock';
 import { IdentityTab } from './IdentityTab';
 import { CombatTab } from './CombatTab';
 import {

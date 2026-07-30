@@ -6,7 +6,7 @@ import {
   AbilityScores,
   Proficiencies,
   proficiencyBonusFromLevel,
-} from '../../lib/abilityScores';
+} from '../../../lib/abilityScores';
 import { StatBlockScoresTable } from './StatBlockScoresTable';
 import { StatBlockSaves } from './StatBlockSaves';
 import { StatBlockPassive } from './StatBlockPassive';

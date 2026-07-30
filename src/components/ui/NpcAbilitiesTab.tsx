@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
-import { StatBlock } from './StatBlock';
+import { StatBlock } from './stat-block/StatBlock';
 import type { NpcFormData } from './NpcFormFields';
 import { 
   AbilityScores, 

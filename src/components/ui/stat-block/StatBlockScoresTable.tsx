@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbilityScores, AbilityName, calculateModifier } from '../../lib/abilityScores';
+import { AbilityScores, AbilityName, calculateModifier } from '../../../lib/abilityScores';
 
 function AbilityScoreInput({
   value,

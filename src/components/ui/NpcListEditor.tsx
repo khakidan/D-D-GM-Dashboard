@@ -5,7 +5,7 @@ import { Button } from './Button';
 import { ConfirmationDialog } from './ConfirmationDialog';
 import { generateUuid } from '../../lib/uuid';
 import { CardHeaderChevron } from './CardHeaderChevron';
-import { formatActionMeta } from './NpcStatBlockSection';
+import { formatActionMeta } from './stat-block/NpcStatBlockSection';
 
 interface NpcListEditorProps<T extends { name: string; _key?: string }> {
   title: string;           // section header e.g. "Traits"

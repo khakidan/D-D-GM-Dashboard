@@ -9,9 +9,9 @@ import {
   SKILL_ABILITY_MAP,
   getSkillBonus,
   abilitiesInOrder,
-} from '../../lib/abilityScores';
-import { formatBonus } from '../../lib/stringUtils';
-import { IconButton } from './IconButton';
+} from '../../../lib/abilityScores';
+import { formatBonus } from '../../../lib/stringUtils';
+import { IconButton } from '../IconButton';
 
 export interface StatBlockSkillsProps {
   abilityScores: AbilityScores;

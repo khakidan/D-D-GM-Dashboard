@@ -1,6 +1,6 @@
 import React from 'react';
-import { AbilityName, AbilityScores, getSavingThrowBonus } from '../../lib/abilityScores';
-import { formatBonus } from '../../lib/stringUtils';
+import { AbilityName, AbilityScores, getSavingThrowBonus } from '../../../lib/abilityScores';
+import { formatBonus } from '../../../lib/stringUtils';
 
 export interface StatBlockSavesProps {
   abilityScores: AbilityScores;
