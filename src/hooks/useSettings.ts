@@ -6,7 +6,6 @@ import { STORAGE_KEYS } from '../lib/constants';
 import { getSpreadsheetId, setSpreadsheetId } from '../services/sheetsService';
 import { setManualRefreshToken, clearTokens } from '../services/googleAuth';
 import { useAppState } from './useAppState';
-import { useTheme } from '../context/ThemeContext';
 import {
   useDeathEvent,
   useDamageEvent,
@@ -36,7 +35,6 @@ export function useSettings({
   handleSyncWithSheets,
   addLog,
 }: UseSettingsProps) {
-  const { theme, setTheme } = useTheme();
   const { state, updateState } = useAppState();
 
   const { fire: fireDeathEvent } = useDeathEvent();
@@ -175,8 +173,6 @@ export function useSettings({
   }, [state]);
 
   return {
-    theme,
-    setTheme,
     tempSpreadsheetId,
     setTempSpreadsheetId,
     manualToken,

@@ -3,18 +3,20 @@
 Referenced from the root [AGENTS.md](../../AGENTS.md). File-by-file inventory of the codebase, organized by architectural layer (see the layer dependency rules in root AGENTS.md).
 
 - `src/index.css` — Global stylesheet. Note that the sleek-modern block is now structural-only (font, radius, shadows, button interactions). All parchment/gold override rules have been removed.
+- `src/types.ts` — Monolithic types definition file containing all shared TypeScript interfaces, type aliases, and enums for characters, NPCs, encounters, damage components, combat logs, and UI states.
 
 ---
 
 ## src/lib/
 
 - `constants.ts` — `OVERLAY_DURATIONS`, `ANIMATION_TIMING`, `SHEET_RANGES`, `WRITE_QUEUE`, `STORAGE_KEYS`, `TIMERS`, `MOODS`, `AUDIO`, `campaignKey()` helper
-- `sheetSchemas.ts` — Zod validation for each sheet row. Defines defaults for every column. NPC schema covers 22 columns (0–21) — templates only, no mutable combat state (see `CHANGELOG.md`'s "NPC Template vs. Combat-Instance State Isolation" entry). Also exports `CHARACTER_HEADERS`/`NPC_HEADERS`/`ENCOUNTER_HEADERS`/`ENCOUNTER_COMBATANT_HEADERS`/`ENCOUNTER_LOG_HEADERS` — the single source of truth for column order, shared between these Zod schemas and `campaigns.ts`'s sheet-seeding logic — see `CHANGELOG.md`.
+- `sheetSchemas.ts` — Zod validation for each sheet row. Defines defaults for every column. NPC schema covers 24 columns (0–23) — templates only, no mutable combat state (see `CHANGELOG.md`'s "NPC Template vs. Combat-Instance State Isolation" entry). Also exports `CHARACTER_HEADERS`/`NPC_HEADERS`/`ENCOUNTER_HEADERS`/`ENCOUNTER_COMBATANT_HEADERS`/`ENCOUNTER_LOG_HEADERS` — the single source of truth for column order, shared between these Zod schemas and `campaigns.ts`'s sheet-seeding logic — see `CHANGELOG.md`.
 - `sheetAdapters.ts` — Maps raw row arrays from the API into typed model objects.
 - `sheetSyncParser.ts` — Validates full campaign workbooks on initial sync. Includes `parseConditions` and `parseSpells` functions alongside `parseNPCs`.
 - `combatLogic.ts` — HP/damage/healing math, IRV application, health status calculation.
 - `combatLog.ts` — Generates readable Markdown transcripts from structured combat events. Also exports shared `ACTION_TYPE_LABELS`.
-- `combatantBuilder.ts` — Pure function that builds combatant state from characters + NPCs + encounterCombatants. Combatant type includes class, level, abilityScores, proficiencies, and all 8 NPC stat block fields (speed, senses, languages, challengeRating, traits, actions, reactions, legendaryActionsList) passed through from the NPC source. Includes `buildSingleNpcCombatant()` helper for adding NPC instances to combat.
+- `combatantBuilder.ts` — Pure function that builds combatant state from characters + NPCs + encounterCombatants. Combatant type includes class, level, abilityScores, proficiencies, and all 11 NPC stat block fields (abilityScores, proficiencies, speed, senses, languages, challengeRating, traits, actions, reactions, legendaryActionsList, bonusActions) passed through from the NPC source, while spellcastingAbility itself is intentionally not passed through directly (only via abilityScores/proficiencies). Includes `buildSingleNpcCombatant()` helper for adding NPC instances to combat.
+- `challengeRatingRepair.ts` — `reconstructChallengeRating(dateSerial: number)` utility for recovering fractional Challenge Ratings (e.g. `"1/8"`, `"1/4"`, `"1/2"`) from Excel/Google Sheets date serials (where fractions are accidentally auto-parsed as dates by the sheet).
 - `classResources.ts` — `CLASS_RESOURCE_SUGGESTIONS` mapping for all 13 standard 5e classes and `getClassResourceSuggestions()`. Includes Rogue (Sneak Attack d6), updated Paladin (Lay on Hands), and updated Warlock (Warlock Spell Slots, short rest). Pools that unlock after level 1 (Ki Points, Sorcery Points, Action Surge, Channel Divinity) are absent from level 1 suggestions and appear automatically via `getResourcePoolSuggestions()` on level up. Returns deep-copied `ResourcePool[]` suggestions. Returns `[]` for unknown/custom classes (e.g. Vitalist).
 - `hitDice.ts` — Hit dice parsing, spending, recovery. Includes `CLASS_HIT_DIE_MAP`.
 - `resourcePools.ts` — `ResourcePool` interface (`{ name, current, max, reset }`), parse/serialize/spend/recover/reset/add/remove/update. Includes `EFFECT_RESOURCE_MAP` for auto-decrement when effects are applied. Note: the rest field is named `reset` (not `restoreOn`).
@@ -31,6 +33,7 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). File-by-file inventory of
 - `automation.ts` — Pure helpers `findStaleAutomatedValues()` and `recalculateAutomatedValues()` for detecting and bulk-updating stale auto-calculated combat action values (DC, Atk bonus, damage component bonus). Also home to `compileDamageComponents()`, moved here from `DamageComponentsBuilder.tsx` to respect the `lib ← components` dependency direction.
 - `audioFileStore.ts` — IndexedDB persistence for audio blobs, scoped per campaign.
 - `diceRoller.ts` — Parses dice notation (e.g. `1d20+5`) and generates results.
+- `dndUtils.ts` — `crToNumber(cr)` utility that parses a Challenge Rating string (including fractions like `"1/8"`) into a comparable numeric value.
 - `utils.ts` — `tailwind-merge` helper.
 - `objectSchemas.ts`
 - `stringUtils.ts`
@@ -133,6 +136,7 @@ Shared test data factories used across many test files. These are not tests them
 - `HealOverlay.tsx`
 - `InitiativeOverlay.tsx`
 - `RageOverlay.tsx`
+- `ScrollToTop.tsx` — Dynamic "Scroll to top" floating button that appears on a container scrolled past a given threshold, providing a smooth scrollback.
 - `SheetConnectionSettings.tsx`
 - `SidebarIcon.tsx`
 - `SyncStatusIndicators.tsx`
@@ -146,6 +150,7 @@ Shared test data factories used across many test files. These are not tests them
 
 ### src/components/ui/ (shared components)
 
+- `AbilitySelectChips.tsx` — Renders a row of clickable chip buttons for selecting one or more ability scores, enforcing alphabetical or standard D&D order (`STR`/`DEX`/`CON`/`INT`/`WIS`/`CHA`).
 - `CardNumberInput.tsx` — Local-state wrapper for numeric inline edit fields on character and NPC cards. Commits on blur or Enter and reverts to the last valid value if cleared without entering a number. Used by `CharacterCardExpanded` and `NpcCard`. Same editing pattern as `AbilityScoreInput`, but without the 1–30 clamp and with a configurable fallback value.
 - `Button.tsx` — Shared button component. `intent?: 'primary' | 'secondary' | 'tertiary' | 'destructive'` (default `'primary'`), `size?: 'large' | 'small'` (default `'small'`). Universal press animation (`motion-safe:active:scale-95`) on all intents. `tertiary` opts out of the shared bold/uppercase typography and `size` padding (plain text-link style). Adopted in 10 locations across dialogs and cards — see `CHANGELOG.md`'s "Shared UI Component Consolidation" entry for the full adoption list and the several real bugs caught during migration (mismatched disabled-state colors, a stray parchment-theme tan hover color, a missing `disabled` prop).
 - `IconButton.tsx` — Shared icon-only button. `icon: React.ReactNode`, `intent?: 'neutral' | 'destructive'` (default `'neutral'`), `onDark?: boolean` (default `false`, for dark-background contexts like `DialogShell`'s header), required `aria-label` (not optional — no visible text for screen readers to fall back on). Always `rounded-full`, always a hover-fill (never a color-only ghost hover). Adopted in 8 locations — see `CHANGELOG.md`.
@@ -186,6 +191,7 @@ Shared test data factories used across many test files. These are not tests them
 - `ResourcePoolsSection.tsx` — Shared pip tracker UI used by both `CharacterCardExpanded` (Party tab) and `CombatantCardExpanded` (Active Encounter tab). Its Ki-Points-style resource pips now use `PipTracker.tsx` (see `CHANGELOG.md`); the "Reset: Short/Long Rest" chip remains a deliberately deferred `Badge` candidate — see `ROADMAP.md`.
 - `ResourcePoolManager.tsx` — Add/edit/delete management UI for a character's resource pools (distinct from `ResourcePoolsSection.tsx`, which only displays and spends/recovers pips). Its Edit and Delete icon buttons use `IconButton.tsx` — see `CHANGELOG.md`.
 - `SpellcastingStatsRow.tsx` — Displays Spell Save DC and Spell Attack Bonus inline on character and NPC cards. When `onOverrideChange` is supplied (Party tab, NPC Library), renders a spellcasting ability override dropdown. When omitted (Active Encounter), renders read-only. Non-casters with no override return `null`.
+- `DamageComponentsBuilder.tsx` — Interactive form component for building and managing a list of `DamageComponent` rows with dice notation, damage types, and auto-computed ability modifier bonuses.
 - `DebouncedInput.tsx` — Standard debounced input. Local-state buffering, commits to the parent's `onChange` on blur or Enter (not time-based debounce). Extended with `size?: 'compact' | 'prominent'` (padding/focus-ring variant; default `'compact'` preserves original behavior) and `immediate?: boolean` (default `false`; when `true`, fires `onChange` on every keystroke instead of on blur/Enter, for filter-as-you-type fields). Neither prop has been adopted anywhere yet — built and available for a genuine future "prominent" or immediate-mode instance; see `CHANGELOG.md` for the investigation that found the originally-suspected adoption sites didn't actually need it.
 - `DebouncedTextarea.tsx` — Standard debounced textarea (light parchment theme).
 - `DialogShell.tsx` — Shared modal shell component (backdrop + panel, `title`/`icon`/`subtitle`/`subheader`/`footer` slots, `zIndex` and `dismissOnBackdropClick` props). Adopted by all 12 target dialogs — see CHANGELOG.md for the full migration history and patterns established.

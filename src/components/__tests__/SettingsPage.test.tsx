@@ -3,13 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SettingsPage } from '../SettingsPage';
 import { useAppState } from '../../hooks/useAppState';
-import { useTheme } from '../../context/ThemeContext';
 import { toast } from 'sonner';
 
 vi.mock('../../hooks/useAppState');
-vi.mock('../../context/ThemeContext', () => ({
-  useTheme: vi.fn(),
-}));
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -58,11 +54,6 @@ describe('SettingsPage Backup Export/Import', () => {
       updateState: mockUpdateState,
       getSnapshot: vi.fn(() => mockState as any),
     });
-
-    vi.mocked(useTheme).mockReturnValue({
-      theme: 'light',
-      setTheme: vi.fn(),
-    } as any);
 
     global.URL.createObjectURL = vi.fn().mockReturnValue('blob:mock-url');
     global.URL.revokeObjectURL = vi.fn();

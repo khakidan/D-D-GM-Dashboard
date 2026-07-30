@@ -58,7 +58,6 @@ export const STORAGE_KEYS = {
   lastActiveTab: 'gm_last_active_tab',
   sidebarOpen: 'gm_sidebar_open',
   writeRetryQueue: 'gm_write_retry_queue',
-  visualStyle: 'gm_visual_style',
   googleAccessToken: 'GM_GOOGLE_ACCESS_TOKEN',
   googleRefreshToken: 'GM_GOOGLE_REFRESH_TOKEN',
   spreadsheetId: 'GM_DATA_SPREADSHEET_ID',

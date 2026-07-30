@@ -5,7 +5,6 @@ import { AuthRelay } from './components/auth/AuthRelay';
 import { checkAndCaptureToken } from './services/googleAuth';
 import { useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
-import { ThemeProvider } from './context/ThemeContext';
 import { useAppState } from './hooks/useAppState';
 import { DeathOverlay } from './components/DeathOverlay';
 import { DamageOverlay } from './components/DamageOverlay';
@@ -28,7 +27,7 @@ function AppContent() {
   const initiativeEvent = state.combatState.initiativeEvent;
 
   return (
-    <div id="root-theme-wrapper" data-theme="sleek-modern" className="w-full min-h-[100dvh] flex flex-col transition-colors duration-300">
+    <div id="root-theme-wrapper" className="w-full min-h-[100dvh] flex flex-col transition-colors duration-300">
       {deathEvent && (
         <DeathOverlay characterName={deathEvent.characterName} />
       )}
@@ -108,10 +107,10 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
+    <>
       <Toaster position="top-center" richColors />
       <AppContent />
-    </ThemeProvider>
+    </>
   );
 }
 

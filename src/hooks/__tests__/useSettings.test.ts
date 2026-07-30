@@ -23,14 +23,6 @@ vi.mock('../../services/googleAuth', () => ({
   clearTokens: vi.fn(),
 }));
 
-const mockSetTheme = vi.fn();
-vi.mock('../../context/ThemeContext', () => ({
-  useTheme: () => ({
-    theme: 'light',
-    setTheme: mockSetTheme,
-  }),
-}));
-
 const mockUpdateState = vi.fn();
 const mockState = {
   campaignName: 'Test Campaign',
@@ -89,12 +81,6 @@ describe('useSettings State Transition Tests', () => {
       result.current.handleSaveSpreadsheet();
     });
     expect(sheetsService.setSpreadsheetId).toHaveBeenCalledWith('new-sheet-id');
-
-    // Verify theme interaction
-    act(() => {
-      result.current.setTheme('sleek-modern');
-    });
-    expect(mockSetTheme).toHaveBeenCalledWith('sleek-modern');
   });
 
   it('exports settings payload correctly', async () => {

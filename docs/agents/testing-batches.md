@@ -2,20 +2,20 @@
 Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 batch counts individually after any change — never report only a combined total).
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 1061 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
-- **Batch 1: 509 tests.**
-- **Batch 2: 57 tests.**
-- **Batch 3: 62 tests.** Not touched this session — see baseline.
-- **Batch 4: 11 tests.**
-- **Batch 5A: 65 tests.**
-- **Batch 5B: 60 tests.**
-- **Batch 6A: 75 tests.** Breakdown: LevelUpDialog (19), CharacterCardExpanded (17), NewPlayerDialog (7), LongRestDialog (2), ShortRestDialog (1), CharacterCard (3), usePartyRest (20), PartyTab (1), usePartyCharacterCrud (5) = 75.
-- **Batch 6B: 26 tests.** Not touched this session — see baseline.
-- **Batch 6C: 43 tests.** Breakdown: NpcCard (22), NewNpcDialog (9), NpcFormFields (4), NpcLibraryTab (3), NpcCardSubcomponents (1), useNpcLibrary (4) = 43.
-- **Batch 7B-1: 21 tests.** Not touched this session — see baseline.
-- **Batch 7B-2: 31 tests.** Not touched this session — see baseline.
-- **Batch 8: 85 tests.** Breakdown: NpcCombatActionFields (17), ResourcePoolsSection (8), NpcListEditor (15), ConditionChips (13), DamageComponentsBuilder (7), ResourcePoolManager (6), AbilitySelectChips (4), ConditionPopover (13), SpellcastingStatsRow (2) = 85.
-- **Batch 9: 16 tests.** Not touched this session.
+**Current baseline: 1060 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+- Batch 1: 509 tests.
+- Batch 2: 57 tests.
+- Batch 3: 62 tests.
+- Batch 4: 11 tests.
+- Batch 5A: 65 tests.
+- Batch 5B: 60 tests.
+- Batch 6A: 75 tests.
+- Batch 6B: 26 tests.
+- Batch 6C: 43 tests.
+- Batch 7B-1: 21 tests.
+- Batch 7B-2: 30 tests.
+- Batch 8: 85 tests.
+- Batch 9: 16 tests.
 
 Run each batch individually. Never chain with `&&`. Never use glob patterns. Never run all tests at once with `npx vitest run`.
 
@@ -31,7 +31,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 6B | `src/components/EncountersTab/__tests__` | 26 |
 | 6C | `src/components/NpcLibraryTab/__tests__` | 43 |
 | 7B-1 | Audio + main dashboard top-level components | 21 |
-| 7B-2 | Other top-level components | 31 |
+| 7B-2 | Other top-level components | 30 |
 | 8 | `src/components/ui/__tests__` | 85 |
 | 9 | `src/components/auth/__tests__` | 16 |
 
@@ -56,8 +56,8 @@ npx vitest run src/components/EncountersTab/__tests__
 npx vitest run src/components/NpcLibraryTab/__tests__
 # BATCH 7B-1 — 21 tests
 npx vitest run src/components/__tests__/CommandPalette.test.tsx src/components/__tests__/ErrorBoundary.test.tsx src/components/__tests__/GMDashboard.test.tsx src/components/__tests__/GMDashboardSidebar.test.tsx src/components/__tests__/AudioLibrary.test.tsx src/components/__tests__/ScrollToTop.test.tsx
-# BATCH 7B-2 — 31 tests
-npx vitest run src/components/__tests__/CampaignSelector.test.tsx src/components/__tests__/GMTabContent.test.tsx src/components/__tests__/PlayerView.test.tsx src/components/__tests__/ThemeContext.test.tsx src/components/__tests__/GMTestingTools.test.tsx src/components/__tests__/SheetConnectionSettings.test.tsx src/components/__tests__/ReferenceDataSeeder.test.tsx src/components/__tests__/SettingsPage.test.tsx
+# BATCH 7B-2 — 30 tests
+npx vitest run src/components/__tests__/CampaignSelector.test.tsx src/components/__tests__/GMTabContent.test.tsx src/components/__tests__/PlayerView.test.tsx src/components/__tests__/GMTestingTools.test.tsx src/components/__tests__/SheetConnectionSettings.test.tsx src/components/__tests__/ReferenceDataSeeder.test.tsx src/components/__tests__/SettingsPage.test.tsx
 # BATCH 8 — 85 tests
 npx vitest run src/components/ui/__tests__
 # BATCH 9 — 16 tests
