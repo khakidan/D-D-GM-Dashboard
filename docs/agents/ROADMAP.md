@@ -99,59 +99,7 @@ prompt → verified raw test output → doc sync).
 
 #### Part 2 — Test Quality Audit (against `testing-philosophy.md`)
 
-**Goal:** confirm every test file in the codebase follows the three
-anti-patterns and the Seam Test Standard documented in
-`testing-philosophy.md`, flagging and fixing any test that:
-- Only asserts a function was called, without checking what data it
-  received (shallow call assertion).
-- Asserts that mock-injected data was returned, which can never fail
-  (circular mock assertion).
-- Asserts on internal state/implementation structure instead of
-  observable behavior (implementation-detail assertion).
-- At a UI↔service-layer seam (any form submission or inline edit),
-  fails to verify the **complete** data object reaching the service
-  layer has correct values in the correct fields — not just that the
-  service function was called.
-
-**Folder sequence (one investigation-only prompt per folder, matching
-`file-reference.md`'s structure and `testing-batches.md`'s batch
-groupings):**
-1. `src/lib/__tests__/` (Batch 1) — pure functions; primary risk here is
-   circular-mock and implementation-detail assertions, since there's no
-   UI/service seam to speak of.
-2. `src/services/__tests__/` (Batch 2) — `dbOperations`, `sheetsService`,
-   `writeQueue`, `googleAuth`. This is where the Seam Test Standard
-   applies most directly (exact row data at exact column indices).
-3. `src/hooks/__tests__/` (Batch 3) — store/hook logic; primary risk is
-   shallow call assertions per the philosophy doc's own hook example.
-4. `src/server/__tests__/` + `src/__tests__/` (Batch 4, combined)
-5. `src/components/PartyTab/__tests__/` (Batch 6A)
-6. `src/components/NpcLibraryTab/__tests__/` (Batch 6C)
-7. `src/components/EncountersTab/__tests__/` (Batch 6B)
-8. `src/components/ActiveEncounterTab/__tests__/` — split into hooks
-   (Batch 5A) and components (Batch 5B), given this is the largest
-   single folder
-9. `src/components/ui/__tests__/` (Batch 8)
-10. `src/components/__tests__/` — top-level components (Batches 7B-1,
-    7B-2)
-11. `src/components/auth/__tests__/` (Batch 9)
-
-**Report format per test file:**
-FILE: <path>
-VERDICT: ✅ Meets testing-philosophy.md standard / ⚠️ Violation(s) found
-VIOLATIONS (if any): <anti-pattern name> — <quoted offending assertion>
-— <what it should assert instead, per the philosophy doc's own
-BAD/GOOD examples>
-
-A file only gets a ✅ if every test within it was actually checked
-against all three anti-patterns and, where applicable, the Seam Test
-Standard — not a skim-level "looks fine" pass.
-
-**Fix discipline:** any ⚠️ found gets fixed one file at a time, with the
-corrected test's raw terminal output (per `AGENTS.md` rule #1) pasted
-before being marked resolved, exactly as every other fix in this project
-has been verified. No test file gets bulk-rewritten without individual
-review of what changed and why.
+Completed.
 
 ---
 

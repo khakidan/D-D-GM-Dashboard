@@ -58,13 +58,13 @@ describe('writeQueue tests', () => {
   });
 
   it('retryPersistedWrites processes queued items from localStorage', async () => {
-    localStorage.setItem(RETRY_STORAGE_KEY, JSON.stringify([{ range: 'B2', values: [[2]] }]));
+    localStorage.setItem(RETRY_STORAGE_KEY, JSON.stringify([{ range: 'B2', spreadsheetId: 'mock-id', values: [[2]] }]));
     
     await retryPersistedWrites();
     expect(getQueueSize()).toBe(1);
     
     await flushQueue();
-    expect(batchUpdateValues).toHaveBeenCalledWith([{ range: 'B2', values: [[2]] }]);
+    expect(batchUpdateValues).toHaveBeenCalledWith('mock-id', [{ range: 'B2', values: [[2]] }]);
   });
 
   it('queue respects maxRetryItems limit', async () => {

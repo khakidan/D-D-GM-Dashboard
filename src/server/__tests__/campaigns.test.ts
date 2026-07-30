@@ -111,7 +111,8 @@ describe('Campaigns Router', () => {
       'Death_Saves_Successes', 'Class',
       'Hit_Dice_Config', 'Hit_Dice_Used', 'Resource_Pools',
       'Ability_Scores', 'Proficiencies', 'Spellcasting_Ability',
-      'GM_Controlled', 'Traits', 'Actions', 'Reactions', 'Bonus_Actions'
+      'GM_Controlled', 'Traits', 'Actions', 'Reactions', 'Bonus_Actions',
+      'Auto_Refresh_Mechanics', 'Speed', 'Senses', 'Languages'
     ]);
 
     // EncounterLogs sheet header assertion
@@ -256,10 +257,10 @@ describe('Campaigns Router', () => {
     
     const charsData = valuesBody.data.find((d: any) => d.range.startsWith('Characters!'));
     expect(charsData).toBeDefined();
-    expect(charsData.range).toBe('Characters!A1:AE1');
+    expect(charsData.range).toBe('Characters!A1:AI1');
 
     const npcsData = valuesBody.data.find((d: any) => d.range.startsWith('NPCs!'));
     expect(npcsData).toBeDefined();
-    expect(npcsData.range).toBe('NPCs!A1:W1');
+    expect(npcsData.range).toBe('NPCs!A1:X1');
   });
 });
