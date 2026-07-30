@@ -24,6 +24,9 @@ function mirrorCharacterFieldsToCombatants(
       ...(updates.characterName !== undefined ? { name: updates.characterName } : {}),
       ...(updates.notes !== undefined ? { notes: updates.notes } : {}),
       ...(updates.passivePerception !== undefined ? { passivePerception: updates.passivePerception } : {}),
+      ...(updates.speed !== undefined ? { speed: updates.speed } : {}),
+      ...(updates.senses !== undefined ? { senses: updates.senses } : {}),
+      ...(updates.languages !== undefined ? { languages: updates.languages } : {}),
       ...(updates.tempAc !== undefined ? { tempAcModifier: updates.tempAc } : {}),
     };
   });

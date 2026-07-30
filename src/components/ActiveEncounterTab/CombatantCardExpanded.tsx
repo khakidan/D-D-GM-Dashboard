@@ -145,7 +145,7 @@ export function CombatantCardExpanded({
 
       {/* 1. Compact Stats Line */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3 py-2 border-b border-[#e2e8f0]">
-        {c.type === 'npc' && c.speed && (
+        {(c.type === 'npc' || pcCharacter?.gmControlled) && c.speed && (
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9]">Speed</span>
             <span className="text-sm font-bold text-slate-700">{c.speed}</span>
@@ -220,13 +220,13 @@ export function CombatantCardExpanded({
             readOnly={true}
             onPassiveBonusChange={() => {}}
           />
-          {c.type === 'npc' && c.senses && c.senses.trim() !== '' && (
+          {(c.type === 'npc' || pcCharacter?.gmControlled) && c.senses && c.senses.trim() !== '' && (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9] whitespace-nowrap">SENSES</span>
               <span className="text-sm font-bold text-slate-700">{c.senses}</span>
             </div>
           )}
-          {c.type === 'npc' && c.languages && c.languages.trim() !== '' && (
+          {(c.type === 'npc' || pcCharacter?.gmControlled) && c.languages && c.languages.trim() !== '' && (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#8d8db9] whitespace-nowrap">LANGUAGES</span>
               <span className="text-sm font-bold text-slate-700">{c.languages}</span>

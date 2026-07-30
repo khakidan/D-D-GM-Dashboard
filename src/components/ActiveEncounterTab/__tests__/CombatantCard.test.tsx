@@ -534,23 +534,59 @@ describe('CombatantCard - Expanded content gating and layout', () => {
     expect(screen.getByText('Legendary Resistances')).toBeInTheDocument();
   });
 
-  it('does not leak NPC-only fields (CR, Speed, Senses, Languages, Legendary) to a PC expanded display', () => {
+  it('renders Speed, Senses, and Languages for a GM-controlled PC combatant', () => {
+    const c = makeCombatant({
+      id: 'pc1',
+      type: 'pc',
+      name: 'GM PC',
+      speed: '30 ft.',
+      senses: 'Darkvision 60ft',
+      languages: 'Common, Elvish',
+    });
+    
+    const props = {
+      ...defaultProps,
+      c,
+      pcCharacter: { id: 'char1', characterName: 'GM PC', gmControlled: true } as any
+    };
+    
+    render(<CombatantCard {...props} />);
+    
+    expect(screen.getByText('Speed')).toBeInTheDocument();
+    expect(screen.getByText('30 ft.')).toBeInTheDocument();
+    expect(screen.getByText('SENSES')).toBeInTheDocument();
+    expect(screen.getByText('Darkvision 60ft')).toBeInTheDocument();
+    expect(screen.getByText('LANGUAGES')).toBeInTheDocument();
+    expect(screen.getByText('Common, Elvish')).toBeInTheDocument();
+    
+    // CR should still be absent even for GM-controlled PCs
+    expect(screen.queryByText('CR')).not.toBeInTheDocument();
+  });
+
+  it('does not leak NPC-only fields (CR, Legendary) or GM-only fields (Speed, Senses, Languages) to a normal PC expanded display', () => {
     const c = makeCombatant({
       id: 'pc1',
       type: 'pc',
       name: 'Player',
-      speed: '30 ft.', // PC might have speed, but we check gating
+      speed: '30 ft.',
       challengeRating: '5',
       senses: 'Darkvision 60ft',
       languages: 'Common, Elvish',
       legendaryActions: { max: 3, remaining: 3 }
     });
     
-    render(<CombatantCard {...defaultProps} c={c} />);
+    const props = {
+      ...defaultProps,
+      c,
+      pcCharacter: { id: 'char1', characterName: 'Player', gmControlled: false } as any
+    };
+    
+    render(<CombatantCard {...props} />);
     
     expect(screen.queryByText('CR')).not.toBeInTheDocument();
-    expect(screen.queryByText('Senses')).not.toBeInTheDocument();
-    expect(screen.queryByText('Languages')).not.toBeInTheDocument();
+    expect(screen.queryByText('Speed')).not.toBeInTheDocument();
+    expect(screen.queryByText('SENSES')).not.toBeInTheDocument();
+    expect(screen.queryByText('LANGUAGES')).not.toBeInTheDocument();
     expect(screen.queryByText('Legendary Actions')).not.toBeInTheDocument();
     expect(screen.queryByText('Legendary Resistances')).not.toBeInTheDocument();
   });

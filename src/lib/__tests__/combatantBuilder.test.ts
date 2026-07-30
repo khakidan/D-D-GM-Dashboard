@@ -654,6 +654,30 @@ describe('buildCombatantsFromState GM Controlled PC handling', () => {
     expect(res[0].reactions).toBe('[{"name":"Parry"}]');
   });
 
+  it('correctly passes speed, senses, and languages from character sheet when linked', () => {
+    const characters: Partial<Character>[] = [{
+      id: 'pc-1',
+      characterName: 'Alandra',
+      speed: '30 ft.',
+      senses: 'Darkvision 60 ft.',
+      languages: 'Common, Elvish'
+    }];
+    const ec: Partial<EncounterCombatant>[] = [{
+      id: 'ec-1',
+      encounterId: 'enc-1',
+      playerId: 'pc-1',
+    }];
+    const res = buildCombatantsFromState(
+      encounter as Encounter,
+      ec as EncounterCombatant[],
+      characters as Character[],
+      []
+    );
+    expect(res[0].speed).toBe('30 ft.');
+    expect(res[0].senses).toBe('Darkvision 60 ft.');
+    expect(res[0].languages).toBe('Common, Elvish');
+  });
+
   it('correctly passes gmControlled and stat block JSON strings from character sheet when falling back to active characters', () => {
     const characters: Partial<Character>[] = [{
       id: 'pc-1',

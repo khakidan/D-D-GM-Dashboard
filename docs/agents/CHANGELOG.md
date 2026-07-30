@@ -2,6 +2,25 @@
 
 ---
 
+## GM-Controlled PC Combatant Detail Completion (Completed)
+
+Resolved the 3-layer gap causing Speed, Senses, and Languages display to be missing from GM-controlled PC combatant cards in the Active Encounter tab.
+
+- **Data Flow Fixes**:
+  - **combatantBuilder.ts**: Updated the PC-to-Combatant transformation to include `speed`, `senses`, and `languages` (matching the existing string-fallback pattern).
+  - **useParty.ts**: Updated `mirrorCharacterFieldsToCombatants` to propagate these fields from Character to Combatant during live updates.
+  - **usePartyCharacterCrud.ts**: Whitelisted these fields in `isSheetData` to ensure updates trigger both a database write and a combatant mirror.
+- **Display Logic**:
+  - **CombatantCardExpanded.tsx**: Widened the display gates for Speed, Senses, and Languages from `c.type === 'npc'` to `(c.type === 'npc' || pcCharacter?.gmControlled)`, allowing GM-controlled PCs to see these fields while keeping them hidden for normal players.
+  - Challenge Rating (CR) remains strictly NPC-only as intended.
+- **Verification & Test Coverage**:
+  - Added test coverage in `combatantBuilder.test.ts` verifying PC field propagation.
+  - Added test coverage in `CombatantCard.test.tsx` verifying display for GM-controlled PCs and non-leakage for normal PCs.
+  - Updated `usePartyCharacterCrud.test.ts` to verify the new fields are correctly mirrored upon update.
+  - Final test baseline: **1061 tests passed** (Batch 1: 509, Batch 5B: 60, Batch 6A: 75).
+
+---
+
 ## Character & NPC Persistence — `autoRefreshMechanics` Support (Completed)
 
 Integrated full read/write persistence for the "Auto-refresh action mechanics" checkbox across both Characters and NPCs, ensuring the opt-in automation setting survives page reloads and persists in the underlying Google Sheets database.

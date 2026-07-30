@@ -142,7 +142,10 @@ describe('useParty - Character CRUD', () => {
           traits: '[{"name":"Tough"}]',
           actions: '[{"name":"Strike"}]',
           bonusActions: '[{"name":"Quick Step"}]',
-          reactions: '[{"name":"Parry"}]'
+          reactions: '[{"name":"Parry"}]',
+          speed: '30 ft.',
+          senses: 'Darkvision',
+          languages: 'Common'
         });
       });
 
@@ -152,7 +155,10 @@ describe('useParty - Character CRUD', () => {
           traits: '[{"name":"Tough"}]',
           actions: '[{"name":"Strike"}]',
           bonusActions: '[{"name":"Quick Step"}]',
-          reactions: '[{"name":"Parry"}]'
+          reactions: '[{"name":"Parry"}]',
+          speed: '30 ft.',
+          senses: 'Darkvision',
+          languages: 'Common'
         }), 
         expect.objectContaining({ id: 'char-1' })
       );

@@ -2,14 +2,14 @@
 Referenced from the root [AGENTS.md](../../AGENTS.md) (Rule 9: report all 13 batch counts individually after any change — never report only a combined total).
 This file is maintained with the same discipline as [ROADMAP.md](ROADMAP.md)/[CHANGELOG.md](CHANGELOG.md)/[file-reference.md](file-reference.md) — kept current every session, not left stale. It was split out of `AGENTS.md` specifically because it's frequently-changing data (updated almost every session as tests are added), unlike `AGENTS.md`'s otherwise-stable rules and conventions, and unlike [testing-philosophy.md](testing-philosophy.md)'s stable quality principles. Update the table and baseline below immediately whenever a test count changes.
 
-**Current baseline: 1059 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
-- **Batch 1: 508 tests.**
+**Current baseline: 1061 tests.** Real, verified totals for every affected batch, run individually per this file's own rule:
+- **Batch 1: 509 tests.**
 - **Batch 2: 57 tests.**
 - **Batch 3: 62 tests.** Not touched this session — see baseline.
 - **Batch 4: 11 tests.**
 - **Batch 5A: 65 tests.**
-- **Batch 5B: 58 tests.** Not touched this session — see baseline.
-- **Batch 6A: 76 tests.** Breakdown: LevelUpDialog (19), CharacterCardExpanded (18), NewPlayerDialog (7), LongRestDialog (2), ShortRestDialog (1), CharacterCard (3), usePartyRest (20), PartyTab (1), usePartyCharacterCrud (5) = 76.
+- **Batch 5B: 60 tests.**
+- **Batch 6A: 75 tests.** Breakdown: LevelUpDialog (19), CharacterCardExpanded (17), NewPlayerDialog (7), LongRestDialog (2), ShortRestDialog (1), CharacterCard (3), usePartyRest (20), PartyTab (1), usePartyCharacterCrud (5) = 75.
 - **Batch 6B: 26 tests.** Not touched this session — see baseline.
 - **Batch 6C: 43 tests.** Breakdown: NpcCard (22), NewNpcDialog (9), NpcFormFields (4), NpcLibraryTab (3), NpcCardSubcomponents (1), useNpcLibrary (4) = 43.
 - **Batch 7B-1: 21 tests.** Not touched this session — see baseline.
@@ -21,13 +21,13 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 
 | Batch | Description | Test Count |
 |-------|-------------|------------|
-| 1 | `src/lib/__tests__` | 508 |
+| 1 | `src/lib/__tests__` | 509 |
 | 2 | `src/services/__tests__` | 57 |
 | 3 | `src/hooks/__tests__` | 62 |
 | 4 | `src/server/__tests__` + `src/__tests__` | 11 |
 | 5A | ActiveEncounterTab hooks (`.test.ts`) | 65 |
-| 5B | ActiveEncounterTab components (`.test.tsx`) | 58 |
-| 6A | `src/components/PartyTab/__tests__` | 76 |
+| 5B | ActiveEncounterTab components (`.test.tsx`) | 60 |
+| 6A | `src/components/PartyTab/__tests__` | 75 |
 | 6B | `src/components/EncountersTab/__tests__` | 26 |
 | 6C | `src/components/NpcLibraryTab/__tests__` | 43 |
 | 7B-1 | Audio + main dashboard top-level components | 21 |
@@ -36,7 +36,7 @@ Run each batch individually. Never chain with `&&`. Never use glob patterns. Nev
 | 9 | `src/components/auth/__tests__` | 16 |
 
 ```bash
-# BATCH 1 — 508 tests
+# BATCH 1 — 509 tests
 npx vitest run src/lib/__tests__
 # BATCH 2 — 57 tests
 npx vitest run src/services/__tests__
@@ -46,9 +46,9 @@ npx vitest run src/hooks/__tests__
 npx vitest run src/server/__tests__ src/__tests__
 # BATCH 5A — 65 tests
 npx vitest run src/components/ActiveEncounterTab/__tests__/useBatchActions.test.ts src/components/ActiveEncounterTab/__tests__/useCombatSync.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantExpanded.test.ts src/components/ActiveEncounterTab/__tests__/useEncounterPresetLoader.test.ts src/components/ActiveEncounterTab/__tests__/useHealthChange.test.ts src/components/ActiveEncounterTab/__tests__/useSelectionMode.test.ts src/components/ActiveEncounterTab/__tests__/useCombatantMutations.test.ts
-# BATCH 5B — 58 tests
+# BATCH 5B — 60 tests
 npx vitest run src/components/ActiveEncounterTab/__tests__/AddNpcCollision.test.tsx src/components/ActiveEncounterTab/__tests__/CasterAttributionDialog.test.tsx src/components/ActiveEncounterTab/__tests__/CombatHeader.test.tsx src/components/ActiveEncounterTab/__tests__/AddCombatantDialog.test.tsx src/components/ActiveEncounterTab/__tests__/CombatantCard.test.tsx src/components/ActiveEncounterTab/__tests__/KeyboardShortcuts.test.tsx src/components/ActiveEncounterTab/__tests__/MultiTargetActionPanel.test.tsx src/components/ActiveEncounterTab/__tests__/ShortcutCheatSheet.test.tsx src/components/ActiveEncounterTab/__tests__/combatStarted.test.tsx src/components/ActiveEncounterTab/__tests__/index.test.tsx src/components/ActiveEncounterTab/__tests__/useCinematicVideo.test.tsx src/components/ActiveEncounterTab/__tests__/RechargeToastContent.test.tsx
-# BATCH 6A — 76 tests
+# BATCH 6A — 75 tests
 npx vitest run src/components/PartyTab/__tests__
 # BATCH 6B — 26 tests
 npx vitest run src/components/EncountersTab/__tests__
