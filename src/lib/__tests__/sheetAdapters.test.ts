@@ -67,6 +67,9 @@ describe('sheetAdapters', () => {
         '[]',                     // [29] reactions
         '[]',                     // [30] bonusActions
         true,                     // [31] autoRefreshMechanics
+        '30 ft.',                 // [32] speed
+        'darkvision 60 ft.',      // [33] senses
+        'Common',                 // [34] languages
       ];
 
       const character = mapCharacterRowToCharacter(data, 2, mockStatuses);
@@ -107,6 +110,9 @@ describe('sheetAdapters', () => {
         actions: '[]',
         reactions: '[]',
         bonusActions: '[]',
+        speed: '30 ft.',
+        senses: 'darkvision 60 ft.',
+        languages: 'Common',
       });
     });
 

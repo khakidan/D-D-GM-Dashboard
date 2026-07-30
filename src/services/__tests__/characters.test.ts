@@ -76,14 +76,14 @@ describe('updateCharacterDB — row array integrity', () => {
     expect(row[24]).toContain('spellcastingAbility');
   });
 
-  it('writes to Characters!A{row}:AE{row}', async () => {
+  it('writes to Characters!A{row}:AI{row}', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({
       values: [['other'], ['char-1']],
     });
     await updateCharacterDB({}, fullState as any);
     expect(writeQueue.queueWrite).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'Characters!A3:AF3',
+      'Characters!A3:AI3',
       [[
         'char-1',
         'Player 1',
@@ -117,6 +117,9 @@ describe('updateCharacterDB — row array integrity', () => {
         '[]',
         '[]',
         'FALSE',
+        '',
+        '',
+        '',
       ]]
     );
   });
@@ -136,7 +139,7 @@ describe('updateCharacterDB — row array integrity', () => {
 });
 
 describe('addCharacterDB — row structure', () => {
-  it('writes 32 values with spellcastingAbility at index 25', async () => {
+  it('writes 35 values with spellcastingAbility at index 25', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
     await addCharacterDB({
       characterName: 'Mage',
@@ -144,12 +147,12 @@ describe('addCharacterDB — row structure', () => {
     });
     expect(sheetsService.appendSheetData).toHaveBeenCalledWith(
       'mock-spreadsheet-id',
-      'Characters!A:AF',
+      'Characters!A:AI',
       expect.any(Array)
     );
     const appendCall = vi.mocked(sheetsService.appendSheetData).mock.calls[0];
     const row = appendCall[2][0] as any[];
-    expect(row).toHaveLength(32);
+    expect(row).toHaveLength(35);
     expect(row[25]).toBe('CHA');
     expect(row[26]).toBe('FALSE');
     expect(row[27]).toBe('[]');
@@ -157,6 +160,9 @@ describe('addCharacterDB — row structure', () => {
     expect(row[29]).toBe('[]');
     expect(row[30]).toBe('[]');
     expect(row[31]).toBe('FALSE');
+    expect(row[32]).toBe('');
+    expect(row[33]).toBe('');
+    expect(row[34]).toBe('');
   });
 });
 
@@ -193,14 +199,14 @@ describe('addCharacterDB — row array integrity', () => {
     vi.clearAllMocks();
   });
 
-  it('writes all 32 fields at correct column indices (0–31)', async () => {
+  it('writes all 35 fields at correct column indices (0–34)', async () => {
     vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [] });
     await addCharacterDB(charData as any);
     
     expect(sheetsService.appendSheetData).toHaveBeenCalled();
     const row = vi.mocked(sheetsService.appendSheetData).mock.calls[0][2][0] as any[];
     
-    expect(row).toHaveLength(32);
+    expect(row).toHaveLength(35);
     expect(row[1]).toBe('Player One'); // playerName
     expect(row[2]).toBe('Paladin Hero'); // characterName
     expect(row[3]).toBe(18); // ac
@@ -232,6 +238,9 @@ describe('addCharacterDB — row array integrity', () => {
     expect(row[29]).toBe('[]'); // reactions
     expect(row[30]).toBe('[]'); // bonusActions
     expect(row[31]).toBe('FALSE'); // autoRefreshMechanics
+    expect(row[32]).toBe(''); // speed
+    expect(row[33]).toBe(''); // senses
+    expect(row[34]).toBe(''); // languages
   });
 
   it('writes gmControlled and stat block JSON fields correctly to indices 26-29', async () => {

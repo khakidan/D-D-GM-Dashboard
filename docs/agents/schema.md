@@ -28,7 +28,7 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 
 ## Google Sheets Schema
 
-### Characters (A2:AF — 32 columns)
+### Characters (A2:AI — 35 columns)
 
 | Col | Index | Field | Notes |
 |-----|-------|-------|-------|
@@ -64,6 +64,9 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when touching a
 | AD | 29 | reactions | JSON: `NpcReaction[]`, default `[]`. Same shape/precedent as NPCs' own `reactions` column. |
 | AE | 30 | bonusActions | JSON: `NpcAction[]`, default `[]`. Same shape/precedent as NPCs' own `bonusActions` column. |
 | AF | 31 | autoRefreshMechanics | `TRUE`/`FALSE` string, default `FALSE`. Persistence for the "Auto-refresh action mechanics" checkbox. |
+| AG | 32 | speed | Text, e.g. "30 ft., fly 60 ft." |
+| AH | 33 | senses | Text, e.g. "darkvision 60 ft." |
+| AI | 34 | languages | Text |
 
 Note: `gmControlled`/`traits`/`actions`/`reactions`/`bonusActions` reuse the exact same `NpcTrait`/`NpcAction`/`NpcReaction` TypeScript interfaces already defined for NPCs (see the NPCs section below) — no separate PC-specific types exist. Unlike NPCs, PCs never have a Legendary Actions equivalent; that data doesn't apply to player characters and is intentionally absent from this schema.
 
@@ -251,7 +254,7 @@ IDs: 1=Easy, 2=Medium, 3=Hard, 4=Deadly
 
 The following fields are accepted by `handleUpdate` and write to the sheet:
 
-`playerName`, `characterName`, `class`, `ac`, `maxHp`, `tempHp`, `currentHp`, `conditions`, `passivePerception`, `level`, `statusId`, `notes`, `resistances`, `immunities`, `vulnerabilities`, `tempAc`, `deathSavesFails`, `deathSavesSuccesses`, `hitDiceConfig`, `hitDiceUsed`, `resourcePools`, `abilityScores`, `proficiencies`, `spellcastingAbility`, `gmControlled`, `traits`, `actions`, `bonusActions`, `reactions`, `autoRefreshMechanics`
+`playerName`, `characterName`, `class`, `ac`, `maxHp`, `tempHp`, `currentHp`, `conditions`, `passivePerception`, `level`, `statusId`, `notes`, `resistances`, `immunities`, `vulnerabilities`, `speed`, `senses`, `languages`, `tempAc`, `deathSavesFails`, `deathSavesSuccesses`, `hitDiceConfig`, `hitDiceUsed`, `resourcePools`, `abilityScores`, `proficiencies`, `spellcastingAbility`, `gmControlled`, `traits`, `actions`, `bonusActions`, `reactions`, `autoRefreshMechanics`
 
 **Any field not in this list is silently dropped from sheet sync** — the in-memory Zustand store still updates, but the change never reaches the sheet, with no error shown to the GM. This is the exact failure mode `usePartyCharacterCrud.test.ts`'s "GM Controlled Fields" test exists to guard against for the 4 newest fields.
 

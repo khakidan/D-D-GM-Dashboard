@@ -54,6 +54,9 @@ export function mapCharacterRowToCharacter(
     reactions,
     bonusActions,
     autoRefreshMechanics,
+    speed,
+    senses,
+    languages,
   ] = data;
 
   let syncedProficiencies = proficiencies ?? JSON.stringify(DEFAULT_PROFICIENCIES);
@@ -100,6 +103,9 @@ export function mapCharacterRowToCharacter(
     spellcastingAbility: spellcastingAbility ?? '',
     gmControlled: gmControlled ?? false,
     autoRefreshMechanics: autoRefreshMechanics ?? false,
+    speed: speed ?? '',
+    senses: senses ?? '',
+    languages: languages ?? '',
     traits: traits ?? '[]',
     actions: actions ?? '[]',
     reactions: reactions ?? '[]',

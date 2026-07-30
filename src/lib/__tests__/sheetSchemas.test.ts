@@ -37,7 +37,7 @@ describe('sheetSchemas', () => {
           'Fire', 'Cold', 'Acid', 5, 2, 1, 1, 'Paladin', '3d10', '{"d10":1}', '[]',
           '{"STR":10,"DEX":10,"CON":10,"INT":10,"WIS":10,"CHA":10}',
           '{"proficiencyBonus":2,"jackOfAllTrades":false,"savingThrows":[],"skills":{},"passiveBonuses":{"perception":0,"insight":0,"investigation":0},"toughFeat":false}',
-          'Charisma', true, '[{"name":"Brave","description":"Advantage on saves vs frightened"}]', '[]', '[]', '[]', false
+          'Charisma', true, '[{"name":"Brave","description":"Advantage on saves vs frightened"}]', '[]', '[]', '[]', false, '', '', ''
         ]);
       }
     });
@@ -80,6 +80,9 @@ describe('sheetSchemas', () => {
          '[]', // reactions
          '[]', // bonusActions
          false, // autoRefreshMechanics
+         '', // speed
+         '', // senses
+         '', // languages
         ]);
       }
     });

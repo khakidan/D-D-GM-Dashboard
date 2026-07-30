@@ -107,9 +107,12 @@ export async function addCharacterDB(
       sanitizeString(character.reactions || '[]'),
       sanitizeString(character.bonusActions || '[]'),
       character.autoRefreshMechanics ? 'TRUE' : 'FALSE',
+      sanitizeString(character.speed || ''),
+      sanitizeString(character.senses || ''),
+      sanitizeString(character.languages || ''),
     ];
 
-    await appendSheetData(resolvedId, 'Characters!A:AF', [rowData]);
+    await appendSheetData(resolvedId, 'Characters!A:AI', [rowData]);
     return {
       ...character,
       id: finalId,
@@ -130,6 +133,9 @@ export async function addCharacterDB(
       actions: character.actions ?? '[]',
       reactions: character.reactions ?? '[]',
       bonusActions: character.bonusActions ?? '[]',
+      speed: character.speed ?? '',
+      senses: character.senses ?? '',
+      languages: character.languages ?? '',
     };
   } catch (err) {
     console.error('[DB] addCharacterDB failed:', err);
@@ -200,10 +206,13 @@ export async function updateCharacterDB(
       sanitizeString(character.reactions ?? fullState.reactions ?? '[]'),
       sanitizeString(character.bonusActions ?? fullState.bonusActions ?? '[]'),
       (character.autoRefreshMechanics ?? fullState.autoRefreshMechanics) ? 'TRUE' : 'FALSE',
+      sanitizeString(character.speed ?? fullState.speed ?? ''),
+      sanitizeString(character.senses ?? fullState.senses ?? ''),
+      sanitizeString(character.languages ?? fullState.languages ?? ''),
     ];
 
     const a1Row = charRowIdx + 1;
-    queueWriteResolved(resolvedId, `Characters!A${a1Row}:AF${a1Row}`, [rowData]);
+    queueWriteResolved(resolvedId, `Characters!A${a1Row}:AI${a1Row}`, [rowData]);
   } catch (err) {
     console.error('[DB] updateCharacterDB failed:', err);
     throw err;

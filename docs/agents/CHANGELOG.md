@@ -2,6 +2,30 @@
 
 ---
 
+## Character Persistence — Speed, Senses, and Languages Support (Completed)
+
+Integrated full read/write persistence for PC Speed, Senses, and Languages, completing the 3-layer fix for missing data on GM-controlled PC combatant cards. This ensures that values typed into these fields on the PC card survive page reloads and persist in the underlying Google Sheets database.
+
+- **Schema Update**:
+  - Appended `Speed`, `Senses`, and `Languages` to `CHARACTER_HEADERS` in `sheetSchemas.ts`.
+  - Updated `SHEET_RANGES.characters` in `constants.ts` to `Characters!A2:AI` (35 columns).
+  - Added string-coerced `speed`, `senses`, and `languages` to `CharacterRowSchema` using `stringDefault('')` to gracefully handle legacy rows.
+- **Read Path Integration**:
+  - Updated `mapCharacterRowToCharacter` in `sheetAdapters.ts` to destructure and map the three new columns from the raw sheet row data.
+- **Write Path Integration**:
+  - Updated `addCharacterDB` and `updateCharacterDB` in `src/services/dbOperations/characters.ts` to include the new fields in the `rowData` array and updated the sheet range to `A:AI`.
+- **Documentation**:
+  - Updated `docs/agents/schema.md` with the new 35-column definition and updated the `handleUpdate` whitelist confirmation.
+- **Verification & Test Coverage**:
+  - Ran `tsc -p tsconfig.build.json --noEmit` with 0 errors.
+  - Updated `sheetAdapters.test.ts` to verify mapping of the new fields in full-length rows and confirmed fallback behavior for short/legacy rows.
+  - Updated `sheetSchemas.test.ts` to align with the 35-column character row requirement.
+  - Updated `constants.test.ts` to verify the character sheet range correctly ends in `AI`.
+  - Updated `characters.test.ts` to verify `addCharacterDB` and `updateCharacterDB` write the new fields at the correct column indices (32, 33, 34).
+  - Final test baseline: **1061 tests passed** (Batch 1: 509, Batch 2: 57, Batch 5B: 60, Batch 6A: 75).
+
+---
+
 ## GM-Controlled PC Combatant Detail Completion (Completed)
 
 Resolved the 3-layer gap causing Speed, Senses, and Languages display to be missing from GM-controlled PC combatant cards in the Active Encounter tab.
