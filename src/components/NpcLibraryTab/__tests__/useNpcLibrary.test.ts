@@ -7,7 +7,7 @@ import { deleteNpcDB, updateNpcFullDB, addNpcDB } from '../../../services/dbOper
 vi.mock('../../../services/dbOperations', () => ({
   deleteNpcDB: vi.fn(),
   updateNpcFullDB: vi.fn(),
-  addNpcDB: vi.fn().mockResolvedValue({ id: 'new-npc' }),
+  addNpcDB: vi.fn().mockResolvedValue({ id: 'new-npc', name: 'Orc' }),
   resetNpcHpDB: vi.fn(),
 }));
 
@@ -108,7 +108,15 @@ describe('useNpcLibrary', () => {
       await result.current.handleAddNpc({ name: 'Orc' } as any);
     });
 
-    expect(addNpcDB).toHaveBeenCalled();
-    expect(updateStateSpy).toHaveBeenCalled();
+    expect(addNpcDB).toHaveBeenCalledWith(expect.objectContaining({ name: 'Orc' }));
+    
+    const optimisticUpdater = updateStateSpy.mock.calls[0][0];
+    const stateAfterOptimistic = optimisticUpdater({ npcs: [] });
+    const finalUpdater = updateStateSpy.mock.calls[1][0];
+    const finalState = finalUpdater(stateAfterOptimistic);
+    
+    expect(finalState.npcs).toEqual([
+      expect.objectContaining({ id: 'new-npc', name: 'Orc' })
+    ]);
   });
 });
