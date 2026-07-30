@@ -1,13 +1,13 @@
 import React from 'react';
-import { cn } from '../../lib/utils';
-import { StatBlock } from './stat-block/StatBlock';
+import { cn } from '../../../lib/utils';
+import { StatBlock } from '../stat-block/StatBlock';
 import type { NpcFormData } from './NpcFormFields';
 import { 
   AbilityScores, 
   Proficiencies, 
   serializeAbilityScores, 
   serializeProficiencies 
-} from '../../lib/abilityScores';
+} from '../../../lib/abilityScores';
 
 interface NpcAbilitiesTabProps {
   data: NpcFormData;

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Shield, Heart } from 'lucide-react';
-import { cn } from '../../lib/utils';
-import { IrvSection } from './IrvSection';
-import { DebouncedTextarea } from './DebouncedTextarea';
+import { cn } from '../../../lib/utils';
+import { IrvSection } from '../IrvSection';
+import { DebouncedTextarea } from '../DebouncedTextarea';
 import type { NpcFormData } from './NpcFormFields';
 
 interface NpcCombatTabProps {

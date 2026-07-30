@@ -1,12 +1,12 @@
 import React from 'react';
-import { DebouncedTextarea } from './DebouncedTextarea';
-import { AbilityName } from '../../lib/abilityFundamentals';
-import { AbilityScores, calculateModifier } from '../../lib/abilityScores';
-import { AbilitySelectChips } from './AbilitySelectChips';
-import { DamageComponent } from '../../types';
-import { DamageComponentsBuilder } from './DamageComponentsBuilder';
-import { compileDamageComponents } from '../../lib/automation';
-import { cn } from '../../lib/utils';
+import { DebouncedTextarea } from '../DebouncedTextarea';
+import { AbilityName } from '../../../lib/abilityFundamentals';
+import { AbilityScores, calculateModifier } from '../../../lib/abilityScores';
+import { AbilitySelectChips } from '../AbilitySelectChips';
+import { DamageComponent } from '../../../types';
+import { DamageComponentsBuilder } from '../DamageComponentsBuilder';
+import { compileDamageComponents } from '../../../lib/automation';
+import { cn } from '../../../lib/utils';
 
 export interface NpcCombatActionFieldsProps {
   idPrefix: string;

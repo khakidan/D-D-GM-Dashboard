@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Library, Plus, Users, UserPlus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { NPC as Npc, Character, Combatant } from '../../types';
-import { NpcFormFields, NpcFormData, DEFAULT_NPC_FORM_DATA } from '../ui/NpcFormFields';
+import { NpcFormFields, NpcFormData, DEFAULT_NPC_FORM_DATA } from '../ui/npc-editor/NpcFormFields';
 import { DialogShell } from '../ui/DialogShell';
 import { SearchInput } from '../ui/SearchInput';
 import { Tabs } from '../ui/Tabs';

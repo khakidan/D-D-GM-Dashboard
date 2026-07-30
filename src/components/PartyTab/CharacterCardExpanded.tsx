@@ -25,8 +25,8 @@ import { serializeSpellcastingAbility } from '../../lib/spellcasting';
 import { Button } from '../ui/Button';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import { effectiveMaxHp } from '../../lib/conditions';
-import { NpcListEditor } from '../ui/NpcListEditor';
-import { createNpcListRenderers } from '../ui/npcListFieldRenderers';
+import { NpcListEditor } from '../ui/npc-editor/NpcListEditor';
+import { createNpcListRenderers } from '../ui/npc-editor/npcListFieldRenderers';
 
 export interface CharacterCardExpandedProps {
   character: Character;

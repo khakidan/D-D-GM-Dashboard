@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { IconButton } from './IconButton';
-import { Button } from './Button';
-import { ConfirmationDialog } from './ConfirmationDialog';
-import { generateUuid } from '../../lib/uuid';
-import { CardHeaderChevron } from './CardHeaderChevron';
-import { formatActionMeta } from './stat-block/NpcStatBlockSection';
+import { IconButton } from '../IconButton';
+import { Button } from '../Button';
+import { ConfirmationDialog } from '../ConfirmationDialog';
+import { generateUuid } from '../../../lib/uuid';
+import { CardHeaderChevron } from '../CardHeaderChevron';
+import { formatActionMeta } from '../stat-block/NpcStatBlockSection';
 
 interface NpcListEditorProps<T extends { name: string; _key?: string }> {
   title: string;           // section header e.g. "Traits"

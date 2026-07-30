@@ -26,8 +26,8 @@ import { usePlayerFormAutomation } from '../../hooks/usePlayerFormAutomation';
 import { DialogShell } from '../ui/DialogShell';
 import { Button } from '../ui/Button';
 import { Tabs } from '../ui/Tabs';
-import { NpcListEditor } from '../ui/NpcListEditor';
-import { createNpcListRenderers } from '../ui/npcListFieldRenderers';
+import { NpcListEditor } from '../ui/npc-editor/NpcListEditor';
+import { createNpcListRenderers } from '../ui/npc-editor/npcListFieldRenderers';
 
 interface NewPlayerDialogProps {
   statuses: Record<string, string>;

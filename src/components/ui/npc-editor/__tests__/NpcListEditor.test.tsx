@@ -3,7 +3,7 @@ import React from 'react';
 import { render, fireEvent, screen, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { NpcListEditor } from '../NpcListEditor';
-import { formatActionMeta } from '../stat-block/NpcStatBlockSection';
+import { formatActionMeta } from '../../stat-block/NpcStatBlockSection';
 
 interface TestItem {
   id: string;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { cn } from '../../lib/utils';
-import { StatBlock } from './stat-block/StatBlock';
-import { Tabs } from './Tabs';
+import { cn } from '../../../lib/utils';
+import { StatBlock } from '../stat-block/StatBlock';
+import { Tabs } from '../Tabs';
 import { NpcListEditor } from './NpcListEditor';
 import { NpcIdentityTab } from './NpcIdentityTab';
 import { NpcCombatTab } from './NpcCombatTab';
@@ -17,9 +17,9 @@ import {
   DEFAULT_ABILITY_SCORES,
   DEFAULT_PROFICIENCIES,
   proficiencyBonusFromCR,
-} from '../../lib/abilityScores';
-import { useNpcCrAutomation } from '../../hooks/useNpcCrAutomation';
-import type { NpcTrait, NpcAction, NpcReaction, NpcLegendaryAction } from '../../types';
+} from '../../../lib/abilityScores';
+import { useNpcCrAutomation } from '../../../hooks/useNpcCrAutomation';
+import type { NpcTrait, NpcAction, NpcReaction, NpcLegendaryAction } from '../../../types';
 
 export interface NpcFormData {
   name: string;

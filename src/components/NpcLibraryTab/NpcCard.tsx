@@ -6,12 +6,12 @@ import { CardShell } from '../ui/CardShell';
 import { DebouncedInput } from '../ui/DebouncedInput';
 import { CardNumberInput } from '../ui/CardNumberInput';
 import { DebouncedTextarea } from '../ui/DebouncedTextarea';
-import { NpcListEditor } from '../ui/NpcListEditor';
+import { NpcListEditor } from '../ui/npc-editor/NpcListEditor';
 import { Button } from '../ui/Button';
 import { ExpandableContent } from '../ui/ExpandableContent';
 import { LabeledField } from '../ui/LabeledField';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
-import { createNpcListRenderers } from '../ui/npcListFieldRenderers';
+import { createNpcListRenderers } from '../ui/npc-editor/npcListFieldRenderers';
 
 // Modular Sub-components
 import { NpcCardHeader } from './NpcCardHeader';

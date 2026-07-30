@@ -1,15 +1,15 @@
 import React from 'react';
 import { NpcSimpleFieldEditor } from './NpcSimpleFieldEditor';
 import { NpcCombatActionFields } from './NpcCombatActionFields';
-import { DEFAULT_ABILITY_SCORES, AbilityScores } from '../../lib/abilityScores';
-import { compileDamageComponents } from '../../lib/automation';
+import { DEFAULT_ABILITY_SCORES, AbilityScores } from '../../../lib/abilityScores';
+import { compileDamageComponents } from '../../../lib/automation';
 
 import type { 
   NpcTrait, 
   NpcAction, 
   NpcReaction, 
   NpcLegendaryAction 
-} from '../../types';
+} from '../../../types';
 
 export function createNpcListRenderers(idPrefix: string, abilityScores: AbilityScores, proficiencyBonus: number) {
   return {

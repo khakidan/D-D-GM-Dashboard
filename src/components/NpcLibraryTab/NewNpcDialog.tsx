@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { UserPlus, Save } from 'lucide-react';
 import { NPC } from '../../types';
-import { NpcFormFields, NpcFormData, DEFAULT_NPC_FORM_DATA } from '../ui/NpcFormFields';
+import { NpcFormFields, NpcFormData, DEFAULT_NPC_FORM_DATA } from '../ui/npc-editor/NpcFormFields';
 import {
   proficiencyBonusFromCR,
   parseProficiencies,

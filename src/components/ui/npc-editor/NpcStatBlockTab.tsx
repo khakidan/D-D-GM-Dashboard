@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 import { NpcListEditor } from './NpcListEditor';
 import { createNpcListRenderers } from './npcListFieldRenderers';
 import type { 
@@ -7,8 +7,8 @@ import type {
   NpcAction, 
   NpcReaction, 
   NpcLegendaryAction
-} from '../../types';
-import { AbilityScores } from '../../lib/abilityScores';
+} from '../../../types';
+import { AbilityScores } from '../../../lib/abilityScores';
 
 interface NpcStatBlockTabProps {
   traits: NpcTrait[];

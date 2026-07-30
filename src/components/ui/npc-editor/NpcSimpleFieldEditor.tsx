@@ -1,5 +1,5 @@
 import React from 'react';
-import { DebouncedTextarea } from './DebouncedTextarea';
+import { DebouncedTextarea } from '../DebouncedTextarea';
 
 export interface NpcSimpleFieldEditorProps {
   name: string;

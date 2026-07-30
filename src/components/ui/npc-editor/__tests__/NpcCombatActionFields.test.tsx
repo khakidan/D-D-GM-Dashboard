@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { NpcCombatActionFields } from '../NpcCombatActionFields';
-import { DEFAULT_ABILITY_SCORES } from '../../../lib/abilityScores';
+import { DEFAULT_ABILITY_SCORES } from '../../../../lib/abilityScores';
 import '@testing-library/jest-dom/vitest';
 
 describe('NpcCombatActionFields Component', () => {

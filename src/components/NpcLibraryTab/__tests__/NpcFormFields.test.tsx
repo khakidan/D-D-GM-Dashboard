@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { render, fireEvent, cleanup, screen } from '@testing-library/react';
-import { NpcFormFields, DEFAULT_NPC_FORM_DATA } from '../../ui/NpcFormFields';
+import { NpcFormFields, DEFAULT_NPC_FORM_DATA } from '../../ui/npc-editor/NpcFormFields';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 describe('NpcFormFields', () => {
