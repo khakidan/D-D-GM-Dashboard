@@ -34,7 +34,7 @@ describe('useSheetSync State Transition Tests', () => {
       }
     } as any);
 
-    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [['1', 'Goblin']] });
+    vi.mocked(sheetsService.fetchSheetData).mockResolvedValue({ values: [['1', 'Goblin', 'Aragorn']] });
 
     const { result } = renderHook(() => useSheetSync({ setIsGoogleConnected }));
 
@@ -43,10 +43,28 @@ describe('useSheetSync State Transition Tests', () => {
     });
 
     expect(updateStateCalledWith).not.toBeNull();
+    
     expect(updateStateCalledWith.characters).toBeDefined();
+    expect(updateStateCalledWith.characters).toHaveLength(1);
+    expect(updateStateCalledWith.characters[0]).toMatchObject({
+      id: '1',
+      playerName: 'Goblin',
+      characterName: 'Aragorn',
+    });
+
     expect(updateStateCalledWith.npcs).toBeDefined();
     expect(updateStateCalledWith.npcs).toHaveLength(1);
+    expect(updateStateCalledWith.npcs[0]).toMatchObject({
+      id: '1',
+      name: 'Goblin',
+    });
+
     expect(updateStateCalledWith.encounters).toBeDefined();
+    expect(updateStateCalledWith.encounters).toHaveLength(1);
+    expect(updateStateCalledWith.encounters[0]).toMatchObject({
+      id: '1',
+      name: 'Goblin',
+    });
   });
 
   it('resets hasInitialSynced to true upon successful initial load', async () => {
