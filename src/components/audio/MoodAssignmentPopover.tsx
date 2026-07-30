@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { MOODS, MoodId } from '../lib/constants';
-import { StoredAudioFile } from '../lib/audioFileStore';
+import { MOODS, MoodId } from '../../lib/constants';
+import { StoredAudioFile } from '../../lib/audioFileStore';
 
 interface MoodAssignmentPopoverProps {
   fileId: string;

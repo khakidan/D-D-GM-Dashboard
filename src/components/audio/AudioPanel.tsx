@@ -1,16 +1,16 @@
-// src/components/AudioPanel.tsx
+// src/components/audio/AudioPanel.tsx
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, ChevronUp, Music, Volume2, HardDrive, Play, HelpCircle, X } from 'lucide-react';
-import { cn } from '../lib/utils';
-import { IconButton } from './ui/IconButton';
-import { Tabs } from './ui/Tabs';
-import { StoredAudioFile } from '../lib/audioFileStore';
+import { cn } from '../../lib/utils';
+import { IconButton } from '../ui/IconButton';
+import { Tabs } from '../ui/Tabs';
+import { StoredAudioFile } from '../../lib/audioFileStore';
 import { AmbientPlayer } from './AmbientPlayer';
 import { Soundboard } from './Soundboard';
 import { AudioLibrary } from './AudioLibrary';
-import { MoodId } from '../lib/constants';
+import { MoodId } from '../../lib/constants';
 
 interface AudioPanelProps {
   currentAmbientId: string | null;

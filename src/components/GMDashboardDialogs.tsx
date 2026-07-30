@@ -1,6 +1,6 @@
 import React from 'react';
 import { Campaign } from '../hooks/useCampaign';
-import { AudioPanel } from './AudioPanel';
+import { AudioPanel } from './audio/AudioPanel';
 import { CommandPalette } from './CommandPalette';
 import { SyncingOverlay } from './SyncingOverlay';
 import { useAudioEngine } from '../hooks/useAudioEngine';

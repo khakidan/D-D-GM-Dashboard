@@ -3,8 +3,8 @@ import { render, screen, waitFor, cleanup, fireEvent } from '@testing-library/re
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AudioLibrary } from '../AudioLibrary';
-import { STORAGE_KEYS, campaignKey } from '../../lib/constants';
-import { StoredAudioFile } from '../../lib/audioFileStore';
+import { STORAGE_KEYS, campaignKey } from '../../../lib/constants';
+import { StoredAudioFile } from '../../../lib/audioFileStore';
 
 describe('AudioLibrary', () => {
   const mockPlay = vi.fn().mockResolvedValue(undefined);

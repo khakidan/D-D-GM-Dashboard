@@ -116,13 +116,6 @@ Shared test data factories used across many test files. These are not tests them
 - `PlayerView.tsx` — Cross-tab broadcast view for a second monitor.
 - `ReferenceDetailDialog.tsx` — Modal shown when a condition or spell is selected from Command Palette search. Displays spell metadata (level, school, components, concentration/ritual badges) and renders the full description and `higherLevel` rules text using `react-markdown` with `remark-gfm`.
 - `CommandPalette.tsx` — Cmd+K global search. Searches Conditions and Spells reference data (shown after 2+ characters typed) in addition to navigation and action commands.
-- `AudioPanel.tsx` — `M` key modal with **Ambient**, **Soundboard**, and **Library** tabs.
-- `AmbientPlayer.tsx` — Mood presets, track list, and volume.
-- `Soundboard.tsx` — 3×4 configurable sound effect grid, campaign-scoped layout.
-- `AudioLibrary.tsx` — Tabbed audio file manager, decomposed into modular components; orchestrates uploads, single-preview and single-popover state, and ConfirmationDialog-based delete flows.
-- `AudioLibraryDropzone.tsx` — Presentational drag-and-drop component for uploading audio files.
-- `MoodAssignmentPopover.tsx` — Popover component to assign and unassign ambient tracks to atmospheric moods.
-- `AudioFileRow.tsx` — Individual audio file row component; displays metadata, play/pause controls, mood badge, and delete button, composing `MoodAssignmentPopover`.
 - `ErrorBoundary.tsx`
 - `GMDashboardDialogs.tsx`
 - `GMLoadingScreen.tsx`
@@ -131,6 +124,16 @@ Shared test data factories used across many test files. These are not tests them
 - `SidebarIcon.tsx`
 - `SyncStatusIndicators.tsx`
 - `SyncingOverlay.tsx`
+
+### src/components/audio/
+
+- `AudioPanel.tsx` — `M` key modal with **Ambient**, **Soundboard**, and **Library** tabs.
+- `AmbientPlayer.tsx` — Mood presets, track list, and volume.
+- `Soundboard.tsx` — 3×4 configurable sound effect grid, campaign-scoped layout.
+- `AudioLibrary.tsx` — Tabbed audio file manager, decomposed into modular components; orchestrates uploads, single-preview and single-popover state, and ConfirmationDialog-based delete flows.
+- `AudioLibraryDropzone.tsx` — Presentational drag-and-drop component for uploading audio files.
+- `MoodAssignmentPopover.tsx` — Popover component to assign and unassign ambient tracks to atmospheric moods.
+- `AudioFileRow.tsx` — Individual audio file row component; displays metadata, play/pause controls, mood badge, and delete button, composing `MoodAssignmentPopover`.
 
 ### src/components/overlays/
 

@@ -1,10 +1,10 @@
-// src/components/AmbientPlayer.tsx
+// src/components/audio/AmbientPlayer.tsx
 
 import React from 'react';
 import { Play, Pause, Volume, Volume2, Music, Square } from 'lucide-react';
 import { toast } from 'sonner';
-import { StoredAudioFile } from '../lib/audioFileStore';
-import { MOODS, MoodId } from '../lib/constants';
+import { StoredAudioFile } from '../../lib/audioFileStore';
+import { MOODS, MoodId } from '../../lib/constants';
 
 interface AmbientPlayerProps {
   currentAmbientId: string | null;

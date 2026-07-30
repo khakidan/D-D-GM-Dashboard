@@ -1,14 +1,14 @@
-// src/components/AudioLibrary.tsx
+// src/components/audio/AudioLibrary.tsx
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Trash2, X, Music, Volume2, HelpCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { StoredAudioFile } from '../lib/audioFileStore';
-import { STORAGE_KEYS, TIMERS, MoodId, campaignKey } from '../lib/constants';
+import { StoredAudioFile } from '../../lib/audioFileStore';
+import { STORAGE_KEYS, TIMERS, MoodId, campaignKey } from '../../lib/constants';
 import { SoundboardSlot } from './Soundboard';
-import { cn } from '../lib/utils';
-import { IconButton } from './ui/IconButton';
-import { ConfirmationDialog } from './ui/ConfirmationDialog';
+import { cn } from '../../lib/utils';
+import { IconButton } from '../ui/IconButton';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import { AudioLibraryDropzone } from './AudioLibraryDropzone';
 import { AudioFileRow } from './AudioFileRow';
 
