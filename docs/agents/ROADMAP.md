@@ -19,10 +19,6 @@ None.
 
 A review of `docs/agents/file-reference.md` against the real codebase, verified against actual raw `view` directory output (not just synthesized summaries), turned up factual inaccuracies, undocumented files, and organizational opportunities. Recorded here for a future dedicated pass — do not fix inline as a side effect of unrelated work.
 
-### Naming-mismatch candidates
-1. **`src/context/ThemeContext.tsx` — confirmed name-mismatch / mostly dead code.** Consistent with this session's persistence audit finding: `VisualStyle` is now a single-value type (`'sleek-modern'`), there's no theme-selector UI anywhere, and `setTheme` has no real caller. Candidate for either a rename reflecting its now-vestigial scope, or scheduling for removal.
-2. **`src/hooks/dashboardStore.ts` — flagged as a "mild" mismatch, treat as a discussion point, not a confirmed action item.** Argument: it caches sheet-backed entity data (characters/NPCs/encounters/etc.), not just dashboard UI state. Reasonable but not clear-cut — "dashboard" can fairly be read as encompassing all state the GM dashboard needs. Worth a team discussion, not an automatic rename.
-
 ### Organizational proposal — `src/components/ui/` (5 subfolders)
 Refined across two passes. One correction adopted: **`NpcStatBlockSection.tsx` belongs with the display/stat-block family, not the editing family** — it's a read-only display component used by `NpcCard.tsx`, not part of the `NpcFormFields.tsx` editing-tab decomposition.
 - **`npc-editor/`** (9 files): `NpcFormFields.tsx`, `NpcIdentityTab.tsx`, `NpcCombatTab.tsx`, `NpcAbilitiesTab.tsx`, `NpcStatBlockTab.tsx`, `NpcListEditor.tsx`, `NpcSimpleFieldEditor.tsx`, `NpcCombatActionFields.tsx`, `npcListFieldRenderers.tsx`
@@ -41,8 +37,7 @@ Note: `layout/` is coarser than the "three-part card componentization effort" (`
 After these three groupings, remaining root-level components (`PlayerView.tsx`, `CampaignSelector.tsx`, `CommandPalette.tsx`, `DiceRoller.tsx`, `ErrorBoundary.tsx`, `GMDashboard.tsx`, `GMDashboardDialogs.tsx`, `GMDashboardSidebar.tsx`, `GMLoadingScreen.tsx`, `GMTabContent.tsx`, `GlobalControls.tsx`, `ScrollToTop.tsx`, `SidebarIcon.tsx`, `SyncStatusIndicators.tsx`, `SyncingOverlay.tsx`) are reasonably standalone/dashboard-shell-level and don't obviously need further grouping.
 
 **Next steps:**
-1. Treat `ThemeContext.tsx`'s naming/dead-code status as confirmed; treat `dashboardStore.ts`'s naming as an open discussion point.
-2. Any subfolder reorganization (`ui/` 5-6-way split, `overlays/`, `settings/`, `audio/`) remains optional, import-path-only work — do as an isolated, dedicated pass with a full type-check + full test suite run afterward, not bundled with feature work.
+1. Any subfolder reorganization (`ui/` 5-6-way split, `overlays/`, `settings/`, `audio/`) remains optional, import-path-only work — do as an isolated, dedicated pass with a full type-check + full test suite run afterward, not bundled with feature work.
 
 ---
 

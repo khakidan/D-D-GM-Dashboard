@@ -1,6 +1,6 @@
-import { ANIMATION_TIMING } from '../lib/constants';
+import { ANIMATION_TIMING } from '../../lib/constants';
   import React from 'react';
-  import { useCinematicVideo } from './ActiveEncounterTab/hooks/useCinematicVideo';
+  import { useCinematicVideo } from '../ActiveEncounterTab/hooks/useCinematicVideo';
   import { FilmGrainLayer } from './FilmGrainLayer';
 
   interface UnconsciousOverlayProps {

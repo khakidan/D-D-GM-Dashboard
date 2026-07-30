@@ -125,22 +125,25 @@ Shared test data factories used across many test files. These are not tests them
 - `MoodAssignmentPopover.tsx` — Popover component to assign and unassign ambient tracks to atmospheric moods.
 - `AudioFileRow.tsx` — Individual audio file row component; displays metadata, play/pause controls, mood badge, and delete button, composing `MoodAssignmentPopover`.
 - `SettingsPage.tsx` — Settings page layout with `SheetConnectionSettings` full width, Auth + Backup in a two-column grid (the Backup card itself wrapped in `SettingsPanel`), then `ReferenceDataSeeder` and `GMTestingTools` each full width.
-- `DamageOverlay.tsx`
-- `DeathOverlay.tsx`
 - `ErrorBoundary.tsx`
-- `FilmGrainLayer.tsx`
 - `GMDashboardDialogs.tsx`
 - `GMLoadingScreen.tsx`
 - `GMTestingTools.tsx`
 - `GlobalControls.tsx`
-- `HealOverlay.tsx`
-- `InitiativeOverlay.tsx`
-- `RageOverlay.tsx`
 - `ScrollToTop.tsx` — Dynamic "Scroll to top" floating button that appears on a container scrolled past a given threshold, providing a smooth scrollback.
 - `SheetConnectionSettings.tsx`
 - `SidebarIcon.tsx`
 - `SyncStatusIndicators.tsx`
 - `SyncingOverlay.tsx`
+
+### src/components/overlays/
+
+- `DamageOverlay.tsx`
+- `DeathOverlay.tsx`
+- `FilmGrainLayer.tsx` — Renders an animated SVG film grain texture with customizable opacity, z-index, and scroll speed.
+- `HealOverlay.tsx`
+- `InitiativeOverlay.tsx`
+- `RageOverlay.tsx`
 - `UnconsciousOverlay.tsx`
 
 ### src/components/auth/

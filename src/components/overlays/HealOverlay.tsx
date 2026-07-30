@@ -1,7 +1,7 @@
-import { ANIMATION_TIMING } from '../lib/constants';
+import { ANIMATION_TIMING } from '../../lib/constants';
   import React from 'react';
-  import { useCinematicVideo } from './ActiveEncounterTab/hooks/useCinematicVideo';
-  import { formatNames } from '../lib/stringUtils';
+  import { useCinematicVideo } from '../ActiveEncounterTab/hooks/useCinematicVideo';
+  import { formatNames } from '../../lib/stringUtils';
   import { FilmGrainLayer } from './FilmGrainLayer';
 
   interface HealOverlayProps {

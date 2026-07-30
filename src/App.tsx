@@ -6,12 +6,12 @@ import { checkAndCaptureToken } from './services/googleAuth';
 import { useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
 import { useAppState } from './hooks/useAppState';
-import { DeathOverlay } from './components/DeathOverlay';
-import { DamageOverlay } from './components/DamageOverlay';
-import { HealOverlay } from './components/HealOverlay';
-import { UnconsciousOverlay } from './components/UnconsciousOverlay';
-import { RageOverlay } from './components/RageOverlay';
-import { InitiativeOverlay } from './components/InitiativeOverlay';
+import { DeathOverlay } from './components/overlays/DeathOverlay';
+import { DamageOverlay } from './components/overlays/DamageOverlay';
+import { HealOverlay } from './components/overlays/HealOverlay';
+import { UnconsciousOverlay } from './components/overlays/UnconsciousOverlay';
+import { RageOverlay } from './components/overlays/RageOverlay';
+import { InitiativeOverlay } from './components/overlays/InitiativeOverlay';
 import { useCampaign } from './hooks/useCampaign';
 import { CampaignSelector } from './components/CampaignSelector';
 
