@@ -9,7 +9,6 @@ Referenced from the root [AGENTS.md](../../AGENTS.md). Read this when implementi
 ### Optimistic update pattern
 
 Every mutation follows this sequence:
-
 1. Snapshot current Zustand state.
 2. Apply the change optimistically to the Zustand store.
 3. Update the UI immediately (zero perceived latency).
@@ -31,7 +30,6 @@ Never use a bare localStorage key that is shared across all campaigns.
 ### Concentration check
 
 When any combatant or character with the `concentrating` condition takes damage:
-
 - Call `concentrationCheckDc(damage)` to calculate the DC.
 - Call `fireConcentrationAlert(name, damage)` to display the Sonner toast.
 - This fires in `useHealthChange.ts` for combat and `usePartyCharacterCrud.ts`'s `handleUpdate` for Party Tab HP changes (part of `useParty.ts`'s decomposition — see `CHANGELOG.md`).
@@ -46,7 +44,6 @@ When defining a recharge ability for an NPC, `parseRechargeOn` accepts both full
 When certain effects are applied via `ConditionChips`, the `onConditionAdded` callback fires. If `getResourceForEffect()` returns a non-null resource name, the matching pool is decremented by 1 and saved.
 
 Current mappings (`EFFECT_RESOURCE_MAP`):
-
 - `raging` → `rage`
 - `wild shaped` → `wild shape`
 - `action surge (used)` → `action surge`
@@ -58,26 +55,22 @@ Current mappings (`EFFECT_RESOURCE_MAP`):
 `SpellcastingStatsRow` derives Spell Save DC and Spell Attack Bonus from `abilityScores` + `proficiencyBonus`.
 
 The spellcasting ability is resolved in the following order:
-
 1. `proficiencies.spellcastingAbility` override (if the key exists, even if its value is `null`; `null` means the GM explicitly marked the creature as a non-caster).
 2. Auto-derived from class using `SPELLCASTING_ABILITY_MAP` in `spellcasting.ts`.
 3. If neither resolves, the row renders nothing.
 
 The distinction between `undefined` and `null` is critical:
-
 - `undefined` = no override set (auto-derive)
 - `null` = explicitly overridden to "none" (non-caster), which takes precedence over auto-derivation
 
 Do **not** flatten both values to `null` in any handler.
 
 NPC `spellcastingAbility` is stored in column **V** (index 21) and read using:
-
 ```ts
 SHEET_RANGES.npcs = "NPCs!A2:V";
 ```
 
 `NpcCard`'s `onOverrideChange` writes both:
-
 - `spellcastingAbility` (column V)
 - `proficiencies` JSON
 
@@ -88,12 +81,10 @@ Do **not** shrink `SHEET_RANGES.npcs` below `A2:V` — that would truncate the s
 Character `spellcastingAbility` is stored in column **Z** (index 25) and is also embedded in the proficiencies JSON stored in column **Y**.
 
 Both values are written by `CharacterCardExpanded`'s `onOverrideChange` handler.
-
 ```ts
 SHEET_RANGES.characters = "Characters!A2:AD";
 ```
 Note: the range was expanded from Z to AD to add 4 columns (AA–AD) for gmControlled, traits, actions, and reactions as part of the "GM-Controlled PC Stat Block" feature.
-
 reads both values.
 
 Do **not** revert the read range to `A2:Y`.
@@ -101,7 +92,6 @@ Do **not** revert the read range to `A2:Y`.
 ### Resource pool scaling on level-up
 
 `LevelUpDialog` calls:
-
 ```ts
 getResourcePoolSuggestions(
   character.class,
@@ -109,7 +99,6 @@ getResourcePoolSuggestions(
   currentPools
 )
 ```
-
 to generate pre-filled pool suggestions.
 
 The GM sees all suggested pools with editable maximum values and can include or exclude newly gained pools before confirming.
@@ -121,33 +110,26 @@ On confirmation, `resourcePools` is included in the `onConfirm` updates object a
 NPC stat blocks are stored as JSON strings in columns **R–U**.
 
 They are displayed in two places:
-
-1. NPC Library expanded view via `NpcStatBlockSection` (`src/components/ui/`)
-2. Active Encounter NPC cards via `NpcReferencePanel`
+1. NPC Library expanded view via `NpcStatBlockSection` (`src/components/ui/stat-block/`)
+2. Active Encounter NPC cards via `CombatantCardExpanded.tsx` — the standalone `NpcReferencePanel.tsx`/`PcReferencePanel.tsx` components were deleted and their functionality unified into this single component (see `CHANGELOG.md`'s "Unified Expanded Layout" entry)
 
 `formatActionMeta(action: NpcAction): string` is exported from `NpcStatBlockSection.tsx` and builds a compact mechanical summary line from structured `NpcAction` fields.
 
 Import it from:
-
 ```ts
-src/components/ui/NpcStatBlockSection
+src/components/ui/stat-block/NpcStatBlockSection
 ```
 
 `NpcListEditor` is the generic form component used to edit these lists.
-
 It is generic over:
-
 ```ts
 T extends { name: string }
 ```
-
 and uses a `renderFields` prop to render each entry.
 
 ### Ability Score Input Pattern
 
-`AbilityScoreInput` is a local-state wrapper component defined in `StatBlockScores.tsx`.
-
-It keeps the raw typed value locally and commits changes only on blur or Enter. This prevents mid-keystroke snap-to-default behavior.
+`AbilityScoreInput` is a local-state wrapper, defined and used only internally within `StatBlockScoresTable.tsx` (`src/components/ui/stat-block/`) — not a separately exported or reusable component. It keeps the raw typed value locally and commits changes only on blur or Enter. This prevents mid-keystroke snap-to-default behavior.
 
 Do **not** replace it with `DebouncedInput` (different contract) or revert to a direct `<input onChange>`.
 
@@ -196,7 +178,6 @@ It was originally adopted for the Tauri desktop wrapper and has been retained be
 Shared components that are imported by more than one feature belong in `src/components/ui/` rather than inside a feature directory.
 
 Examples include:
-
 - `NpcFormFields`
 - `NpcListEditor`
 - `NpcStatBlockSection`
@@ -205,7 +186,6 @@ Examples include:
 - `IrvSection`
 
 Rule:
-
 > If a component is imported by more than one feature tab, it belongs in `ui/`.
 
 ### Test fixtures live in `src/test-utils/`
@@ -213,11 +193,9 @@ Rule:
 `characterFixtures.ts` and `combatantFixtures.ts` are fixture factories, **not** test files.
 
 They live in:
-
 ```text
 src/test-utils/fixtures/
 ```
-
 rather than inside `__tests__/` to clearly distinguish test infrastructure from test suites.
 
 ### Store-access architecture: container/presentational separation
@@ -254,19 +232,16 @@ A four-tab form for creating characters manually.
    - Class
    - Level
    - Status
-
 2. **Combat Stats**
    - AC
    - Max HP
    - Hit Dice
    - IRV
    - Notes
-
 3. **Abilities**
    - Ability Scores
    - Automatically calculates Passive Perception
    - Automatically calculates Proficiency Bonus
-
 4. **Resources**
    - Manage Resource Pools
    - Automatically suggests pools based on the class selected on the Identity tab

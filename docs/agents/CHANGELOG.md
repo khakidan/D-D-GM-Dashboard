@@ -2,6 +2,31 @@
 
 ---
 
+## Codebase Reorganization — src/components/ Subfolder Restructuring (Completed)
+
+Multi-stage reorganization moving the codebase's two flattest, most-overgrown directories — `src/components/` root (~29 files) and `src/components/ui/` (~46 files) — into purpose-grouped subfolders. Originated from the `file-reference.md` accuracy audit, which found real functional cohesion behind several groupings (confirmed via actual import-relationship evidence, not just similar-sounding names) and one genuine misnomer (`SyncingOverlay.tsx`, which despite its name is an interactive dialog, not a timed cinematic overlay, and was correctly excluded from the `overlays/` grouping).
+
+Executed as 8 fully isolated stages — one subfolder per stage, each with its own investigation → move → import-path fix → test-file relocation → `file-reference.md` update → full verification cycle — specifically to keep any single failure's blast radius small and independently revertible. No stage was bundled with feature work.
+
+**`src/components/` root (3 stages):**
+- **`overlays/`** (7 files: `DamageOverlay.tsx`, `DeathOverlay.tsx`, `HealOverlay.tsx`, `InitiativeOverlay.tsx`, `RageOverlay.tsx`, `UnconsciousOverlay.tsx`, `FilmGrainLayer.tsx`) — confirmed via real quotes that all 6 overlay components share the same `useCombatOverlayEvents.ts`-driven event/duration pattern and `FilmGrainLayer.tsx` texture integration.
+- **`settings/`** (4 files: `SettingsPage.tsx`, `SheetConnectionSettings.tsx`, `GMTestingTools.tsx`, `ReferenceDataSeeder.tsx`) — mirrors the existing `src/components/auth/` precedent.
+- **`audio/`** (7 files: `AmbientPlayer.tsx`, `AudioFileRow.tsx`, `AudioLibrary.tsx`, `AudioLibraryDropzone.tsx`, `AudioPanel.tsx`, `Soundboard.tsx`, `MoodAssignmentPopover.tsx`) — a well-evidenced addition surfaced during the `settings/` investigation, not originally proposed.
+
+**`src/components/ui/` (5 stages, refined from an initial 5-way split into 6 subfolders during execution):**
+- **`stat-block/`** (6 files) — `StatBlock.tsx` and its 4 sub-components, plus `NpcStatBlockSection.tsx` (correctly identified as a read-only display component belonging with this family, not with `npc-editor/`'s editing-tab decomposition it superficially resembles by name).
+- **`npc-editor/`** (9 files) — `NpcFormFields.tsx` and its full editing-tab/list-editor decomposition.
+- **`inputs/`** (9 files: `Button.tsx`, `IconButton.tsx`, `Badge.tsx`, `ToggleBadge.tsx`, `SearchInput.tsx`, `DebouncedInput.tsx`, `DebouncedTextarea.tsx`, `PipTracker.tsx`, `CardNumberInput.tsx`) — the most widely-consumed group in the whole tree (`Button.tsx` alone adopted in 10 locations); this stage's investigation also uncovered and fixed a real gap in Batch 8's test command (`npx vitest run src/components/ui/__tests__` was silently failing to discover tests in nested subfolders — corrected to `npx vitest run src/components/ui`, which recurses properly and was load-bearing for every subsequent stage).
+- **`combat/`** (11 files: `ConditionChips.tsx`, `ConditionDurationPrompt.tsx`, `ConditionPopover.tsx`, `ConditionSearchDropdown.tsx`, `DamageComponentsBuilder.tsx`, `AbilitySelectChips.tsx`, `IrvMultiSelect.tsx`, `IrvSection.tsx`, `ResourcePoolManager.tsx`, `ResourcePoolsSection.tsx`, `SpellcastingStatsRow.tsx`).
+- **`card-primitives/`** (4 files: `CardShell.tsx`, `CardHeaderChevron.tsx`, `ExpandableContent.tsx`, `StatTile.tsx`) — split out from the originally-proposed single `layout/` folder specifically to keep the documented "three-part card componentization effort" (`CardShell` → `CardHeaderChevron` → `ExpandableContent`) together as its own cohesive unit rather than diluting it into a broader grouping.
+- **`layout/`** (11 files: `Accordion.tsx`, `Callout.tsx`, `Tabs.tsx`, `LabeledField.tsx`, `ConfirmationDialog.tsx`, `SettingsPanel.tsx`, `EmptyState.tsx`, `markdownComponents.tsx`, `DialogShell.tsx`, `DashboardLayout.tsx`, `SectionHeader.tsx`).
+
+**Verification discipline:** every stage required a full `tsc --noEmit` pass plus real, individually-run test-batch confirmation (not assumed) for every batch plausibly touching the moved files — this repeatedly caught real problems before they could compound: a Stage 5 test-file reporting discrepancy resolved by a fresh re-quote; Stage 6's Batch 8 recursion bug; a Stage 7 unauthorized `ROADMAP.md`/`CHANGELOG.md` edit that was reverted; and, most significantly, a Stage 8 response that presented an entirely fabricated `file-reference.md` (invented file names, invented sections, real content silently replaced) which was caught only by insisting on a fresh, direct read of the real file from disk rather than accepting the reported diff at face value.
+
+**Result:** `src/components/` root reduced from ~29 files to ~19 (16 components + 3 subfolders), and `src/components/ui/` reduced from ~46 flat files to 6 purpose-named subfolders, each independently documented in `file-reference.md`. Total test count unchanged throughout (baseline held at 1060 across all 8 stages) — this was a pure import-path reorganization with zero behavior change.
+
+---
+
 ## Persistence Audit — Field-by-Field Sheet Round-Trip Verification (Completed)
 Systematic, folder-by-folder audit confirming every user-enterable or GM-editable field across the app actually round-trips to the correct Google Sheet column, rather than only existing on the TypeScript interface/UI layer. Conducted as a 5-part series, one folder at a time, with every claim required to be backed by a verbatim, freshly-read code quote (no paraphrasing, no line-number-only citations) per this project's established anti-fabrication discipline for this task. **All 5 parts complete; audit finished.**
 

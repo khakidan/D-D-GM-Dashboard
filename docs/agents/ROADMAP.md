@@ -1,4 +1,5 @@
 # Roadmap
+
 Referenced from the root [AGENTS.md](../../AGENTS.md). This file tracks **only currently-open work** — pending features/bugs and in-progress/scoped-but-not-yet-built plans. Read this file (not `CHANGELOG.md`) to know what's currently being worked on or planned next.
 
 Per root AGENTS.md rule 12: when something here is completed, it gets **removed entirely** from this file (not archived here) and a write-up documenting what was actually built gets added to [CHANGELOG.md](CHANGELOG.md) instead. This file should stay small and fully current — if a section here says "Completed," that's a sign it should have already been moved out.
@@ -15,29 +16,20 @@ None.
 
 None.
 
-## file-reference.md Accuracy & Organization Audit (Findings confirmed via raw directory listing — ready for edit pass)
+## Post-Reorganization Professionalism Improvements (Pending)
 
-A review of `docs/agents/file-reference.md` against the real codebase, verified against actual raw `view` directory output (not just synthesized summaries), turned up factual inaccuracies, undocumented files, and organizational opportunities. Recorded here for a future dedicated pass — do not fix inline as a side effect of unrelated work.
+Following the src/components/ reorganization and final sanity-check pass, three concrete follow-up improvements were identified and scoped but not yet started. Do as isolated, dedicated passes — one at a time, each independently verified — not bundled together or combined with feature work.
 
-### Organizational proposal — `src/components/ui/` (5 subfolders)
-Refined across two passes. One correction adopted: **`NpcStatBlockSection.tsx` belongs with the display/stat-block family, not the editing family** — it's a read-only display component used by `NpcCard.tsx`, not part of the `NpcFormFields.tsx` editing-tab decomposition.
-- **`npc-editor/`** (9 files): `NpcFormFields.tsx`, `NpcIdentityTab.tsx`, `NpcCombatTab.tsx`, `NpcAbilitiesTab.tsx`, `NpcStatBlockTab.tsx`, `NpcListEditor.tsx`, `NpcSimpleFieldEditor.tsx`, `NpcCombatActionFields.tsx`, `npcListFieldRenderers.tsx`
-- **`stat-block/`** (6 files): `StatBlock.tsx`, `StatBlockScoresTable.tsx`, `StatBlockSaves.tsx`, `StatBlockPassive.tsx`, `StatBlockSkills.tsx`, `NpcStatBlockSection.tsx`
-- **`inputs/`** (9 files): `Button.tsx`, `IconButton.tsx`, `Badge.tsx`, `ToggleBadge.tsx`, `SearchInput.tsx`, `DebouncedInput.tsx`, `DebouncedTextarea.tsx`, `PipTracker.tsx`, `CardNumberInput.tsx`
-- **`combat/`** (11 files): `ConditionChips.tsx`, `ConditionDurationPrompt.tsx`, `ConditionPopover.tsx`, `ConditionSearchDropdown.tsx`, `DamageComponentsBuilder.tsx`, `AbilitySelectChips.tsx`, `IrvMultiSelect.tsx`, `IrvSection.tsx`, `ResourcePoolManager.tsx`, `ResourcePoolsSection.tsx`, `SpellcastingStatsRow.tsx`
-- **`layout/`** (12 files): `CardShell.tsx`, `CardHeaderChevron.tsx`, `DashboardLayout.tsx`, `DialogShell.tsx`, `SectionHeader.tsx`, `SettingsPanel.tsx`, `Tabs.tsx`, `Accordion.tsx`, `Callout.tsx`, `EmptyState.tsx`, `ExpandableContent.tsx`, `markdownComponents.tsx`
-Note: `layout/` is coarser than the "three-part card componentization effort" (`CardShell`/`CardHeaderChevron`/`ExpandableContent`) that `file-reference.md`'s own text already describes as a deliberately staged, cohesive unit — consider a separate `card-primitives/` folder for that trio plus `StatTile.tsx` (not assigned a home in either pass) rather than absorbing them into the broader `layout/` grouping. `ConfirmationDialog.tsx` and `LabeledField.tsx` also weren't assigned in either pass and need a home (likely `layout/` or their own small group).
+### 1. Production bundle optimization (do first)
+The current production build produces a single JS chunk over Vite's 500kB warning threshold (~1.9MB uncompressed / ~465KB gzipped as of the last build). No code-splitting or `manualChunks` configuration currently exists. Candidates for lazy-loading: `ActiveEncounterTab/` and `NpcLibraryTab/` are likely the heaviest tabs and good first candidates for `React.lazy()`/dynamic `import()`. Investigate real per-route/per-tab weight before deciding a splitting strategy — don't guess at what's heavy.
 
-### Organizational proposal — `src/components/` root (confirmed via second pass, with real evidence)
-1. **`overlays/`** (6 files, not 7 as originally proposed): `DamageOverlay.tsx`, `DeathOverlay.tsx`, `HealOverlay.tsx`, `InitiativeOverlay.tsx`, `RageOverlay.tsx`, `UnconsciousOverlay.tsx`, plus `FilmGrainLayer.tsx` (a shared presentation utility consumed by all 6). Confirmed via real quotes: all 6 share the same `useCombatOverlayEvents.ts`-driven event/duration pattern and `FilmGrainLayer.tsx` texture integration.
-   - **`SyncingOverlay.tsx` explicitly excluded** — despite the name, it's a real interactive dialog (status logs, buttons, manual re-auth flow), not a timed cinematic transition. Correctly identified as not belonging to this family; should stay elsewhere (with settings/sync-related components) rather than being swept in by name alone.
-2. **`settings/`** (4 files): `SettingsPage.tsx`, `SheetConnectionSettings.tsx`, `GMTestingTools.tsx`, `ReferenceDataSeeder.tsx`. Confirmed via a real import quote from `SettingsPage.tsx` that all three sub-components are exclusively imported there, mirroring the existing `src/components/auth/` precedent.
-3. **`audio/`** (7 files, new finding from this pass, not originally proposed): `AmbientPlayer.tsx`, `AudioFileRow.tsx`, `AudioLibrary.tsx`, `AudioLibraryDropzone.tsx`, `AudioPanel.tsx`, `Soundboard.tsx`, `MoodAssignmentPopover.tsx` (confirmed via import quote as used exclusively inside `AudioFileRow.tsx`). A reasonable, well-evidenced addition worth adopting alongside the other two.
+### 2. Production error tracking (Sentry)
+Add `@sentry/react` (client) and `@sentry/node` (server) for basic unexpected-error visibility — currently there is no signal when something breaks for a user outside of a live debugging session. Scope narrowly to genuine unexpected errors (React crashes via `ErrorBoundary.tsx`, unhandled promise rejections, Express route errors) — explicitly do NOT instrument the app's existing expected-failure paths (DB-write rollback/retry logic), which already have correct user-facing handling via Sonner toasts and would just create alert noise. Requires manually creating a Sentry account/project and setting real `VITE_SENTRY_DSN`/`SENTRY_DSN` values — that step needs dashboard access, not something achievable in-session. See prior session notes for a fully scoped implementation plan (investigation → install → wire into `ErrorBoundary.tsx` → global unhandled-rejection listener → full 13-batch + build verification).
 
-After these three groupings, remaining root-level components (`PlayerView.tsx`, `CampaignSelector.tsx`, `CommandPalette.tsx`, `DiceRoller.tsx`, `ErrorBoundary.tsx`, `GMDashboard.tsx`, `GMDashboardDialogs.tsx`, `GMDashboardSidebar.tsx`, `GMLoadingScreen.tsx`, `GMTabContent.tsx`, `GlobalControls.tsx`, `ScrollToTop.tsx`, `SidebarIcon.tsx`, `SyncStatusIndicators.tsx`, `SyncingOverlay.tsx`) are reasonably standalone/dashboard-shell-level and don't obviously need further grouping.
+### 3. CI/CD pipeline
+No automated pipeline currently runs the test suite on push/PR — all 1060 tests across 13 batches have only ever been run manually in-session. Add a GitHub Actions workflow (or equivalent, confirm real hosting/repo setup first) that runs `tsc --noEmit` plus all 13 batches on every push, and blocks merges on failure. Should respect the project's "never chain batches with `&&`, never run all tests with a bare `vitest run`" rule structurally in the workflow, not just as a written convention.
 
-**Next steps:**
-1. Any subfolder reorganization (`ui/` 5-6-way split, `overlays/`, `settings/`, `audio/`) remains optional, import-path-only work — do as an isolated, dedicated pass with a full type-check + full test suite run afterward, not bundled with feature work.
+**Note:** These are incremental hardening work on an already-functioning app — none are blocking or urgent. Sequence and pace are Dan's call.
 
 ---
 
