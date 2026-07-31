@@ -10,6 +10,22 @@ vi.mock('../../hooks/useAppState', () => ({
   useAppState: vi.fn(),
 }));
 
+vi.mock('../PartyTab', () => ({
+  PartyTab: () => <input defaultValue="Hero 1" readOnly />,
+}));
+
+vi.mock('../NpcLibraryTab', () => ({
+  NpcLibraryTab: () => <div>NpcLibraryTab Mock</div>,
+}));
+
+vi.mock('../EncountersTab', () => ({
+  EncountersTab: () => <div>EncountersTab Mock</div>,
+}));
+
+vi.mock('../ActiveEncounterTab', () => ({
+  ActiveEncounterTab: () => <div>ActiveEncounterTab Mock</div>,
+}));
+
 describe('GMTabContent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -42,7 +58,7 @@ describe('GMTabContent', () => {
     cleanup();
   });
 
-  it("renders PartyTab when activeTab is 'party'", () => {
+  it("renders PartyTab when activeTab is 'party'", async () => {
     render(
       <MemoryRouter>
         <GMTabContent
@@ -60,7 +76,7 @@ describe('GMTabContent', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByDisplayValue('Hero 1')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('Hero 1')).toBeInTheDocument();
     expect(screen.queryByText('Round 1')).toBeNull();
   });
 });

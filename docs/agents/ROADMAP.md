@@ -18,15 +18,12 @@ None.
 
 ## Post-Reorganization Professionalism Improvements (Pending)
 
-Following the src/components/ reorganization and final sanity-check pass, three concrete follow-up improvements were identified and scoped but not yet started. Do as isolated, dedicated passes — one at a time, each independently verified — not bundled together or combined with feature work.
+Following the src/components/ reorganization and final sanity-check pass, concrete follow-up improvements were identified and scoped. Production bundle optimization (originally item 1 of this list) is complete — see `CHANGELOG.md`. Remaining items below. Do as isolated, dedicated passes — one at a time, each independently verified — not bundled together or combined with feature work.
 
-### 1. Production bundle optimization (do first)
-The current production build produces a single JS chunk over Vite's 500kB warning threshold (~1.9MB uncompressed / ~465KB gzipped as of the last build). No code-splitting or `manualChunks` configuration currently exists. Candidates for lazy-loading: `ActiveEncounterTab/` and `NpcLibraryTab/` are likely the heaviest tabs and good first candidates for `React.lazy()`/dynamic `import()`. Investigate real per-route/per-tab weight before deciding a splitting strategy — don't guess at what's heavy.
-
-### 2. Production error tracking (Sentry)
+### 1. Production error tracking (Sentry)
 Add `@sentry/react` (client) and `@sentry/node` (server) for basic unexpected-error visibility — currently there is no signal when something breaks for a user outside of a live debugging session. Scope narrowly to genuine unexpected errors (React crashes via `ErrorBoundary.tsx`, unhandled promise rejections, Express route errors) — explicitly do NOT instrument the app's existing expected-failure paths (DB-write rollback/retry logic), which already have correct user-facing handling via Sonner toasts and would just create alert noise. Requires manually creating a Sentry account/project and setting real `VITE_SENTRY_DSN`/`SENTRY_DSN` values — that step needs dashboard access, not something achievable in-session. See prior session notes for a fully scoped implementation plan (investigation → install → wire into `ErrorBoundary.tsx` → global unhandled-rejection listener → full 13-batch + build verification).
 
-### 3. CI/CD pipeline
+### 2. CI/CD pipeline
 No automated pipeline currently runs the test suite on push/PR — all 1060 tests across 13 batches have only ever been run manually in-session. Add a GitHub Actions workflow (or equivalent, confirm real hosting/repo setup first) that runs `tsc --noEmit` plus all 13 batches on every push, and blocks merges on failure. Should respect the project's "never chain batches with `&&`, never run all tests with a bare `vitest run`" rule structurally in the workflow, not just as a written convention.
 
 **Note:** These are incremental hardening work on an already-functioning app — none are blocking or urgent. Sequence and pace are Dan's call.
