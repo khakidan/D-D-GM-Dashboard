@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getConditionDescription } from '../../lib/conditions';
-import { CONDITION_OPTIONS, SPELL_EFFECT_OPTIONS } from '../../lib/irvOptions';
+import { getConditionDescription } from '../../../lib/conditions';
+import { CONDITION_OPTIONS, SPELL_EFFECT_OPTIONS } from '../../../lib/irvOptions';
 
 export interface ConditionPopoverProps {
   conditionName: string;

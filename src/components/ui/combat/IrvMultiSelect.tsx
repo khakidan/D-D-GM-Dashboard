@@ -1,9 +1,9 @@
-import { IRV_OPTIONS } from '../../lib/conditions';
-import { parseCommaSeparatedList } from '../../lib/stringUtils';
+import { IRV_OPTIONS } from '../../../lib/conditions';
+import { parseCommaSeparatedList } from '../../../lib/stringUtils';
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Search, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 
 interface IrvMultiSelectProps {
   label: string;

@@ -3,7 +3,7 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { AbilitySelectChips } from '../AbilitySelectChips';
-import { AbilityName } from '../../../lib/abilityFundamentals';
+import { AbilityName } from '../../../../lib/abilityFundamentals';
 
 describe('AbilitySelectChips', () => {
   afterEach(() => cleanup());

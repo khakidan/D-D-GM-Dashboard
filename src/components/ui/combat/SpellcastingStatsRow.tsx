@@ -1,13 +1,13 @@
 import React from 'react';
-import { AbilityScores, calculateModifier } from '../../lib/abilityScores';
+import { AbilityScores, calculateModifier } from '../../../lib/abilityScores';
 import {
   SpellcastingAbility,
   getEffectiveSpellcastingAbility,
   calculateSpellSaveDC,
   calculateSpellAttackBonus,
-} from '../../lib/spellcasting';
+} from '../../../lib/spellcasting';
 
-import { formatBonus } from '../../lib/stringUtils';
+import { formatBonus } from '../../../lib/stringUtils';
 
 export interface SpellcastingStatsRowProps {
   abilityScores: AbilityScores;

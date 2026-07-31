@@ -2,9 +2,9 @@ import React from 'react';
 import { DebouncedTextarea } from '../inputs/DebouncedTextarea';
 import { AbilityName } from '../../../lib/abilityFundamentals';
 import { AbilityScores, calculateModifier } from '../../../lib/abilityScores';
-import { AbilitySelectChips } from '../AbilitySelectChips';
+import { AbilitySelectChips } from '../combat/AbilitySelectChips';
 import { DamageComponent } from '../../../types';
-import { DamageComponentsBuilder } from '../DamageComponentsBuilder';
+import { DamageComponentsBuilder } from '../combat/DamageComponentsBuilder';
 import { compileDamageComponents } from '../../../lib/automation';
 import { cn } from '../../../lib/utils';
 

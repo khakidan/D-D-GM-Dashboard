@@ -1,6 +1,6 @@
 import React from 'react';
 import { toast } from 'sonner';
-import { ConditionChips } from '../ui/ConditionChips';
+import { ConditionChips } from '../ui/combat/ConditionChips';
 
 export interface CharacterResourceSectionProps {
   conditions: string;

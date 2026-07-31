@@ -3,7 +3,7 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { ResourcePoolsSection } from '../ResourcePoolsSection';
-import { Character } from '../../../types';
+import { Character } from '../../../../types';
 
 const sampleCharacter: Character = {
   id: 'char-123',

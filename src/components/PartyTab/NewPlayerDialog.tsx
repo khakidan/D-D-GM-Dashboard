@@ -21,7 +21,7 @@ import {
   serializeResourcePools,
 } from '../../lib/resourcePools';
 import { parseHitDiceConfig } from '../../lib/hitDice';
-import { ResourcePoolManager } from '../ui/ResourcePoolManager';
+import { ResourcePoolManager } from '../ui/combat/ResourcePoolManager';
 import { usePlayerFormAutomation } from '../../hooks/usePlayerFormAutomation';
 import { DialogShell } from '../ui/DialogShell';
 import { Button } from '../ui/inputs/Button';

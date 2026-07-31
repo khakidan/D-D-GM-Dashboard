@@ -2,11 +2,11 @@ import React from 'react';
 import { render, screen, cleanup, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, vi, beforeAll } from 'vitest';
 import { ConditionPopover } from '../ConditionPopover';
-import { getConditionDescription } from '../../../lib/conditions';
+import { getConditionDescription } from '../../../../lib/conditions';
 import '@testing-library/jest-dom/vitest';
 
-vi.mock('../../../lib/conditions', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../lib/conditions')>();
+vi.mock('../../../../lib/conditions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../lib/conditions')>();
   return {
     ...actual,
     getConditionDescription: vi.fn(),
@@ -17,7 +17,7 @@ describe('ConditionPopover Component', () => {
   let realGetConditionDescription: any;
 
   beforeAll(async () => {
-    const actual = await vi.importActual<typeof import('../../../lib/conditions')>('../../../lib/conditions');
+    const actual = await vi.importActual<typeof import('../../../../lib/conditions')>('../../../../lib/conditions');
     realGetConditionDescription = actual.getConditionDescription;
   });
 

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, Minus, Trash2, Edit2, Save, X, RotateCcw } from 'lucide-react';
-import { Character } from '../../types';
-import { cn } from '../../lib/utils';
-import { PipTracker } from './inputs/PipTracker';
-import { Badge } from './inputs/Badge';
-import { ConfirmationDialog } from './ConfirmationDialog';
+import { Character } from '../../../types';
+import { cn } from '../../../lib/utils';
+import { PipTracker } from '../inputs/PipTracker';
+import { Badge } from '../inputs/Badge';
+import { ConfirmationDialog } from '../ConfirmationDialog';
 import {
   parseResourcePools,
   serializeResourcePools,
@@ -14,7 +14,7 @@ import {
   removeResourcePool,
   updateResourcePool,
   ResourcePool,
-} from '../../lib/resourcePools';
+} from '../../../lib/resourcePools';
 
 export interface ResourcePoolsSectionProps {
   character: Character;

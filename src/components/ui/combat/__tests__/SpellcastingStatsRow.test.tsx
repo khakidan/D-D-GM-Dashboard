@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, cleanup } from '@testing-library/react';
 import { describe, it, expect, afterEach } from 'vitest';
 import { SpellcastingStatsRow } from '../SpellcastingStatsRow';
-import { AbilityScores } from '../../../lib/abilityScores';
+import { AbilityScores } from '../../../../lib/abilityScores';
 import '@testing-library/jest-dom/vitest';
 
 describe('SpellcastingStatsRow Component', () => {

@@ -3,9 +3,9 @@ import { render, screen, fireEvent, cleanup, within } from '@testing-library/rea
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { DamageComponentsBuilder } from '../DamageComponentsBuilder';
-import { compileDamageComponents } from '../../../lib/automation';
-import { AbilityScores } from '../../../lib/abilityScores';
-import { DamageComponent } from '../../../types';
+import { compileDamageComponents } from '../../../../lib/automation';
+import { AbilityScores } from '../../../../lib/abilityScores';
+import { DamageComponent } from '../../../../types';
 
 describe('DamageComponentsBuilder', () => {
   afterEach(() => cleanup());

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Character, PoolEdit } from '../../types';
 import { ArrowRight } from 'lucide-react';
-import { IrvMultiSelect } from '../ui/IrvMultiSelect';
+import { IrvMultiSelect } from '../ui/combat/IrvMultiSelect';
 import { parseClassString, getHitDieForClass, addHitDieToConfig } from '../../lib/hitDice';
 import { proficiencyBonusFromLevel, parseProficiencies, serializeProficiencies, parseAbilityScores, calculateModifier } from '../../lib/abilityScores';
 import { calculateHpGain } from '../../lib/combatLogic';

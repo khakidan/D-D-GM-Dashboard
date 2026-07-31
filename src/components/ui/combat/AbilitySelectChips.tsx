@@ -1,6 +1,6 @@
 import React from 'react';
-import { AbilityName, abilitiesInOrder } from '../../lib/abilityFundamentals';
-import { cn } from '../../lib/utils';
+import { AbilityName, abilitiesInOrder } from '../../../lib/abilityFundamentals';
+import { cn } from '../../../lib/utils';
 
 interface Props {
   selected: AbilityName[];

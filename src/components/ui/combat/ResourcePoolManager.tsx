@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
-import { cn } from '../../lib/utils';
-import { IconButton } from './inputs/IconButton';
+import { cn } from '../../../lib/utils';
+import { IconButton } from '../inputs/IconButton';
 import {
   ResourcePool,
   addResourcePool,
   removeResourcePool,
   updateResourcePool
-} from '../../lib/resourcePools';
-import { getClassResourceSuggestions } from '../../lib/classResources';
+} from '../../../lib/resourcePools';
+import { getClassResourceSuggestions } from '../../../lib/classResources';
 
 interface ResourcePoolManagerProps {
   pools: ResourcePool[];

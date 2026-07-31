@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { IrvSection } from '../ui/IrvSection';
+import { IrvSection } from '../ui/combat/IrvSection';
 import { LabeledField } from '../ui/LabeledField';
 
 interface CombatTabProps {

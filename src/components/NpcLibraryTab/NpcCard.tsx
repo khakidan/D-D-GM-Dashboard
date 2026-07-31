@@ -15,13 +15,13 @@ import { createNpcListRenderers } from '../ui/npc-editor/npcListFieldRenderers';
 
 // Modular Sub-components
 import { NpcCardHeader } from './NpcCardHeader';
-import { IrvSection } from '../ui/IrvSection';
+import { IrvSection } from '../ui/combat/IrvSection';
 import { NpcLegendarySection } from './NpcLegendarySection';
 import { StatBlockScoresTable } from '../ui/stat-block/StatBlockScoresTable';
 import { StatBlockSaves } from '../ui/stat-block/StatBlockSaves';
 import { StatBlockPassive } from '../ui/stat-block/StatBlockPassive';
 import { StatBlockSkills } from '../ui/stat-block/StatBlockSkills';
-import { SpellcastingStatsRow } from '../ui/SpellcastingStatsRow';
+import { SpellcastingStatsRow } from '../ui/combat/SpellcastingStatsRow';
 import { serializeSpellcastingAbility } from '../../lib/spellcasting';
 import { toast } from 'sonner';
 import { findStaleAutomatedValues, recalculateAutomatedValues } from '../../lib/automation';

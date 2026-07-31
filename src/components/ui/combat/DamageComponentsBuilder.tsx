@@ -1,12 +1,12 @@
 import React from 'react';
-import { AbilityName } from '../../lib/abilityFundamentals';
-import { AbilityScores, calculateModifier } from '../../lib/abilityScores';
+import { AbilityName } from '../../../lib/abilityFundamentals';
+import { AbilityScores, calculateModifier } from '../../../lib/abilityScores';
 import { AbilitySelectChips } from './AbilitySelectChips';
-import { DamageComponent } from '../../types';
-import { DAMAGE_TYPE_OPTIONS } from '../../lib/irvOptions';
+import { DamageComponent } from '../../../types';
+import { DAMAGE_TYPE_OPTIONS } from '../../../lib/irvOptions';
 import { Plus, Trash2 } from 'lucide-react';
-import { cn } from '../../lib/utils';
-import { compileDamageComponents } from '../../lib/automation';
+import { cn } from '../../../lib/utils';
+import { compileDamageComponents } from '../../../lib/automation';
 
 export { compileDamageComponents };
 

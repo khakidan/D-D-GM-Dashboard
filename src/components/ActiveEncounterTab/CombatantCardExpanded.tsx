@@ -2,10 +2,10 @@ import React from 'react';
 import { Trash2, RotateCcw } from 'lucide-react';
 import { buildConditionSummary } from '../../lib/conditions';
 import { Combatant, Character, NPC } from '../../types';
-import { ConditionChips } from '../ui/ConditionChips';
+import { ConditionChips } from '../ui/combat/ConditionChips';
 import { CombatantRechargeTracker } from './CombatantRechargeTracker';
 import { CombatantLegendaryTracker } from './CombatantLegendaryTracker';
-import { ResourcePoolsSection } from '../ui/ResourcePoolsSection';
+import { ResourcePoolsSection } from '../ui/combat/ResourcePoolsSection';
 import { StatTile } from '../ui/StatTile';
 import { 
   parseAbilityScores, 

@@ -2,7 +2,7 @@ import React from 'react';
 import { Character } from '../../types';
 import { cn } from '../../lib/utils';
 import { getHealthStatus, effectiveMaxHp, effectiveAc } from '../../lib/conditions';
-import { SpellcastingStatsRow } from '../ui/SpellcastingStatsRow';
+import { SpellcastingStatsRow } from '../ui/combat/SpellcastingStatsRow';
 import { parseAbilityScores, parseProficiencies, proficiencyBonusFromLevel } from '../../lib/abilityScores';
 import { CardShell } from '../ui/CardShell';
 import { ExpandableContent } from '../ui/ExpandableContent';

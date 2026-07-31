@@ -1,16 +1,16 @@
-import { CONDITION_OPTIONS, EFFECT_OPTIONS, CONDITION_IMMUNITY_MAP, CONCENTRATION_EFFECTS, CONDITION_MECHANICS, buildConditionSummary } from '../../lib/conditions';
-// src/components/ui/ConditionChips.tsx
+import { CONDITION_OPTIONS, EFFECT_OPTIONS, CONDITION_IMMUNITY_MAP, CONCENTRATION_EFFECTS, CONDITION_MECHANICS, buildConditionSummary } from '../../../lib/conditions';
+// src/components/ui/combat/ConditionChips.tsx
 
-import { parseCommaSeparatedList } from '../../lib/stringUtils';
+import { parseCommaSeparatedList } from '../../../lib/stringUtils';
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 import { ConditionPopover } from './ConditionPopover';
 import { ConditionSearchDropdown } from './ConditionSearchDropdown';
 import { ConditionDurationPrompt } from './ConditionDurationPrompt';
-import { checkIrvMatch } from '../../lib/combatLogic';
+import { checkIrvMatch } from '../../../lib/combatLogic';
 import { toast } from 'sonner';
-import { isIncapacitating, stripConcentrationEffects } from '../../lib/concentrationCheck';
+import { isIncapacitating, stripConcentrationEffects } from '../../../lib/concentrationCheck';
 
 // Static — never depends on props or state, so this is computed once at module load
 // rather than on every render of every ConditionChips instance.

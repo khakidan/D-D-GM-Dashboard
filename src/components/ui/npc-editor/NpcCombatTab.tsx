@@ -1,7 +1,7 @@
 import React from 'react';
 import { Shield, Heart } from 'lucide-react';
 import { cn } from '../../../lib/utils';
-import { IrvSection } from '../IrvSection';
+import { IrvSection } from '../combat/IrvSection';
 import { DebouncedTextarea } from '../inputs/DebouncedTextarea';
 import type { NpcFormData } from './NpcFormFields';
 
