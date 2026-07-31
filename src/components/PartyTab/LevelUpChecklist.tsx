@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckSquare, Square } from 'lucide-react';
-import { SectionHeader } from '../ui/SectionHeader';
+import { SectionHeader } from '../ui/layout/SectionHeader';
 
 export interface LevelUpChecklistProps {
   chkHp: boolean;

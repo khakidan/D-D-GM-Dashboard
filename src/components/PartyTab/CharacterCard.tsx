@@ -4,8 +4,8 @@ import { cn } from '../../lib/utils';
 import { getHealthStatus, effectiveMaxHp, effectiveAc } from '../../lib/conditions';
 import { SpellcastingStatsRow } from '../ui/combat/SpellcastingStatsRow';
 import { parseAbilityScores, parseProficiencies, proficiencyBonusFromLevel } from '../../lib/abilityScores';
-import { CardShell } from '../ui/CardShell';
-import { ExpandableContent } from '../ui/ExpandableContent';
+import { CardShell } from '../ui/card-primitives/CardShell';
+import { ExpandableContent } from '../ui/card-primitives/ExpandableContent';
 
 // Modular Sub-components
 import { CharacterCardHeader } from './CharacterCardHeader';

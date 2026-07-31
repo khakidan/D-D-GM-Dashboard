@@ -4,8 +4,8 @@ import { useAppState } from '../hooks/useAppState';
 import { cn } from '../lib/utils';
 import { Skull, Heart, ShieldAlert, Shield, Swords, HeartCrack, ShieldCheck } from 'lucide-react';
 import { motion } from "motion/react";
-import { EmptyState } from './ui/EmptyState';
-import { CardShell } from './ui/CardShell';
+import { EmptyState } from './ui/layout/EmptyState';
+import { CardShell } from './ui/card-primitives/CardShell';
 import { Badge } from './ui/inputs/Badge';
 import { PipTracker } from './ui/inputs/PipTracker';
 

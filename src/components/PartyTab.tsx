@@ -1,8 +1,8 @@
 import React from 'react';
 import { Coffee, Loader2, Users, Plus, Moon, Heart } from 'lucide-react';
 import { Button } from './ui/inputs/Button';
-import { Callout } from './ui/Callout';
-import { EmptyState } from './ui/EmptyState';
+import { Callout } from './ui/layout/Callout';
+import { EmptyState } from './ui/layout/EmptyState';
 import { useAppState } from '../hooks/useAppState';
 import { useParty } from './PartyTab/hooks/useParty';
 import { CharacterCard } from './PartyTab/CharacterCard';
@@ -11,7 +11,7 @@ import { NewPlayerDialog } from './PartyTab/NewPlayerDialog';
 import { LongRestDialog } from './PartyTab/LongRestDialog';
 import { ShortRestDialog } from './PartyTab/ShortRestDialog';
 import { cn } from '../lib/utils';
-import { DashboardLayout } from './ui/DashboardLayout';
+import { DashboardLayout } from './ui/layout/DashboardLayout';
 import { DEFAULT_STATUSES } from '../lib/constants';
 
 export function PartyTab() {

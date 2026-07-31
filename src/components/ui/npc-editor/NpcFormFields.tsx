@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../../../lib/utils';
 import { StatBlock } from '../stat-block/StatBlock';
-import { Tabs } from '../Tabs';
+import { Tabs } from '../layout/Tabs';
 import { NpcListEditor } from './NpcListEditor';
 import { NpcIdentityTab } from './NpcIdentityTab';
 import { NpcCombatTab } from './NpcCombatTab';

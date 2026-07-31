@@ -2,9 +2,9 @@ import React, { useEffect } from 'react';
 import { Sword, MapPin, Trophy, Save } from 'lucide-react';
 import { DifficultyLevel } from '../../types';
 import { useFormState } from '../../hooks/useFormState';
-import { DialogShell } from '../ui/DialogShell';
+import { DialogShell } from '../ui/layout/DialogShell';
 import { Button } from '../ui/inputs/Button';
-import { LabeledField } from '../ui/LabeledField';
+import { LabeledField } from '../ui/layout/LabeledField';
 
 interface NewEncounterDialogProps {
   isOpen: boolean;

@@ -2,7 +2,7 @@ import { DAMAGE_TYPE_OPTIONS } from '../../lib/conditions';
 import React, { useState } from 'react';
 import { DamageType } from '../../types';
 import { Shield, Heart, PlusCircle, Trash2, X } from 'lucide-react';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { ConfirmationDialog } from '../ui/layout/ConfirmationDialog';
 
 interface MultiTargetActionPanelProps {
   selectedCount: number;

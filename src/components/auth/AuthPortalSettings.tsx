@@ -1,7 +1,7 @@
 // src/components/AuthPortalSettings.tsx
 
 import { LogIn } from 'lucide-react';
-import { SettingsPanel } from '../ui/SettingsPanel';
+import { SettingsPanel } from '../ui/layout/SettingsPanel';
 
 interface AuthPortalSettingsProps {
   isGoogleConnected: boolean;

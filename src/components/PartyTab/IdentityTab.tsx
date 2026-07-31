@@ -1,5 +1,5 @@
 import React from 'react';
-import { LabeledField } from '../ui/LabeledField';
+import { LabeledField } from '../ui/layout/LabeledField';
 
 interface IdentityTabProps {
   playerName: string;

@@ -5,13 +5,13 @@ import { Character } from '../../types';
 import { getHitDiceStatus, spendHitDice } from '../../lib/hitDice';
 import { parseDiceNotation, rollDice } from '../../lib/diceRoller';
 import { toast } from 'sonner';
-import { DialogShell } from '../ui/DialogShell';
+import { DialogShell } from '../ui/layout/DialogShell';
 import { Button } from '../ui/inputs/Button';
-import { Accordion } from '../ui/Accordion';
-import { Callout } from '../ui/Callout';
-import { SectionHeader } from '../ui/SectionHeader';
+import { Accordion } from '../ui/layout/Accordion';
+import { Callout } from '../ui/layout/Callout';
+import { SectionHeader } from '../ui/layout/SectionHeader';
 import { effectiveMaxHp } from '../../lib/conditions';
-import { LabeledField } from '../ui/LabeledField';
+import { LabeledField } from '../ui/layout/LabeledField';
 
 interface ShortRestDialogProps {
   isOpen: boolean;

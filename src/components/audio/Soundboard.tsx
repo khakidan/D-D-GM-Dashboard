@@ -5,8 +5,8 @@ import { VolumeX, Plus, Edit2, Play, Trash2, Music } from 'lucide-react';
 import { toast } from 'sonner';
 import { StoredAudioFile } from '../../lib/audioFileStore';
 import { STORAGE_KEYS, campaignKey } from '../../lib/constants';
-import { DialogShell } from '../ui/DialogShell';
-import { Callout } from '../ui/Callout';
+import { DialogShell } from '../ui/layout/DialogShell';
+import { Callout } from '../ui/layout/Callout';
 
 export interface SoundboardSlot {
   slotIndex: number;    // 0-11

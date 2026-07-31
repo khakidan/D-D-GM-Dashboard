@@ -13,7 +13,7 @@ import { DeathSaveTrackerDisplay } from './DeathSaveTrackerDisplay';
 import { ResourcePool } from '../../lib/resourcePools';
 import { Badge } from '../ui/inputs/Badge';
 import { ToggleBadge } from '../ui/inputs/ToggleBadge';
-import { CardHeaderChevron } from '../ui/CardHeaderChevron';
+import { CardHeaderChevron } from '../ui/card-primitives/CardHeaderChevron';
 import { parseAbilityScores, parseProficiencies, proficiencyBonusFromLevel, calculateModifier } from '../../lib/abilityScores';
 import { getEffectiveSpellcastingAbility, calculateSpellSaveDC, calculateSpellAttackBonus } from '../../lib/spellcasting';
 import { formatBonus } from '../../lib/stringUtils';

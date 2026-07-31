@@ -5,7 +5,7 @@ import { CommandPalette } from './CommandPalette';
 import { SyncingOverlay } from './SyncingOverlay';
 import { useAudioEngine } from '../hooks/useAudioEngine';
 import { useMoodPresets } from '../hooks/useMoodPresets';
-import { ConfirmationDialog } from './ui/ConfirmationDialog';
+import { ConfirmationDialog } from './ui/layout/ConfirmationDialog';
 
 interface GMDashboardDialogsProps {
   campaignId: string;

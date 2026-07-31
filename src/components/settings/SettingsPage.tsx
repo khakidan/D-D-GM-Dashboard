@@ -6,8 +6,8 @@ import { SheetConnectionSettings } from './SheetConnectionSettings';
 import { AuthPortalSettings } from '../auth/AuthPortalSettings';
 import { ReferenceDataSeeder } from './ReferenceDataSeeder';
 import { GMTestingTools } from './GMTestingTools';
-import { DashboardLayout } from '../ui/DashboardLayout';
-import { SettingsPanel } from '../ui/SettingsPanel';
+import { DashboardLayout } from '../ui/layout/DashboardLayout';
+import { SettingsPanel } from '../ui/layout/SettingsPanel';
 
 interface SettingsPageProps {
   isGoogleConnected: boolean;

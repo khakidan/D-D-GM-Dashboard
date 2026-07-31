@@ -8,9 +8,9 @@ import { Library, Plus, Users, UserPlus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { NPC as Npc, Character, Combatant } from '../../types';
 import { NpcFormFields, NpcFormData, DEFAULT_NPC_FORM_DATA } from '../ui/npc-editor/NpcFormFields';
-import { DialogShell } from '../ui/DialogShell';
+import { DialogShell } from '../ui/layout/DialogShell';
 import { SearchInput } from '../ui/inputs/SearchInput';
-import { Tabs } from '../ui/Tabs';
+import { Tabs } from '../ui/layout/Tabs';
 
 interface AddCombatantDialogProps {
   isOpen: boolean;

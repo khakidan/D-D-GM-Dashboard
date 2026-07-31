@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { parseDiceNotation, rollDice, RollResult } from '../lib/diceRoller';
-import { Accordion } from './ui/Accordion';
+import { Accordion } from './ui/layout/Accordion';
 
 export function DiceRoller() {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => {

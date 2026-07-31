@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAppState } from '../hooks/useAppState';
 import { Swords, Plus } from 'lucide-react';
 import { Button } from './ui/inputs/Button';
-import { Callout } from './ui/Callout';
-import { EmptyState } from './ui/EmptyState';
+import { Callout } from './ui/layout/Callout';
+import { EmptyState } from './ui/layout/EmptyState';
 import { useEncounters } from './EncountersTab/hooks/useEncounters';
 import { EncounterCard } from './EncountersTab/EncounterCard';
 import { NewEncounterDialog } from './EncountersTab/NewEncounterDialog';
 import { DifficultyLevel } from '../types';
-import { DashboardLayout } from './ui/DashboardLayout';
+import { DashboardLayout } from './ui/layout/DashboardLayout';
 
 export function EncountersTab({ 
   onSelectEncounter, 

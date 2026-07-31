@@ -4,8 +4,8 @@ import { toast } from 'sonner';
 import { EncounterLog, CombatEvent } from '../../lib/combatLog';
 import { CombatEventRow } from './CombatEventRow';
 import { Button } from '../ui/inputs/Button';
-import { Accordion } from '../ui/Accordion';
-import { Tabs } from '../ui/Tabs';
+import { Accordion } from '../ui/layout/Accordion';
+import { Tabs } from '../ui/layout/Tabs';
 import { TIMERS } from '../../lib/constants';
 
 interface EncounterLogDetailsProps {

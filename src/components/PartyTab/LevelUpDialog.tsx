@@ -9,9 +9,9 @@ import { ResourcePool, parseResourcePools, serializeResourcePools } from '../../
 import { LevelUpChecklist } from './LevelUpChecklist';
 import { LevelUpResourcePools } from './LevelUpResourcePools';
 import { useLevelUpAutomation } from '../../hooks/useLevelUpAutomation';
-import { DialogShell } from '../ui/DialogShell';
+import { DialogShell } from '../ui/layout/DialogShell';
 import { Button } from '../ui/inputs/Button';
-import { SectionHeader } from '../ui/SectionHeader';
+import { SectionHeader } from '../ui/layout/SectionHeader';
 
 
 export interface LevelUpDialogProps {

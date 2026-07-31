@@ -4,7 +4,7 @@ import { Character } from '../../../types';
 import { cn } from '../../../lib/utils';
 import { PipTracker } from '../inputs/PipTracker';
 import { Badge } from '../inputs/Badge';
-import { ConfirmationDialog } from '../ConfirmationDialog';
+import { ConfirmationDialog } from '../layout/ConfirmationDialog';
 import {
   parseResourcePools,
   serializeResourcePools,

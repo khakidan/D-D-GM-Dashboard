@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, ChevronUp, Music, Volume2, HardDrive, Play, HelpCircle, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { IconButton } from '../ui/inputs/IconButton';
-import { Tabs } from '../ui/Tabs';
+import { Tabs } from '../ui/layout/Tabs';
 import { StoredAudioFile } from '../../lib/audioFileStore';
 import { AmbientPlayer } from './AmbientPlayer';
 import { Soundboard } from './Soundboard';

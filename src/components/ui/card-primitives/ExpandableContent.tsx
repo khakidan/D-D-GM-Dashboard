@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 
 export interface ExpandableContentProps {
   isExpanded: boolean;

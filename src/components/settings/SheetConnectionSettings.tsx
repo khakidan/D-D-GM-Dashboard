@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { Save, RotateCcw } from 'lucide-react';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
-import { SettingsPanel } from '../ui/SettingsPanel';
+import { ConfirmationDialog } from '../ui/layout/ConfirmationDialog';
+import { SettingsPanel } from '../ui/layout/SettingsPanel';
 
 interface SheetConnectionSettingsProps {
   tempSpreadsheetId: string;

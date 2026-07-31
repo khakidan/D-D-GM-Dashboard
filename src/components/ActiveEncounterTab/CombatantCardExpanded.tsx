@@ -6,7 +6,7 @@ import { ConditionChips } from '../ui/combat/ConditionChips';
 import { CombatantRechargeTracker } from './CombatantRechargeTracker';
 import { CombatantLegendaryTracker } from './CombatantLegendaryTracker';
 import { ResourcePoolsSection } from '../ui/combat/ResourcePoolsSection';
-import { StatTile } from '../ui/StatTile';
+import { StatTile } from '../ui/card-primitives/StatTile';
 import { 
   parseAbilityScores, 
   parseProficiencies, 
@@ -23,7 +23,7 @@ import { getEffectiveResistances } from '../../lib/combatLogic';
 import { CombatMechanicsSummary } from './CombatMechanicsSummary';
 import { CombatantIrvDisplay } from './CombatantIrvDisplay';
 import { Button } from '../ui/inputs/Button';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { ConfirmationDialog } from '../ui/layout/ConfirmationDialog';
 import { parseCommaSeparatedList } from '../../lib/stringUtils';
 
 export interface CombatantCardExpandedProps {

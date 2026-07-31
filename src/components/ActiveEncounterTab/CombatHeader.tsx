@@ -5,7 +5,7 @@ import { Encounter, DamageType } from '../../types';
 import { cn } from '../../lib/utils';
 import { MultiTargetActionPanel } from './MultiTargetActionPanel';
 import { ToggleBadge } from '../ui/inputs/ToggleBadge';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { ConfirmationDialog } from '../ui/layout/ConfirmationDialog';
 import { Button } from '../ui/inputs/Button';
 
 interface CombatHeaderProps {

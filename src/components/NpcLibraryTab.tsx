@@ -3,14 +3,14 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useAppState } from '../hooks/useAppState';
 import { useNpcLibrary } from './NpcLibraryTab/hooks/useNpcLibrary';
 import { BookOpen, Plus, Filter, X, Shield, Activity, Award } from 'lucide-react';
-import { Callout } from './ui/Callout';
-import { EmptyState } from './ui/EmptyState';
+import { Callout } from './ui/layout/Callout';
+import { EmptyState } from './ui/layout/EmptyState';
 import { SearchInput } from './ui/inputs/SearchInput';
 import { cn } from '../lib/utils';
 import { NewNpcDialog } from './NpcLibraryTab/NewNpcDialog';
 import { NpcCard } from './NpcLibraryTab/NpcCard';
 import { checkIrvMatch } from '../lib/combatLogic';
-import { DashboardLayout } from './ui/DashboardLayout';
+import { DashboardLayout } from './ui/layout/DashboardLayout';
 import { crToNumber } from '../lib/dndUtils';
 
 export function NpcLibraryTab() {

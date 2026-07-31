@@ -2,8 +2,8 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { NpcAction, NpcLegendaryAction, NpcReaction } from '../../../types';
-import { SectionHeader } from '../SectionHeader';
-import { baseMarkdownComponents } from '../markdownComponents';
+import { SectionHeader } from '../layout/SectionHeader';
+import { baseMarkdownComponents } from '../layout/markdownComponents';
 
 export function formatActionMeta(action: NpcAction | NpcLegendaryAction | NpcReaction): string {
   const parts: string[] = [];

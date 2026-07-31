@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Flame } from 'lucide-react';
 import { Combatant } from '../../types';
-import { DialogShell } from '../ui/DialogShell';
+import { DialogShell } from '../ui/layout/DialogShell';
 import { isConcentrating } from '../../lib/conditions';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { ConfirmationDialog } from '../ui/layout/ConfirmationDialog';
 
 export interface CasterAttributionDialogProps {
   isOpen: boolean;

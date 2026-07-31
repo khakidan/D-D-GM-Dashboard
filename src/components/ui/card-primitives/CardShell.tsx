@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, HTMLMotionProps } from 'motion/react';
 import { Loader2 } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn } from '../../../lib/utils';
 
 export interface CardShellProps extends Omit<HTMLMotionProps<"div">, 'children'> {
   syncing?: boolean;

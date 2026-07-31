@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Moon, Heart } from 'lucide-react';
 import { Character } from '../../types';
 import { getHitDiceStatus, getTotalHitDiceCount } from '../../lib/hitDice';
-import { DialogShell } from '../ui/DialogShell';
+import { DialogShell } from '../ui/layout/DialogShell';
 import { Button } from '../ui/inputs/Button';
 
 interface LongRestDialogProps {

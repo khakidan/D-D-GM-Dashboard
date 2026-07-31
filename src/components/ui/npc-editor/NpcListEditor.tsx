@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { IconButton } from '../inputs/IconButton';
 import { Button } from '../inputs/Button';
-import { ConfirmationDialog } from '../ConfirmationDialog';
+import { ConfirmationDialog } from '../layout/ConfirmationDialog';
 import { generateUuid } from '../../../lib/uuid';
-import { CardHeaderChevron } from '../CardHeaderChevron';
+import { CardHeaderChevron } from '../card-primitives/CardHeaderChevron';
 import { formatActionMeta } from '../stat-block/NpcStatBlockSection';
 
 interface NpcListEditorProps<T extends { name: string; _key?: string }> {

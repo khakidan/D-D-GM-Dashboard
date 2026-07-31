@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils';
 import { DebouncedInput } from '../ui/inputs/DebouncedInput';
 import { Badge } from '../ui/inputs/Badge';
 import { Button } from '../ui/inputs/Button';
-import { CardHeaderChevron } from '../ui/CardHeaderChevron';
+import { CardHeaderChevron } from '../ui/card-primitives/CardHeaderChevron';
 
 const healthStatusMap: Record<string, 'emerald' | 'green' | 'yellow' | 'red' | 'gray' | 'blue'> = {
   Full: 'emerald',

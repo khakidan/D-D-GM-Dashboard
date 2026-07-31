@@ -9,7 +9,7 @@ import {
   parseAbilityScores,
 } from '../../lib/abilityScores';
 import { recalculateAutomatedValues } from '../../lib/automation';
-import { DialogShell } from '../ui/DialogShell';
+import { DialogShell } from '../ui/layout/DialogShell';
 import { Button } from '../ui/inputs/Button';
 
 interface NewNpcDialogProps {

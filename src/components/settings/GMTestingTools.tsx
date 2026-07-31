@@ -8,7 +8,7 @@ import { updateNpcFullDB } from '../../services/dbOperations/npcs';
 import { reconstructChallengeRating } from '../../lib/challengeRatingRepair';
 import { resolveActiveSpreadsheetId } from '../../services/sheetsService';
 import { toast } from 'sonner';
-import { SettingsPanel } from '../ui/SettingsPanel';
+import { SettingsPanel } from '../ui/layout/SettingsPanel';
 
 interface GMTestingToolsProps {
   fireDeathEvent: (payload: { characterName: string }) => void;

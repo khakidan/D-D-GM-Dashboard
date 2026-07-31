@@ -9,7 +9,7 @@ import {
   FolderOpen
 } from 'lucide-react';
 import { Button } from './ui/inputs/Button';
-import { Callout } from './ui/Callout';
+import { Callout } from './ui/layout/Callout';
 import { Campaign } from '../hooks/useCampaign';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { STORAGE_KEYS } from '../lib/constants';

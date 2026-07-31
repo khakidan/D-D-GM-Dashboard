@@ -2,15 +2,15 @@ import React from 'react';
 import { NPC, NpcTrait, NpcAction, NpcReaction, NpcLegendaryAction } from '../../types';
 import { Trash2, Zap, Shield as ShieldIcon } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { CardShell } from '../ui/CardShell';
+import { CardShell } from '../ui/card-primitives/CardShell';
 import { DebouncedInput } from '../ui/inputs/DebouncedInput';
 import { CardNumberInput } from '../ui/inputs/CardNumberInput';
 import { DebouncedTextarea } from '../ui/inputs/DebouncedTextarea';
 import { NpcListEditor } from '../ui/npc-editor/NpcListEditor';
 import { Button } from '../ui/inputs/Button';
-import { ExpandableContent } from '../ui/ExpandableContent';
-import { LabeledField } from '../ui/LabeledField';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { ExpandableContent } from '../ui/card-primitives/ExpandableContent';
+import { LabeledField } from '../ui/layout/LabeledField';
+import { ConfirmationDialog } from '../ui/layout/ConfirmationDialog';
 import { createNpcListRenderers } from '../ui/npc-editor/npcListFieldRenderers';
 
 // Modular Sub-components

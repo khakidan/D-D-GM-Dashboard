@@ -1,6 +1,6 @@
 import React from 'react';
 import { PoolEdit } from '../../types';
-import { SectionHeader } from '../ui/SectionHeader';
+import { SectionHeader } from '../ui/layout/SectionHeader';
 
 export interface LevelUpResourcePoolsProps {
   poolEdits: PoolEdit[];

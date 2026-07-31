@@ -7,8 +7,8 @@ import { Combatant, DamageType, Character, NPC } from '../../types';
 import { CombatantCardHeader } from './CombatantCardHeader';
 import { CombatantCardExpanded } from './CombatantCardExpanded';
 import { ResourcePool, serializeResourcePools } from '../../lib/resourcePools';
-import { CardShell } from '../ui/CardShell';
-import { ExpandableContent } from '../ui/ExpandableContent';
+import { CardShell } from '../ui/card-primitives/CardShell';
+import { ExpandableContent } from '../ui/card-primitives/ExpandableContent';
 
 export interface CombatantCardProps {
   c: Combatant;

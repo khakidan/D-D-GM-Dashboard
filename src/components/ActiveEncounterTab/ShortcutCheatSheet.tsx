@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { DialogShell } from '../ui/DialogShell';
+import { DialogShell } from '../ui/layout/DialogShell';
 
 interface ShortcutCheatSheetProps {
   isOpen: boolean;

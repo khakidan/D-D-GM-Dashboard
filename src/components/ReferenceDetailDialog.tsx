@@ -3,9 +3,9 @@ import { Spell, Condition } from '../types';
 import { Sparkles, AlertCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { DialogShell } from './ui/DialogShell';
-import { SectionHeader } from './ui/SectionHeader';
-import { baseMarkdownComponents } from './ui/markdownComponents';
+import { DialogShell } from './ui/layout/DialogShell';
+import { SectionHeader } from './ui/layout/SectionHeader';
+import { baseMarkdownComponents } from './ui/layout/markdownComponents';
 
 interface ReferenceDetailDialogProps {
   reference:

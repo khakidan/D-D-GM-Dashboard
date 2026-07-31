@@ -8,7 +8,7 @@ import { STORAGE_KEYS, TIMERS, MoodId, campaignKey } from '../../lib/constants';
 import { SoundboardSlot } from './Soundboard';
 import { cn } from '../../lib/utils';
 import { IconButton } from '../ui/inputs/IconButton';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { ConfirmationDialog } from '../ui/layout/ConfirmationDialog';
 import { AudioLibraryDropzone } from './AudioLibraryDropzone';
 import { AudioFileRow } from './AudioFileRow';
 

@@ -1,8 +1,8 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn } from '../../lib/utils';
-import { IconButton } from './inputs/IconButton';
+import { cn } from '../../../lib/utils';
+import { IconButton } from '../inputs/IconButton';
 
 export interface CardHeaderChevronProps {
   isExpanded: boolean;

@@ -5,7 +5,7 @@ import { Database, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { useReferenceDataSeeder } from '../../hooks/useReferenceDataSeeder';
 import { Button } from '../ui/inputs/Button';
-import { SettingsPanel } from '../ui/SettingsPanel';
+import { SettingsPanel } from '../ui/layout/SettingsPanel';
 
 interface ReferenceDataSeederProps {
   isGoogleConnected: boolean;

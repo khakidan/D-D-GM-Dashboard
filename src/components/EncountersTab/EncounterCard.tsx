@@ -3,13 +3,13 @@ import { Encounter, EncounterCombatant } from '../../types';
 import { Swords, MapPin, Skull, Trash2, AlertCircle, ScrollText } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { toast } from 'sonner';
-import { CardShell } from '../ui/CardShell';
+import { CardShell } from '../ui/card-primitives/CardShell';
 import { TIMERS } from '../../lib/constants';
 import { DebouncedInput } from '../ui/inputs/DebouncedInput';
 import { EncounterLogModal } from './EncounterLogModal';
 import { Badge } from '../ui/inputs/Badge';
 import { Button } from '../ui/inputs/Button';
-import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { ConfirmationDialog } from '../ui/layout/ConfirmationDialog';
 
 export interface EncounterCardProps {
   enc: Encounter;
