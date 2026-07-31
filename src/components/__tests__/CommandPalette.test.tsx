@@ -9,6 +9,13 @@ vi.mock('../../hooks/useAppState', () => ({
   useAppState: vi.fn(),
 }));
 
+vi.mock('../ui/layout/MarkdownRenderer', () => ({
+  MarkdownRenderer: ({ children, components }: any) => {
+    const P = components?.p || 'p';
+    return <P>{children}</P>;
+  }
+}));
+
 describe('CommandPalette', () => {
   beforeEach(() => {
     vi.clearAllMocks();

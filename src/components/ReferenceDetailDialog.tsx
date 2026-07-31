@@ -1,11 +1,10 @@
 import React from 'react';
 import { Spell, Condition } from '../types';
 import { Sparkles, AlertCircle } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { DialogShell } from './ui/layout/DialogShell';
 import { SectionHeader } from './ui/layout/SectionHeader';
 import { baseMarkdownComponents } from './ui/layout/markdownComponents';
+import { MarkdownRenderer } from './ui/layout/MarkdownRenderer';
 
 interface ReferenceDetailDialogProps {
   reference:
@@ -24,6 +23,14 @@ export function ReferenceDetailDialog({ reference, onClose }: ReferenceDetailDia
     <AlertCircle className="w-5 h-5 text-[#2563eb]" />
   );
 
+  const skeletonFallback = (
+    <div className="space-y-2 animate-pulse py-2">
+      <div className="h-4 bg-stone-100 rounded w-full" />
+      <div className="h-4 bg-stone-100 rounded w-5/6" />
+      <div className="h-4 bg-stone-100 rounded w-2/3" />
+    </div>
+  );
+
   return (
     <DialogShell
       isOpen={!!reference}
@@ -36,9 +43,9 @@ export function ReferenceDetailDialog({ reference, onClose }: ReferenceDetailDia
       <div className="space-y-4 text-[#0f172a] text-sm leading-relaxed">
         {reference.type === 'condition' && (
           <div className="text-[#0f172a]">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={baseMarkdownComponents}>
+            <MarkdownRenderer components={baseMarkdownComponents} fallback={skeletonFallback}>
               {reference.data.description}
-            </ReactMarkdown>
+            </MarkdownRenderer>
           </div>
         )}
 
@@ -78,9 +85,9 @@ export function ReferenceDetailDialog({ reference, onClose }: ReferenceDetailDia
             </div>
 
             <div className="text-[#0f172a]">
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={baseMarkdownComponents}>
+              <MarkdownRenderer components={baseMarkdownComponents} fallback={skeletonFallback}>
                 {reference.data.description}
-              </ReactMarkdown>
+              </MarkdownRenderer>
             </div>
 
             {reference.data.higherLevel && (
@@ -89,9 +96,9 @@ export function ReferenceDetailDialog({ reference, onClose }: ReferenceDetailDia
                   At Higher Levels
                 </SectionHeader>
                 <div className="text-[#0f172a]">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={baseMarkdownComponents}>
+                  <MarkdownRenderer components={baseMarkdownComponents} fallback={skeletonFallback}>
                     {reference.data.higherLevel}
-                  </ReactMarkdown>
+                  </MarkdownRenderer>
                 </div>
               </div>
             )}

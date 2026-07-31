@@ -14,6 +14,13 @@ vi.mock('../../../services/dbOperations', () => ({
   updateEncounterStateDB: vi.fn(),
 }));
 
+vi.mock('../../ui/layout/MarkdownRenderer', () => ({
+  MarkdownRenderer: ({ children, components }: any) => {
+    const P = components?.p || 'p';
+    return <P>{children}</P>;
+  }
+}));
+
 describe('CombatantCard', () => {
   afterEach(() => cleanup());
 

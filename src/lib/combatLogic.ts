@@ -1,7 +1,7 @@
 // src/lib/combatLogic.ts
 
 import { Combatant, DamageType } from '../types';
-import { CONDITION_MECHANICS } from './conditions';
+import { CONDITION_MECHANICS } from './conditionMechanicsData';
 import { calculateModifier } from './abilityScores';
 import { parseCommaSeparatedList } from './stringUtils';
 

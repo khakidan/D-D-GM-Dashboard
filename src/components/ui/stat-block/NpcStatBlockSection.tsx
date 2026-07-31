@@ -1,9 +1,8 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { NpcAction, NpcLegendaryAction, NpcReaction } from '../../../types';
 import { SectionHeader } from '../layout/SectionHeader';
 import { baseMarkdownComponents } from '../layout/markdownComponents';
+import { MarkdownRenderer } from '../layout/MarkdownRenderer';
 
 export function formatActionMeta(action: NpcAction | NpcLegendaryAction | NpcReaction): string {
   const parts: string[] = [];
@@ -77,8 +76,7 @@ export const NpcStatBlockSection: React.FC<NpcStatBlockSectionProps> = ({ title,
               )}
             </div>
             <div className="mt-0.5">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
+              <MarkdownRenderer
                 components={{
                   ...baseMarkdownComponents,
                   p: ({ children }: any) => (
@@ -97,9 +95,10 @@ export const NpcStatBlockSection: React.FC<NpcStatBlockSectionProps> = ({ title,
                     </ol>
                   ),
                 }}
+                fallback={<div className="animate-pulse h-4 bg-stone-100 rounded w-3/4 my-1" />}
               >
                 {item.description}
-              </ReactMarkdown>
+              </MarkdownRenderer>
             </div>
           </div>
         ))}
